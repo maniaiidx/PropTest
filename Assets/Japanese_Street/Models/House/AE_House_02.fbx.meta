@@ -1,0 +1,213 @@
+fileFormatVersion: 2
+guid: b58a516f971b18546914175ea9d57512
+ModelImporter:
+  serializedVersion: 23
+  fileIDToRecycleName:
+    100000: AE_Door_02_05_LOD0.001
+    100002: AE_Door_02_05_LOD0.002
+    100004: AE_Door_02_05_LOD0.003
+    100006: AE_Door_02_05_LOD0.004
+    100008: AE_Door_02_05_LOD0.005
+    100010: AE_Door_02_LOD0.001
+    100012: AE_Door_02_LOD1.001
+    100014: //RootNode
+    100016: AE_House_02_LOD0
+    100018: AE_House_02_LOD1.002
+    400000: AE_Door_02_05_LOD0.001
+    400002: AE_Door_02_05_LOD0.002
+    400004: AE_Door_02_05_LOD0.003
+    400006: AE_Door_02_05_LOD0.004
+    400008: AE_Door_02_05_LOD0.005
+    400010: AE_Door_02_LOD0.001
+    400012: AE_Door_02_LOD1.001
+    400014: //RootNode
+    400016: AE_House_02_LOD0
+    400018: AE_House_02_LOD1.002
+    2300000: AE_Door_02_05_LOD0.001
+    2300002: AE_Door_02_05_LOD0.002
+    2300004: AE_Door_02_05_LOD0.003
+    2300006: AE_Door_02_05_LOD0.004
+    2300008: AE_Door_02_05_LOD0.005
+    2300010: AE_Door_02_LOD0.001
+    2300012: AE_Door_02_LOD1.001
+    2300014: AE_House_02_LOD0
+    2300016: AE_House_02_LOD1.002
+    3300000: AE_Door_02_05_LOD0.001
+    3300002: AE_Door_02_05_LOD0.002
+    3300004: AE_Door_02_05_LOD0.003
+    3300006: AE_Door_02_05_LOD0.004
+    3300008: AE_Door_02_05_LOD0.005
+    3300010: AE_Door_02_LOD0.001
+    3300012: AE_Door_02_LOD1.001
+    3300014: AE_House_02_LOD0
+    3300016: AE_House_02_LOD1.002
+    4300000: AE_House_02_LOD0
+    4300002: AE_Door_02_05_LOD0.001
+    4300004: AE_Door_02_05_LOD0.002
+    4300006: AE_Door_02_05_LOD0.003
+    4300008: AE_Door_02_05_LOD0.004
+    4300010: AE_Door_02_05_LOD0.005
+    4300012: AE_Door_02_LOD0.001
+    4300014: AE_Door_02_LOD1.001
+    4300016: AE_House_02_LOD1.002
+    20500000: //RootNode
+    2186277476908879412: ImportLogs
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Ceiling
+    second: {fileID: 2100000, guid: 0e031b5787121b34aab0adca584648ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Concrete
+    second: {fileID: 2100000, guid: eb9a36a6bc3ed3143bb398aeaff0fc68, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Door_01
+    second: {fileID: 2100000, guid: 4d5a66ee756595746993da7ec89af360, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Door_02
+    second: {fileID: 2100000, guid: 21f41a3b902d0bc488c215ed3bacfaa0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Floor_01
+    second: {fileID: 2100000, guid: 0a814b84d5e88ba4aa8725f9871b9dc5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Floor_02
+    second: {fileID: 2100000, guid: aaf9170abfb341c48a62627a5b4c42a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Glass
+    second: {fileID: 2100000, guid: 27128fb580fe63e46a882345c143969b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Grass_02
+    second: {fileID: 2100000, guid: f950cc174b6fafe4ab7014200e986a9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Roller_Shutter
+    second: {fileID: 2100000, guid: 89a4e3bcbfcecb549a0a9700fec64fdd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Tilling material_01
+    second: {fileID: 2100000, guid: 082eb6eabe36fa340aaf3ee663a727d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Tilling material_02
+    second: {fileID: 2100000, guid: bf85be9acc3c96d4d9159ecc71b82f8c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Tilling material_03
+    second: {fileID: 2100000, guid: 19f338004eb9a5c45bc8c408dbfd9f8c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Tilling material_04
+    second: {fileID: 2100000, guid: d1cd34e56895eef4387fea4fca467f98, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AE_Window
+    second: {fileID: 2100000, guid: 527979957669e564a954e130960fd5e3, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties:
+    - '#BAKERY{"meshName":["AE_Door_02_05_LOD0.004","AE_Door_02_05_LOD0.003","AE_Door_02_05_LOD0.002","AE_Door_02_05_LOD0.001","AE_Door_02_05_LOD0.005","AE_House_02_LOD0","AE_Door_02_LOD0.001","AE_House_02_LOD1.002","AE_Door_02_LOD1.001"],"padding":[104,104,104,104,104,6,100,10,256],"unwrapper":[0,0,0,0,0,0,0,0,0]}'
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages:
+    - 0.25
+    - 0.01
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 1
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 1
+    secondaryUVAngleDistortion: 24
+    secondaryUVAreaDistortion: 26
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 54
+    useFileScale: 1
+    previousCalculatedGlobalScale: 1
+    hasPreviousCalculatedGlobalScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
