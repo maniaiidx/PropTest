@@ -17,18 +17,11 @@ namespace VeryAnimation
         public const string AnimationRiggingRigName = "VARig";
 
         public RigBuilder rigBuilder { get; private set; }
-#if UNITY_2020_1_OR_NEWER
-        public RigLayer rigLayer { get; private set; }   //version 0.3
-#else
-        public RigBuilder.RigLayer rigLayer { get; private set; }   //version 0.2
-#endif
         public Rig rig { get; private set; }
         public VeryAnimationRigBuilder vaRigBuilder { get; private set; }
         public VeryAnimationRig vaRig { get; private set; }
 
-        public bool isValid { get { return vaRigBuilder != null && vaRig != null && rigBuilder != null && rigLayer != null && rig != null;  } }
-        public bool isActive { get { return isValid && rigBuilder.isActiveAndEnabled && rigLayer.active; } }
-        public float weight { get { return isActive ? rig.weight : 0f; } }
+        public bool isValid { get { return vaRigBuilder != null && vaRig != null && rigBuilder != null && rig != null; } }
 
         public void Initialize()
         {
@@ -40,13 +33,10 @@ namespace VeryAnimation
             vaRig = GetVeryAnimationRig(vaw.gameObject);
             if (vaRig != null)
                 rig = vaRig.GetComponent<Rig>();
-            if (rigBuilder != null)
-                rigLayer = rigBuilder.layers.Find(x => x != null && x.rig == rig);
         }
         public void Release()
         {
             rigBuilder = null;
-            rigLayer = null;
             rig = null;
             vaRigBuilder = null;
             vaRig = null;
@@ -64,7 +54,6 @@ namespace VeryAnimation
                 vaRigBuilder = vaw.gameObject.GetComponent<VeryAnimationRigBuilder>();
                 vaRig = GetVeryAnimationRig(vaw.gameObject);
                 rig = vaRig != null ? vaRig.GetComponent<Rig>() : null;
-                rigLayer = rigBuilder != null ? rigBuilder.layers.Find(x => x != null && x.rig == rig) : null;
             }
             va.OnHierarchyWindowChanged();
         }
@@ -121,9 +110,9 @@ namespace VeryAnimation
                 vaRig = Undo.AddComponent<VeryAnimationRig>(rigObj);
                 Undo.RecordObject(rigBuilder, "");
 #if UNITY_2020_1_OR_NEWER
-                var rigLayer = new RigLayer(rig);   //version 0.3
+                var rigLayer = new RigLayer(rig);   //version 0.3.2
 #else
-                var rigLayer = new RigBuilder.RigLayer(rig);    //version 0.2
+                var rigLayer = new RigBuilder.RigLayer(rig);    //version 0.2.5
 #endif
                 rigBuilder.layers.Add(rigLayer);
                 Selection.activeGameObject = rigObj;
@@ -152,221 +141,17 @@ namespace VeryAnimation
             }
             if (rigBuilder != null)
             {
-                if (index >= 0 && index < rigBuilder.layers.Count)
+                if (rigBuilder.layers.Count == 1)
+                {
+                    Undo.DestroyObjectImmediate(rigBuilder);
+                }
+                else if (index >= 0 && index < rigBuilder.layers.Count)
                 {
                     Undo.RecordObject(rigBuilder, "");
                     rigBuilder.layers.RemoveAt(index);
-                    if (rigBuilder.layers.Count == 0)
-                    {
-                        Undo.DestroyObjectImmediate(rigBuilder);
-                    }
                 }
                 rigBuilder = null;
             }
-        }
-
-        public static void ReplaceConstraintTransformReference(GameObject gameObject, Rig rig,
-                                                                GameObject originalGameObject, Rig originalRig)
-        {
-            Func<Transform, Transform> GetPreviewTransform = (t) =>
-            {
-                if (t == null) return null;
-                var path = AnimationUtility.CalculateTransformPath(t, originalGameObject.transform);
-                return gameObject.transform.Find(path);
-            };
-
-            var originalRigConstraints = originalGameObject.GetComponentsInChildren<IRigConstraint>();
-            foreach (var originalRigConstraint in originalRigConstraints)
-            {
-                #region BlendConstraint
-                if (originalRigConstraint is BlendConstraint)
-                {
-                    var blendConstraint = originalRigConstraint as BlendConstraint;
-                    var constraint = GetPreviewTransform(blendConstraint.transform).GetComponent<BlendConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(blendConstraint.data.constrainedObject);
-                        constraint.data.sourceObjectA = GetPreviewTransform(blendConstraint.data.sourceObjectA);
-                        constraint.data.sourceObjectB = GetPreviewTransform(blendConstraint.data.sourceObjectB);
-                    }
-                }
-                #endregion
-                #region ChainIKConstraint
-                else if (originalRigConstraint is ChainIKConstraint)
-                {
-                    var chainIKConstraint = originalRigConstraint as ChainIKConstraint;
-                    var constraint = GetPreviewTransform(chainIKConstraint.transform).GetComponent<ChainIKConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.root = GetPreviewTransform(chainIKConstraint.data.root);
-                        constraint.data.tip = GetPreviewTransform(chainIKConstraint.data.tip);
-                        constraint.data.target = GetPreviewTransform(chainIKConstraint.data.target);
-                    }
-                }
-                #endregion
-                #region ChainIKConstraint
-                else if (originalRigConstraint is DampedTransform)
-                {
-                    var dampedTransform = originalRigConstraint as DampedTransform;
-                    var constraint = GetPreviewTransform(dampedTransform.transform).GetComponent<DampedTransform>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(dampedTransform.data.constrainedObject);
-                        constraint.data.sourceObject = GetPreviewTransform(dampedTransform.data.sourceObject);
-                    }
-                }
-                #endregion
-                #region MultiAimConstraint
-                else if (originalRigConstraint is MultiAimConstraint)
-                {
-                    var multiAimConstraint = originalRigConstraint as MultiAimConstraint;
-                    var constraint = GetPreviewTransform(multiAimConstraint.transform).GetComponent<MultiAimConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(multiAimConstraint.data.constrainedObject);
-                        var sourceObjects = constraint.data.sourceObjects;
-                        for (int i = 0; i < multiAimConstraint.data.sourceObjects.Count; i++)
-                            sourceObjects.SetTransform(i, GetPreviewTransform(multiAimConstraint.data.sourceObjects.GetTransform(i)));
-                        constraint.data.sourceObjects = sourceObjects;
-                    }
-                }
-                #endregion
-                #region MultiParentConstraint
-                else if (originalRigConstraint is MultiParentConstraint)
-                {
-                    var multiParentConstraint = originalRigConstraint as MultiParentConstraint;
-                    var constraint = GetPreviewTransform(multiParentConstraint.transform).GetComponent<MultiParentConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(multiParentConstraint.data.constrainedObject);
-                        var sourceObjects = constraint.data.sourceObjects;
-                        for (int i = 0; i < multiParentConstraint.data.sourceObjects.Count; i++)
-                            sourceObjects.SetTransform(i, GetPreviewTransform(multiParentConstraint.data.sourceObjects.GetTransform(i)));
-                        constraint.data.sourceObjects = sourceObjects;
-                    }
-                }
-                #endregion
-                #region MultiPositionConstraint
-                else if (originalRigConstraint is MultiPositionConstraint)
-                {
-                    var multiPositionConstraint = originalRigConstraint as MultiPositionConstraint;
-                    var constraint = GetPreviewTransform(multiPositionConstraint.transform).GetComponent<MultiPositionConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(multiPositionConstraint.data.constrainedObject);
-                        var sourceObjects = constraint.data.sourceObjects;
-                        for (int i = 0; i < multiPositionConstraint.data.sourceObjects.Count; i++)
-                            sourceObjects.SetTransform(i, GetPreviewTransform(multiPositionConstraint.data.sourceObjects.GetTransform(i)));
-                        constraint.data.sourceObjects = sourceObjects;
-                    }
-                }
-                #endregion
-                #region MultiReferentialConstraint
-                else if (originalRigConstraint is MultiReferentialConstraint)
-                {
-                    var multiReferentialConstraint = originalRigConstraint as MultiReferentialConstraint;
-                    var constraint = GetPreviewTransform(multiReferentialConstraint.transform).GetComponent<MultiReferentialConstraint>();
-                    if (constraint != null)
-                    {
-                        var sourceObjects = constraint.data.sourceObjects;
-                        for (int i = 0; i < multiReferentialConstraint.data.sourceObjects.Count; i++)
-                            sourceObjects[i] = GetPreviewTransform(multiReferentialConstraint.data.sourceObjects[i]);
-                        constraint.data.sourceObjects = sourceObjects;
-                    }
-                }
-                #endregion
-                #region MultiRotationConstraint
-                else if (originalRigConstraint is MultiRotationConstraint)
-                {
-                    var multiRotationConstraint = originalRigConstraint as MultiRotationConstraint;
-                    var constraint = GetPreviewTransform(multiRotationConstraint.transform).GetComponent<MultiRotationConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(multiRotationConstraint.data.constrainedObject);
-                        var sourceObjects = constraint.data.sourceObjects;
-                        for (int i = 0; i < multiRotationConstraint.data.sourceObjects.Count; i++)
-                            sourceObjects.SetTransform(i, GetPreviewTransform(multiRotationConstraint.data.sourceObjects.GetTransform(i)));
-                        constraint.data.sourceObjects = sourceObjects;
-                    }
-                }
-                #endregion
-                #region OverrideTransform
-                else if (originalRigConstraint is OverrideTransform)
-                {
-                    var overrideTransform = originalRigConstraint as OverrideTransform;
-                    var constraint = GetPreviewTransform(overrideTransform.transform).GetComponent<OverrideTransform>();
-                    if (constraint != null)
-                    {
-                        constraint.data.constrainedObject = GetPreviewTransform(overrideTransform.data.constrainedObject);
-                        constraint.data.sourceObject = GetPreviewTransform(overrideTransform.data.sourceObject);
-                    }
-                }
-                #endregion
-                #region TwistCorrection
-                else if (originalRigConstraint is TwistCorrection)
-                {
-                    var twistCorrection = originalRigConstraint as TwistCorrection;
-                    var constraint = GetPreviewTransform(twistCorrection.transform).GetComponent<TwistCorrection>();
-                    if (constraint != null)
-                    {
-                        constraint.data.sourceObject = GetPreviewTransform(twistCorrection.data.sourceObject);
-                        var twistNodes = constraint.data.twistNodes;
-                        for (int i = 0; i < twistCorrection.data.twistNodes.Count; i++)
-                            twistNodes.SetTransform(i, GetPreviewTransform(twistCorrection.data.twistNodes.GetTransform(i)));
-                        constraint.data.twistNodes = twistNodes;
-                    }
-                }
-                #endregion
-                #region TwoBoneIKConstraint
-                else if (originalRigConstraint is TwoBoneIKConstraint)
-                {
-                    var twoBoneIKConstraint = originalRigConstraint as TwoBoneIKConstraint;
-                    var constraint = GetPreviewTransform(twoBoneIKConstraint.transform).GetComponent<TwoBoneIKConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.root = GetPreviewTransform(twoBoneIKConstraint.data.root);
-                        constraint.data.mid = GetPreviewTransform(twoBoneIKConstraint.data.mid);
-                        constraint.data.tip = GetPreviewTransform(twoBoneIKConstraint.data.tip);
-                        constraint.data.target = GetPreviewTransform(twoBoneIKConstraint.data.target);
-                        constraint.data.hint = GetPreviewTransform(twoBoneIKConstraint.data.hint);
-                    }
-                }
-                #endregion
-#if UNITY_2020_1_OR_NEWER
-                #region TwistChainConstraint
-                else if (originalRigConstraint is TwistChainConstraint) //version 0.3
-                {
-                    var twistChainConstraint = originalRigConstraint as TwistChainConstraint;
-                    var constraint = GetPreviewTransform(twistChainConstraint.transform).GetComponent<TwistChainConstraint>();
-                    if (constraint != null)
-                    {
-                        constraint.data.root = GetPreviewTransform(twistChainConstraint.data.root);
-                        constraint.data.tip = GetPreviewTransform(twistChainConstraint.data.tip);
-                        constraint.data.rootTarget = GetPreviewTransform(twistChainConstraint.data.rootTarget);
-                        constraint.data.tipTarget = GetPreviewTransform(twistChainConstraint.data.tipTarget);
-                    }
-                }
-                #endregion
-#endif
-                else
-                {
-                    Debug.LogErrorFormat("<color=blue>[Very Animation]</color>Unknown IRigConstraint. {0}", originalRigConstraint);
-                }
-            }
-
-            #region VeryAnimationRig
-            {
-                var vaRig = rig.GetComponent<VeryAnimationRig>();
-                var originalVaRig = originalRig.GetComponent<VeryAnimationRig>();
-                if (vaRig != null && originalVaRig != null)
-                {
-                    vaRig.basePoseLeftHand.constraint = GetPreviewTransform(originalVaRig.basePoseLeftHand.constraint);
-                    vaRig.basePoseRightHand.constraint = GetPreviewTransform(originalVaRig.basePoseRightHand.constraint);
-                    vaRig.basePoseLeftFoot.constraint = GetPreviewTransform(originalVaRig.basePoseLeftFoot.constraint);
-                    vaRig.basePoseRightFoot.constraint = GetPreviewTransform(originalVaRig.basePoseRightFoot.constraint);
-                }
-            }
-            #endregion
         }
     }
 }

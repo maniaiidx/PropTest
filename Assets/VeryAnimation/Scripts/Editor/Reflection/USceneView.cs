@@ -13,9 +13,6 @@ namespace VeryAnimation
 #if !UNITY_2019_1_OR_NEWER
         protected FieldInfo fi_onPreSceneGUIDelegate;
 #endif
-#if !UNITY_2017_1_OR_NEWER
-        protected MethodInfo mi_Frame;
-#endif
         public USceneView()
         {
             var asmUnityEditor = Assembly.LoadFrom(InternalEditorUtility.GetEditorAssemblyPath());
@@ -23,9 +20,6 @@ namespace VeryAnimation
             Assert.IsNotNull(pi_viewIsLockedToObject = sceneViewType.GetProperty("viewIsLockedToObject", BindingFlags.NonPublic | BindingFlags.Instance));
 #if !UNITY_2019_1_OR_NEWER
             Assert.IsNotNull(fi_onPreSceneGUIDelegate = sceneViewType.GetField("onPreSceneGUIDelegate", BindingFlags.NonPublic | BindingFlags.Static));
-#endif
-#if !UNITY_2017_1_OR_NEWER
-            Assert.IsNotNull(mi_Frame = sceneViewType.GetMethod("Frame", BindingFlags.NonPublic | BindingFlags.Instance));
 #endif
         }
 
@@ -47,13 +41,7 @@ namespace VeryAnimation
 
         public bool Frame(SceneView instance, Bounds bounds, bool instant = true)
         {
-#if UNITY_2017_2_OR_NEWER
             return instance.Frame(bounds, instant);
-#elif UNITY_2017_1_OR_NEWER
-            return instance.Frame(bounds);
-#else
-            return (bool)mi_Frame.Invoke(instance, new object[] { bounds });
-#endif
         }
     }
 }

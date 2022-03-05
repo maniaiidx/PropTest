@@ -1,11 +1,13 @@
 // Toony Colors Pro+Mobile 2
-// (c) 2014-2019 Jean Moreno
+// (c) 2014-2021 Jean Moreno
 
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using ToonyColorsPro.Utilities;
+using ToonyColorsPro.Legacy;
 
 internal class TCP2_MaterialInspector_SurfacePBS_SG : ShaderGUI
 {
@@ -653,9 +655,16 @@ internal class TCP2_MaterialInspector_SurfacePBS_SG : ShaderGUI
 		// A material's GI flag internally keeps track of whether emission is enabled at all, it's enabled but has no effect
 		// or is enabled and may be modified at runtime. This state depends on the values of the current flag and emissive color.
 		// The fixup routine makes sure that the material is in the correct state if/when changes are made to the mode or color.
-		MaterialEditor.FixupEmissiveFlag(material);
-		bool shouldEmissionBeEnabled = material.HasProperty("_EmissionColor") && (material.globalIlluminationFlags & MaterialGlobalIlluminationFlags.EmissiveIsBlack) == 0;
-		SetKeyword(material, "_EMISSION", shouldEmissionBeEnabled);
+		if (material.HasProperty("_EmissionColor"))
+		{
+			MaterialEditor.FixupEmissiveFlag(material);
+			bool shouldEmissionBeEnabled = material.HasProperty("_EmissionColor") && (material.globalIlluminationFlags & MaterialGlobalIlluminationFlags.EmissiveIsBlack) == 0;
+			SetKeyword(material, "_EMISSION", shouldEmissionBeEnabled);
+		}
+		else if(material.IsKeywordEnabled("_EMISSION"))
+		{
+			SetKeyword(material, "_EMISSION", false);
+		}
 #else
 		// Setup lightmap emissive flags
 		var shouldEmissionBeEnabled = material.HasProperty("_EmissionColor") && ShouldEmissionBeEnabled(material, material.GetColor("_EmissionColor"));

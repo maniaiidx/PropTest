@@ -1,6 +1,6 @@
 ﻿//#define Enable_Profiler
 
-#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Assertions;
 using UnityEditor;
 
 namespace VeryAnimation
@@ -58,7 +59,7 @@ namespace VeryAnimation
         private const int QuickSaveSize = 3;
         private PoseTemplate[] quickSaves;
 
-        private string poseSaveDefaultDirectory;
+        public string templateSaveDefaultDirectory { get; set; }
 
         void OnEnable()
         {
@@ -66,7 +67,7 @@ namespace VeryAnimation
 
             instance = this;
 
-            poseSaveDefaultDirectory = Application.dataPath;
+            templateSaveDefaultDirectory = Application.dataPath;
 
             UpdateRootCorrectionModeString();
             Language.OnLanguageChanged += UpdateRootCorrectionModeString;
@@ -251,22 +252,31 @@ namespace VeryAnimation
                         }
                     }
                     {
-#if VERYANIMATION_TIMELINE
-                        if (va.uAw_2017_1.GetLinkedWithTimeline())
+#if UNITY_2018_3_OR_NEWER
+                        var help = Language.Help.EditorOptionsFootIK_2018_3;
+#else
+                        var help = Language.Help.EditorOptionsFootIK;
+#endif
+                        if (va.uAw.GetLinkedWithTimeline())
                         {
+#if VERYANIMATION_TIMELINE
                             EditorGUI.BeginDisabledGroup(true);
-                            GUILayout.Toggle(true, Language.GetContent(Language.Help.EditorOptionsFootIK), EditorStyles.miniButton);
+                            GUILayout.Toggle(va.uAw.GetTimelineAnimationApplyFootIK(), Language.GetContent(help), EditorStyles.miniButton);
                             EditorGUI.EndDisabledGroup();
+#else
+                            Assert.IsTrue(false);
+#endif
                         }
                         else
-#endif
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = GUILayout.Toggle(va.autoFootIK, Language.GetContent(Language.Help.EditorOptionsFootIK), EditorStyles.miniButton);
+                            var flag = GUILayout.Toggle(va.autoFootIK, Language.GetContent(help), EditorStyles.miniButton);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(this, "Change Foot IK");
                                 va.autoFootIK = flag;
+                                va.SetUpdateSampleAnimation();
+                                va.SetSynchroIKtargetAll();
                                 va.SetAnimationWindowSynchroSelection();
                             }
                         }
@@ -396,46 +406,52 @@ namespace VeryAnimation
                     EditorGUILayout.BeginVertical(vaw.guiStyleSkinBox);
                     {
                         EditorGUILayout.BeginHorizontal();
-                        #region Reset
-                        if (va.isHuman)
+                        #region Set
+                        if (GUILayout.Button("Reset", vaw.guiStyleDropDown))
                         {
-                            if (GUILayout.Button(Language.GetContent(Language.Help.EditorPoseHumanoidReset)))
+                            GenericMenu menu = new GenericMenu();
                             {
-                                Undo.RecordObject(this, "Reset Pose");
-                                va.SetPoseHumanoidDefault();
-                            }
-                        }
-                        #endregion
-                        #region Bind or Start
-                        {
-                            if (va.transformPoseSave.IsEnableBindTransform())
-                            {
-                                if (GUILayout.Button(Language.GetContent(Language.Help.EditorPoseBind)))
+                                if (va.isHuman)
                                 {
-                                    Undo.RecordObject(this, "Bind Pose");
-                                    va.SetPoseBind();
+                                    menu.AddItem(Language.GetContent(Language.Help.EditorPoseHumanoidReset), false, () =>
+                                    {
+                                        Undo.RecordObject(this, "Reset Pose");
+                                        va.SetPoseHumanoidDefault();
+                                    });
+                                }
+                                if (va.transformPoseSave.IsEnableTPoseTransform())
+                                {
+                                    menu.AddItem(Language.GetContent(Language.Help.EditorPoseTPose), false, () =>
+                                    {
+                                        Undo.RecordObject(this, "T Pose");
+                                        va.SetPoseTPose();
+                                    });
+                                }
+                                if (va.transformPoseSave.IsEnableBindTransform())
+                                {
+                                    menu.AddItem(Language.GetContent(Language.Help.EditorPoseBind), false, () =>
+                                    {
+                                        Undo.RecordObject(this, "Bind Pose");
+                                        va.SetPoseBind();
+                                    });
+                                }
+                                if (va.transformPoseSave.IsEnablePrefabTransform())
+                                {
+                                    menu.AddItem(Language.GetContent(Language.Help.EditorPosePrefab), false, () =>
+                                    {
+                                        Undo.RecordObject(this, "Prefab Pose");
+                                        va.SetPosePrefab();
+                                    });
+                                }
+                                {
+                                    menu.AddItem(Language.GetContent(Language.Help.EditorPoseStart), false, () =>
+                                    {
+                                        Undo.RecordObject(this, "Edit Start Pose");
+                                        va.SetPoseEditStart();
+                                    });
                                 }
                             }
-                            else
-                            {
-                                if (GUILayout.Button(Language.GetContent(Language.Help.EditorPoseStart)))
-                                {
-                                    Undo.RecordObject(this, "Edit Start Pose");
-                                    va.SetPoseEditStart();
-                                }
-                            }
-                        }
-                        #endregion
-                        #region Prefab
-                        {
-                            if (va.transformPoseSave.IsEnablePrefabTransform())
-                            {
-                                if (GUILayout.Button(Language.GetContent(Language.Help.EditorPosePrefab)))
-                                {
-                                    Undo.RecordObject(this, "Prefab Pose");
-                                    va.SetPosePrefab();
-                                }
-                            }
+                            menu.ShowAsContext();
                         }
                         #endregion
                         #region Mirror
@@ -488,7 +504,7 @@ namespace VeryAnimation
                         #region Save as
                         if (GUILayout.Button(Language.GetContent(Language.Help.EditorPoseSaveAs)))
                         {
-                            string path = EditorUtility.SaveFilePanel("Save as Pose Template", poseSaveDefaultDirectory, string.Format("{0}.asset", va.currentClip.name), "asset");
+                            string path = EditorUtility.SaveFilePanel("Save as Pose Template", templateSaveDefaultDirectory, string.Format("{0}.asset", va.currentClip.name), "asset");
                             if (!string.IsNullOrEmpty(path))
                             {
                                 if (!path.StartsWith(Application.dataPath))
@@ -497,11 +513,19 @@ namespace VeryAnimation
                                 }
                                 else
                                 {
-                                    poseSaveDefaultDirectory = Path.GetDirectoryName(path);
+                                    templateSaveDefaultDirectory = Path.GetDirectoryName(path);
                                     path = FileUtil.GetProjectRelativePath(path);
                                     var poseTemplate = ScriptableObject.CreateInstance<PoseTemplate>();
                                     va.SavePoseTemplate(poseTemplate);
-                                    AssetDatabase.CreateAsset(poseTemplate, path);
+                                    try
+                                    {
+                                        VeryAnimationWindow.CustomAssetModificationProcessor.Pause();
+                                        AssetDatabase.CreateAsset(poseTemplate, path);
+                                    }
+                                    finally
+                                    {
+                                        VeryAnimationWindow.CustomAssetModificationProcessor.Resume();
+                                    }
                                     Focus();
                                 }
                             }
@@ -769,7 +793,7 @@ namespace VeryAnimation
                                 #region Root
                                 {
                                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                    if (GUILayout.Button(new GUIContent("Position", "RootT"), GUILayout.Width(60)))
+                                    if (GUILayout.Button(new GUIContent("Position", "RootT"), GUILayout.Width(64)))
                                     {
                                         va.lastTool = Tool.Move;
                                         va.SelectGameObject(vaw.gameObject);
@@ -788,7 +812,7 @@ namespace VeryAnimation
                                 }
                                 {
                                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                    if (GUILayout.Button(new GUIContent("Rotation", "RootQ"), GUILayout.Width(60)))
+                                    if (GUILayout.Button(new GUIContent("Rotation", "RootQ"), GUILayout.Width(64)))
                                     {
                                         va.lastTool = Tool.Rotate;
                                         va.SelectGameObject(vaw.gameObject);
@@ -880,7 +904,7 @@ namespace VeryAnimation
                                 #region Rotation
                                 {
                                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                    if (GUILayout.Button(new GUIContent("Rotation", "Muscles"), GUILayout.Width(60)))
+                                    if (GUILayout.Button(new GUIContent("Rotation", "Muscles"), GUILayout.Width(64)))
                                     {
                                         va.lastTool = Tool.Rotate;
                                         va.SelectHumanoidBones(new HumanBodyBones[] { humanoidIndex });
@@ -924,7 +948,7 @@ namespace VeryAnimation
                                 if (va.humanoidHasTDoF && VeryAnimation.HumanBonesAnimatorTDOFIndex[(int)humanoidIndex] != null)
                                 {
                                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                    if (GUILayout.Button(new GUIContent("Position", "TDOF"), GUILayout.Width(60)))
+                                    if (GUILayout.Button(new GUIContent("Position", "TDOF"), GUILayout.Width(64)))
                                     {
                                         va.lastTool = Tool.Move;
                                         va.SelectHumanoidBones(new HumanBodyBones[] { humanoidIndex });
@@ -985,7 +1009,7 @@ namespace VeryAnimation
                                     #region Position
                                     {
                                         EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                        if (GUILayout.Button("Position", GUILayout.Width(60)))
+                                        if (GUILayout.Button("Position", GUILayout.Width(64)))
                                         {
                                             va.lastTool = Tool.Move;
                                             va.SelectGameObject(va.bones[boneIndex]);
@@ -1014,7 +1038,7 @@ namespace VeryAnimation
                                     #region Rotation
                                     {
                                         EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                        if (GUILayout.Button("Rotation", GUILayout.Width(60)))
+                                        if (GUILayout.Button("Rotation", GUILayout.Width(64)))
                                         {
                                             va.lastTool = Tool.Rotate;
                                             va.SelectGameObject(va.bones[boneIndex]);
@@ -1043,7 +1067,7 @@ namespace VeryAnimation
                                     #region Scale
                                     {
                                         EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                        if (GUILayout.Button("Scale", GUILayout.Width(60)))
+                                        if (GUILayout.Button("Scale", GUILayout.Width(64)))
                                         {
                                             va.lastTool = Tool.Scale;
                                             va.SelectGameObject(va.bones[boneIndex]);
@@ -1097,7 +1121,7 @@ namespace VeryAnimation
                             int RowCount = 0;
                             {
                                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                if (GUILayout.Button(new GUIContent("Position", "MotionT"), GUILayout.Width(60)))
+                                if (GUILayout.Button(new GUIContent("Position", "MotionT"), GUILayout.Width(64)))
                                 {
                                     va.lastTool = Tool.Move;
                                     va.SelectMotionTool();
@@ -1116,7 +1140,7 @@ namespace VeryAnimation
                             }
                             {
                                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                                if (GUILayout.Button(new GUIContent("Rotation", "MotionQ"), GUILayout.Width(60)))
+                                if (GUILayout.Button(new GUIContent("Rotation", "MotionQ"), GUILayout.Width(64)))
                                 {
                                     va.lastTool = Tool.Rotate;
                                     va.SelectMotionTool();

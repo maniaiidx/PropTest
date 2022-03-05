@@ -1,5 +1,5 @@
 // Toony Colors Pro+Mobile 2
-// (c) 2014-2019 Jean Moreno
+// (c) 2014-2021 Jean Moreno
 
 //Enable this to display the default Inspector (in case the custom Inspector is broken)
 //#define SHOW_DEFAULT_INSPECTOR
@@ -11,13 +11,15 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using ToonyColorsPro.Utilities;
+using ToonyColorsPro.Legacy;
 
 // Custom Unified Inspector that will select the correct shaders depending on the settings defined.
 
 public class TCP2_MaterialInspector : ShaderGUI
 {
 	//Constants
-	private const string BASE_SHADER_PATH = "Toony Colors Pro 2/";
+	private const string BASE_SHADER_PATH = "Toony Colors Pro 2/Legacy/";
 	private const string VARIANT_SHADER_PATH = "Hidden/Toony Colors Pro 2/Variants/";
 	private const string BASE_SHADER_NAME = "Desktop";
 	private const string BASE_SHADER_NAME_MOB = "Mobile";
@@ -161,7 +163,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 		if(materialEditor.isVisible && !mShader.hasMultipleDifferentValues && mShader.objectReferenceValue != null)
 		{
 			//Retina display fix
-			EditorGUIUtility.labelWidth = TCP2_Utils.ScreenWidthRetina - 120f;
+			EditorGUIUtility.labelWidth = Utils.ScreenWidthRetina - 120f;
 			EditorGUIUtility.fieldWidth = 64f;
 
 			EditorGUI.BeginChangeCheck();
@@ -174,7 +176,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 			if(ShowFilteredProperties(null, props))
 			{
 				if(!isGeneratedShader)
-					TCP2_Utils.ShaderKeywordToggle("TCP2_DISABLE_WRAPPED_LIGHT", "Disable Wrapped Lighting", "Disable wrapped lighting, reducing intensity received from lights", keywordsList, ref updateKeywords, "Disable Wrapped Lighting");
+					Utils.ShaderKeywordToggle("TCP2_DISABLE_WRAPPED_LIGHT", "Disable Wrapped Lighting", "Disable wrapped lighting, reducing intensity received from lights", keywordsList, ref updateKeywords, "Disable Wrapped Lighting");
 
 				TCP2_GUI.Separator();
 			}
@@ -191,7 +193,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else
 				{
-					if( TCP2_Utils.ShaderKeywordToggle("TCP2_RAMPTEXT", "Texture Toon Ramp", "Make the toon ramp based on a texture", keywordsList, ref updateKeywords, "Ramp Style") )
+					if( Utils.ShaderKeywordToggle("TCP2_RAMPTEXT", "Texture Toon Ramp", "Make the toon ramp based on a texture", keywordsList, ref updateKeywords, "Ramp Style") )
 					{
 						ShowFilteredProperties("#RAMPT#", props);
 					}
@@ -221,7 +223,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else
 				{
-					if( TCP2_Utils.ShaderKeywordToggle("TCP2_BUMP", "BUMP/NORMAL MAPPING", "Enable bump mapping using normal maps", keywordsList, ref updateKeywords, "Normal/Bump map") )
+					if( Utils.ShaderKeywordToggle("TCP2_BUMP", "BUMP/NORMAL MAPPING", "Enable bump mapping using normal maps", keywordsList, ref updateKeywords, "Normal/Bump map") )
 					{
 						ShowFilteredProperties("#NORM#", props);
 					}
@@ -245,10 +247,10 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else
 				{
-					var specular = TCP2_Utils.HasKeywords(keywordsList, "TCP2_SPEC", "TCP2_SPEC_TOON");
-					TCP2_Utils.ShaderVariantUpdate("Specular", ShaderVariants, ShaderVariantsEnabled, specular, ref updateVariant);
+					var specular = Utils.HasKeywords(keywordsList, "TCP2_SPEC", "TCP2_SPEC_TOON");
+					Utils.ShaderVariantUpdate("Specular", ShaderVariants, ShaderVariantsEnabled, specular, ref updateVariant);
 
-					specular |= TCP2_Utils.ShaderKeywordRadio("SPECULAR", new[]{"TCP2_SPEC_OFF","TCP2_SPEC","TCP2_SPEC_TOON"}, new[]
+					specular |= Utils.ShaderKeywordRadio("SPECULAR", new[]{"TCP2_SPEC_OFF","TCP2_SPEC","TCP2_SPEC_TOON"}, new[]
 					{
 						new GUIContent("Off", "No Specular"),
 						new GUIContent("Regular", "Default Blinn-Phong Specular"),
@@ -260,7 +262,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 					{
 						ShowFilteredProperties("#SPEC#", props);
 
-						var specr = TCP2_Utils.HasKeywords(keywordsList, "TCP2_SPEC_TOON");
+						var specr = Utils.HasKeywords(keywordsList, "TCP2_SPEC_TOON");
 						if(specr)
 						{
 							ShowFilteredProperties("#SPECT#", props);
@@ -294,10 +296,10 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else
 				{
-					var reflection = TCP2_Utils.HasKeywords(keywordsList, "TCP2_REFLECTION", "TCP2_REFLECTION_MASKED");
-					TCP2_Utils.ShaderVariantUpdate("Reflection", ShaderVariants, ShaderVariantsEnabled, reflection, ref updateVariant);
+					var reflection = Utils.HasKeywords(keywordsList, "TCP2_REFLECTION", "TCP2_REFLECTION_MASKED");
+					Utils.ShaderVariantUpdate("Reflection", ShaderVariants, ShaderVariantsEnabled, reflection, ref updateVariant);
 					
-					reflection |= TCP2_Utils.ShaderKeywordRadio("REFLECTION", new[]{"TCP2_REFLECTION_OFF","TCP2_REFLECTION","TCP2_REFLECTION_MASKED"}, new[]
+					reflection |= Utils.ShaderKeywordRadio("REFLECTION", new[]{"TCP2_REFLECTION_OFF","TCP2_REFLECTION","TCP2_REFLECTION_MASKED"}, new[]
 					{
 						new GUIContent("Off", "No Cubemap Reflection"),
 						new GUIContent("Global", "Global Cubemap Reflection"),
@@ -309,7 +311,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 					{
 #if UNITY_5
 						//Reflection Probes toggle
-						if( TCP2_Utils.ShaderKeywordToggle("TCP2_U5_REFLPROBE", "Use Reflection Probes", "Use Unity 5's Reflection Probes", keywordsList, ref updateKeywords) )
+						if( Utils.ShaderKeywordToggle("TCP2_U5_REFLPROBE", "Use Reflection Probes", "Use Unity 5's Reflection Probes", keywordsList, ref updateKeywords) )
 						{
 							ShowFilteredProperties("#REFL_U5#", props);
 						}
@@ -334,10 +336,10 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else if(isMobileShader)
 				{
-					var matcap = TCP2_Utils.HasKeywords(keywordsList, "TCP2_MC", "TCP2_MCMASK");
-					TCP2_Utils.ShaderVariantUpdate("Matcap", ShaderVariants, ShaderVariantsEnabled, matcap, ref updateVariant);
+					var matcap = Utils.HasKeywords(keywordsList, "TCP2_MC", "TCP2_MCMASK");
+					Utils.ShaderVariantUpdate("Matcap", ShaderVariants, ShaderVariantsEnabled, matcap, ref updateVariant);
 					
-					matcap |= TCP2_Utils.ShaderKeywordRadio("MATCAP", new[]{"TCP2_MC_OFF","TCP2_MC","TCP2_MCMASK"}, new[]
+					matcap |= Utils.ShaderKeywordRadio("MATCAP", new[]{"TCP2_MC_OFF","TCP2_MC","TCP2_MCMASK"}, new[]
 					{
 						new GUIContent("Off", "No MatCap reflection"),
 						new GUIContent("Global", "Global additive MatCap"),
@@ -386,13 +388,13 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else
 				{
-					var rim = TCP2_Utils.HasKeywords(keywordsList, "TCP2_RIM");
-					var rimOutline = TCP2_Utils.HasKeywords(keywordsList, "TCP2_RIMO");
+					var rim = Utils.HasKeywords(keywordsList, "TCP2_RIM");
+					var rimOutline = Utils.HasKeywords(keywordsList, "TCP2_RIMO");
 
-					TCP2_Utils.ShaderVariantUpdate("Rim", ShaderVariants, ShaderVariantsEnabled, rim, ref updateVariant);
-					TCP2_Utils.ShaderVariantUpdate("RimOutline", ShaderVariants, ShaderVariantsEnabled, rimOutline, ref updateVariant);
+					Utils.ShaderVariantUpdate("Rim", ShaderVariants, ShaderVariantsEnabled, rim, ref updateVariant);
+					Utils.ShaderVariantUpdate("RimOutline", ShaderVariants, ShaderVariantsEnabled, rimOutline, ref updateVariant);
 					
-					rim |= rimOutline |= TCP2_Utils.ShaderKeywordRadio("RIM", new[]{"TCP2_RIM_OFF","TCP2_RIM","TCP2_RIMO"}, new[]
+					rim |= rimOutline |= Utils.ShaderKeywordRadio("RIM", new[]{"TCP2_RIM_OFF","TCP2_RIM","TCP2_RIMO"}, new[]
 					{
 						new GUIContent("Off", "No Rim effect"),
 						new GUIContent("Lighting", "Rim lighting (additive)"),
@@ -406,7 +408,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 						
 						if(CategoryFilter("RIMDIR"))
 						{
-							if( TCP2_Utils.ShaderKeywordToggle("TCP2_RIMDIR", "Directional Rim", "Enable directional rim control (rim calculation is approximated if enabled)", keywordsList, ref updateKeywords) )
+							if( Utils.ShaderKeywordToggle("TCP2_RIMDIR", "Directional Rim", "Enable directional rim control (rim calculation is approximated if enabled)", keywordsList, ref updateKeywords) )
 							{
 								ShowFilteredProperties("#RIMDIR#", props);
 							}
@@ -471,14 +473,14 @@ public class TCP2_MaterialInspector : ShaderGUI
 				}
 				else
 				{
-					hasOutlineOpaque = TCP2_Utils.HasKeywords(keywordsList, "OUTLINES");
-					hasOutlineBlending = TCP2_Utils.HasKeywords(keywordsList, "OUTLINE_BLENDING");
+					hasOutlineOpaque = Utils.HasKeywords(keywordsList, "OUTLINES");
+					hasOutlineBlending = Utils.HasKeywords(keywordsList, "OUTLINE_BLENDING");
 					hasOutline = hasOutlineOpaque || hasOutlineBlending;
 
-					TCP2_Utils.ShaderVariantUpdate("Outline", ShaderVariants, ShaderVariantsEnabled, hasOutlineOpaque, ref updateVariant);
-					TCP2_Utils.ShaderVariantUpdate("OutlineBlending", ShaderVariants, ShaderVariantsEnabled, hasOutlineBlending, ref updateVariant);
+					Utils.ShaderVariantUpdate("Outline", ShaderVariants, ShaderVariantsEnabled, hasOutlineOpaque, ref updateVariant);
+					Utils.ShaderVariantUpdate("OutlineBlending", ShaderVariants, ShaderVariantsEnabled, hasOutlineBlending, ref updateVariant);
 					
-					hasOutline |= TCP2_Utils.ShaderKeywordRadio("OUTLINE", new[]{"OUTLINE_OFF","OUTLINES","OUTLINE_BLENDING"}, new[]
+					hasOutline |= Utils.ShaderKeywordRadio("OUTLINE", new[]{"OUTLINE_OFF","OUTLINES","OUTLINE_BLENDING"}, new[]
 					{
 						new GUIContent("Off", "No Outline"),
 						new GUIContent("Opaque", "Opaque Outline"),
@@ -495,14 +497,14 @@ public class TCP2_MaterialInspector : ShaderGUI
 					ShowFilteredProperties("#OUTLINE#", props, false);
 					if(!isMobileShader && !HasFlags("FORCE_SM2"))
 					{
-						var outlineTextured = TCP2_Utils.ShaderKeywordToggle("TCP2_OUTLINE_TEXTURED", "Outline Color from Texture", "If enabled, outline will take an averaged color from the main texture multiplied by Outline Color", keywordsList, ref updateKeywords);
+						var outlineTextured = Utils.ShaderKeywordToggle("TCP2_OUTLINE_TEXTURED", "Outline Color from Texture", "If enabled, outline will take an averaged color from the main texture multiplied by Outline Color", keywordsList, ref updateKeywords);
 						if(outlineTextured)
 						{
 							ShowFilteredProperties("#OUTLINETEX#", props);
 						}
 					}
-					TCP2_Utils.ShaderKeywordToggle("TCP2_OUTLINE_CONST_SIZE", "Constant Size Outline", "If enabled, outline will have a constant size independently from camera distance", keywordsList, ref updateKeywords);
-					if( TCP2_Utils.ShaderKeywordToggle("TCP2_ZSMOOTH_ON", "Correct Z Artefacts", "Enable the outline z-correction to try to hide artefacts from complex models", keywordsList, ref updateKeywords) )
+					Utils.ShaderKeywordToggle("TCP2_OUTLINE_CONST_SIZE", "Constant Size Outline", "If enabled, outline will have a constant size independently from camera distance", keywordsList, ref updateKeywords);
+					if( Utils.ShaderKeywordToggle("TCP2_ZSMOOTH_ON", "Correct Z Artefacts", "Enable the outline z-correction to try to hide artefacts from complex models", keywordsList, ref updateKeywords) )
 					{
 						ShowFilteredProperties("#OUTLINEZ#", props);
 					}
@@ -511,7 +513,7 @@ public class TCP2_MaterialInspector : ShaderGUI
 					EditorGUI.indentLevel--;
 					TCP2_GUI.Header("OUTLINE NORMALS", "Defines where to take the vertex normals from to draw the outline.\nChange this when using a smoothed mesh to fill the gaps shown in hard-edged meshes.");
 					EditorGUI.indentLevel++;
-					TCP2_Utils.ShaderKeywordRadio(null, new[]{"TCP2_NONE", "TCP2_COLORS_AS_NORMALS", "TCP2_TANGENT_AS_NORMALS", "TCP2_UV2_AS_NORMALS"}, new[]
+					Utils.ShaderKeywordRadio(null, new[]{"TCP2_NONE", "TCP2_COLORS_AS_NORMALS", "TCP2_TANGENT_AS_NORMALS", "TCP2_UV2_AS_NORMALS"}, new[]
 					{
 						new GUIContent("Regular", "Use regular vertex normals"),
 						new GUIContent("Vertex Colors", "Use vertex colors as normals (with smoothed mesh)"),
@@ -558,18 +560,6 @@ public class TCP2_MaterialInspector : ShaderGUI
 
 				TCP2_GUI.Separator();
 			}
-
-			//LIGHTMAP --------------------------------------------------------------------------------
-
-#if UNITY_4_5
-			if(CategoryFilter("LIGHTMAP") && !isGeneratedShader)
-			{
-				TCP2_Utils.ShaderKeywordRadio("LIGHTMAP", new string[]{"TCP2_LIGHTMAP_OFF","TCP2_LIGHTMAP"}, new GUIContent[]{
-					new GUIContent("Unity", "Use Unity's built-in lightmap decoding"),
-					new GUIContent("Toony Colors Pro 2", "Use TCP2's lightmap decoding (lightmaps will be affected by ramp and color settings)")
-				}, keywordsList, ref updateKeywords);
-			}
-#endif
 
 			//TRANSPARENCY --------------------------------------------------------------------------------
 			

@@ -1,5 +1,5 @@
 ﻿// Toony Colors Pro+Mobile 2
-// (c) 2014-2019 Jean Moreno
+// (c) 2014-2021 Jean Moreno
 
 //#define SHOW_DEFAULT_INSPECTOR
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using ToonyColorsPro.Utilities;
 
 // Custom Inspector when using the Outline Only shaders
 
@@ -75,7 +76,7 @@ public class TCP2_OutlineInspector : MaterialEditor
 		var mShader = serializedObject.FindProperty("m_Shader");
 		if(isVisible && !mShader.hasMultipleDifferentValues && mShader.objectReferenceValue != null)
 		{
-			EditorGUIUtility.labelWidth = TCP2_Utils.ScreenWidthRetina - 120f;
+			EditorGUIUtility.labelWidth = Utils.ScreenWidthRetina - 120f;
 			EditorGUIUtility.fieldWidth = 64f;
 
 			EditorGUI.BeginChangeCheck();
@@ -95,22 +96,22 @@ public class TCP2_OutlineInspector : MaterialEditor
 			ShowFilteredProperties("#OUTLINE#", props, false);
 			if(!mShaderModel2)
 			{
-				var texturedOutline = TCP2_Utils.ShaderKeywordToggle("TCP2_OUTLINE_TEXTURED", "Outline Color from Texture", "If enabled, outline will take an averaged color from the main texture multiplied by Outline Color", keywordsList, ref updateKeywords);
+				var texturedOutline = Utils.ShaderKeywordToggle("TCP2_OUTLINE_TEXTURED", "Outline Color from Texture", "If enabled, outline will take an averaged color from the main texture multiplied by Outline Color", keywordsList, ref updateKeywords);
 				if(texturedOutline)
 				{
 					ShowFilteredProperties("#OUTLINETEX#", props);
 				}
 			}
 
-			TCP2_Utils.ShaderKeywordToggle("TCP2_OUTLINE_CONST_SIZE", "Constant Size Outline", "If enabled, outline will have a constant size independently from camera distance", keywordsList, ref updateKeywords);
-			if( TCP2_Utils.ShaderKeywordToggle("TCP2_ZSMOOTH_ON", "Correct Z Artefacts", "Enable the outline z-correction to try to hide artefacts from complex models", keywordsList, ref updateKeywords) )
+			Utils.ShaderKeywordToggle("TCP2_OUTLINE_CONST_SIZE", "Constant Size Outline", "If enabled, outline will have a constant size independently from camera distance", keywordsList, ref updateKeywords);
+			if( Utils.ShaderKeywordToggle("TCP2_ZSMOOTH_ON", "Correct Z Artefacts", "Enable the outline z-correction to try to hide artefacts from complex models", keywordsList, ref updateKeywords) )
 			{
 				ShowFilteredProperties("#OUTLINEZ#", props);
 			}
 			
 			//Smoothed Normals -----------------------------------------------------------------------
 			TCP2_GUI.Header("OUTLINE NORMALS", "Defines where to take the vertex normals from to draw the outline.\nChange this when using a smoothed mesh to fill the gaps shown in hard-edged meshes.");
-			TCP2_Utils.ShaderKeywordRadio(null, new[]{"TCP2_NONE", "TCP2_COLORS_AS_NORMALS", "TCP2_TANGENT_AS_NORMALS", "TCP2_UV2_AS_NORMALS"}, new[]
+			Utils.ShaderKeywordRadio(null, new[]{"TCP2_NONE", "TCP2_COLORS_AS_NORMALS", "TCP2_TANGENT_AS_NORMALS", "TCP2_UV2_AS_NORMALS"}, new[]
 			{
 				new GUIContent("Regular", "Use regular vertex normals"),
 				new GUIContent("Vertex Colors", "Use vertex colors as normals (with smoothed mesh)"),

@@ -1,11 +1,13 @@
 // Toony Colors Pro+Mobile 2
-// (c) 2014-2019 Jean Moreno
+// (c) 2014-2021 Jean Moreno
 
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using ToonyColorsPro.Utilities;
+using ToonyColorsPro.Legacy;
 
 internal class TCP2_MaterialInspector_PBS_SG : ShaderGUI
 {

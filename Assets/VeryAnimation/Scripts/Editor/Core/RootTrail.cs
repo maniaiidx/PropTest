@@ -38,7 +38,7 @@ namespace VeryAnimation
             if (trailPositions == null || trailPositions.Length != lastFrame + 1)
                 trailPositions = new Vector3[lastFrame + 1];
 
-            var matrix = va.editGameObject.transform.localToWorldMatrix;
+            var matrix = va.transformPoseSave.startMatrix;
 
             vaw.uHandleUtility.ApplyWireMaterial();
             GL.PushMatrix();

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Animations;
 using UnityEngine.Playables;
 using System;
 using System.Collections;

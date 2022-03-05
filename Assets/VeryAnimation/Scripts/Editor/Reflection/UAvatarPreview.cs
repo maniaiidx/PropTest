@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditorInternal;
 using System;
 using System.Reflection;
+using System.Collections.Generic;
+#if VERYANIMATION_ANIMATIONRIGGING
+using UnityEngine.Animations.Rigging;
+using UnityEditor.Animations.Rigging;
+#endif
 
 namespace VeryAnimation
 {
@@ -28,24 +35,42 @@ namespace VeryAnimation
         private Action<GameObject> dg_SetPreview;
         private PropertyInfo pi_OnAvatarChangeFunc;
 
-        private UAnimatorController uAnimatorController;
-        private UAnimatorStateMachine uAnimatorStateMachine;
-        private UAnimatorState uAnimatorState;
-
         private UTimeControl uTimeControl;
+
+#if UNITY_2019_1_OR_NEWER
+        private PlayableGraph m_PlayableGraph;
+        private AnimationClipPlayable m_AnimationClipPlayable;
+        private Playable m_AnimationMotionXToDeltaPlayable;
+        private Playable m_AnimationOffsetPlayable;
+        private UAnimationOffsetPlayable m_UAnimationOffsetPlayable;
+        private UAnimationMotionXToDeltaPlayable m_UAnimationMotionXToDeltaPlayable;
+        private UAnimationClipPlayable m_UAnimationClipPlayable;
+        private int loopCount;
+#if VERYANIMATION_ANIMATIONRIGGING
+        private VeryAnimationRigBuilder m_VARigBuilder;
+        private RigBuilder m_RigBuilder;
+#endif
+#else
         private UnityEditor.Animations.AnimatorController m_Controller;
         private AnimatorStateMachine m_StateMachine;
         private AnimatorState m_State;
+        private UAnimatorController uAnimatorController = new UAnimatorController();
+        private UAnimatorStateMachine uAnimatorStateMachine = new UAnimatorStateMachine();
+        private UAnimatorState uAnimatorState = new UAnimatorState();
+#endif
 
         private GameObject gameObject;
+        private GameObject originalGameObject;
         private Animator animator;
         private Animation animation;
 
         private TransformPoseSave transformPoseSave;
         private BlendShapeWeightSave blendShapeWeightSave;
 
-#if !UNITY_2017_3_OR_NEWER
-        private bool mode2D;
+#if UNITY_2019_3_OR_NEWER
+        private GUIStyle guiStylePreButton = "toolbarbutton";
+#else
+        private GUIStyle guiStylePreButton = "prebutton";
 #endif
 
         private class UAvatarPreviewSelection
@@ -65,9 +90,10 @@ namespace VeryAnimation
         }
         private UAvatarPreviewSelection uAvatarPreviewSelection;
 
-        public static readonly string EditorPrefs2D = "AvatarpreviewCustom2D";
-        public static readonly string EditorPrefsApplyRootMotion = "AvatarpreviewCustomApplyRootMotion";
-        
+        public const string EditorPrefs2D = "AvatarpreviewCustom2D";
+        public const string EditorPrefsApplyRootMotion = "AvatarpreviewCustomApplyRootMotion";
+        public const string EditorPrefsARConstraint = "AvatarpreviewCustomARConstraint";
+
         public UAvatarPreview(AnimationClip clip, GameObject gameObject)
         {
             var asmUnityEditor = Assembly.LoadFrom(InternalEditorUtility.GetEditorAssemblyPath());
@@ -93,10 +119,6 @@ namespace VeryAnimation
             Assert.IsNotNull(dg_SetPreview = (Action<GameObject>)Delegate.CreateDelegate(typeof(Action<GameObject>), instance, avatarPreviewType.GetMethod("SetPreview", BindingFlags.NonPublic | BindingFlags.Instance)));
             Assert.IsNotNull(pi_OnAvatarChangeFunc = avatarPreviewType.GetProperty("OnAvatarChangeFunc"));
 
-            uAnimatorController = new UAnimatorController();
-            uAnimatorStateMachine = new UAnimatorStateMachine();
-            uAnimatorState = new UAnimatorState();
-
             {
                 var fi_timeControl = avatarPreviewType.GetField("timeControl");
                 uTimeControl = new UTimeControl(fi_timeControl.GetValue(instance));
@@ -110,12 +132,18 @@ namespace VeryAnimation
             dg_set_fps(instance, (int)clip.frameRate);
             dg_SetPreview(gameObject);
 
+            SetTime(uTimeControl.currentTime);
+           
             AnimationUtility.onCurveWasModified += OnCurveWasModified;
         }
         ~UAvatarPreview()
         {
             AnimationUtility.onCurveWasModified -= OnCurveWasModified;
+#if UNITY_2019_1_OR_NEWER
+            Assert.IsFalse(m_PlayableGraph.IsValid());
+#else
             Assert.IsNull(m_Controller);
+#endif
         }
 
         public void Release()
@@ -126,26 +154,26 @@ namespace VeryAnimation
             DestroyController();
             dg_OnDestroy();
         }
-        
+
         private void OnAvatarChangeFunc()
         {
             DestroyController();
             InitController();
         }
-        
+
         private void InitController()
         {
             gameObject = dg_get_PreviewObject();
             if (gameObject == null) return;
-            var originalGameObject = uAvatarPreviewSelection.GetPreview(dg_get_animationClipType());
+            originalGameObject = uAvatarPreviewSelection.GetPreview(dg_get_animationClipType());
 
             animator = dg_get_Animator();
             animation = gameObject.GetComponent<Animation>();
             if (originalGameObject != null)
             {
                 transformPoseSave = new TransformPoseSave(originalGameObject);
-                transformPoseSave.SetRootTransform(originalGameObject.transform.position, originalGameObject.transform.rotation, originalGameObject.transform.lossyScale);
-                transformPoseSave.ChangeTransforms(gameObject);
+                transformPoseSave.ChangeStartTransform();
+                transformPoseSave.ChangeTransformReference(gameObject);
             }
             else
             {
@@ -161,6 +189,166 @@ namespace VeryAnimation
             }
             else
             {
+                animator.fireEvents = false;
+                animator.applyRootMotion = EditorPrefs.GetBool(EditorPrefsApplyRootMotion, false);
+
+#if UNITY_2019_1_OR_NEWER
+                animator.enabled = true;
+                UnityEditor.Animations.AnimatorController.SetAnimatorController(animator, null);
+
+                m_PlayableGraph = PlayableGraph.Create("Avatar Preview PlayableGraph");
+                m_PlayableGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+
+                m_AnimationClipPlayable = AnimationClipPlayable.Create(m_PlayableGraph, clip);
+                m_AnimationClipPlayable.SetApplyPlayableIK(false);
+                m_AnimationClipPlayable.SetApplyFootIK(isIKOnFeet);
+                if (m_UAnimationClipPlayable == null)
+                    m_UAnimationClipPlayable = new UAnimationClipPlayable();
+                m_UAnimationClipPlayable.SetRemoveStartOffset(m_AnimationClipPlayable, true);
+                m_UAnimationClipPlayable.SetOverrideLoopTime(m_AnimationClipPlayable, true);
+                m_UAnimationClipPlayable.SetLoopTime(m_AnimationClipPlayable, true);
+
+                Playable rootPlayable = m_AnimationClipPlayable;
+
+#if VERYANIMATION_ANIMATIONRIGGING
+                m_VARigBuilder = gameObject.GetComponent<VeryAnimationRigBuilder>();
+                if (m_VARigBuilder != null)
+                {
+                    RigBuilder.DestroyImmediate(m_VARigBuilder);
+                    m_VARigBuilder = null;
+                }
+                m_RigBuilder = gameObject.GetComponent<RigBuilder>();
+                if (m_RigBuilder != null)
+                {
+                    RigBuilder.DestroyImmediate(m_RigBuilder);
+                    m_RigBuilder = null;
+                }
+                if (originalGameObject != null)
+                {
+                    var rigBuilder = originalGameObject.GetComponent<RigBuilder>();
+                    if (rigBuilder != null && rigBuilder.isActiveAndEnabled && rigBuilder.enabled)
+                    {
+                        var layers = new List<GameObject>();
+                        foreach (var layer in rigBuilder.layers)
+                        {
+                            if (layer.rig == null || !layer.active)
+                                continue;
+                            var originalVaRig = layer.rig.GetComponent<VeryAnimationRig>();
+                            if (originalVaRig == null)
+                                continue;
+
+                            Func<Transform, Transform> GetPreviewTransform = (t) =>
+                            {
+                                if (t == null) return null;
+                                var path = AnimationUtility.CalculateTransformPath(t, originalGameObject.transform);
+                                return gameObject.transform.Find(path);
+                            };
+                            var previewT = GetPreviewTransform(originalVaRig.transform);
+                            if (previewT == null)
+                                continue;
+                            var newVaRig = GameObject.Instantiate<GameObject>(originalVaRig.gameObject, previewT.parent);
+                            newVaRig.name = previewT.name;
+                            GameObject.DestroyImmediate(previewT.gameObject);
+                            {
+                                foreach (MultiAimConstraint originalConstraint in originalVaRig.GetComponentsInChildren<MultiAimConstraint>())
+                                {
+                                    var constraint = GetPreviewTransform(originalConstraint.transform).GetComponent<MultiAimConstraint>();
+                                    constraint.data.constrainedObject = GetPreviewTransform(originalConstraint.data.constrainedObject);
+                                    for (int i = 0; i < originalConstraint.data.sourceObjects.Count; i++)
+                                    {
+                                        constraint.data.sourceObjects.SetTransform(i, GetPreviewTransform(originalConstraint.data.sourceObjects[i].transform));
+                                    }
+                                }
+                                foreach (TwoBoneIKConstraint originalConstraint in originalVaRig.GetComponentsInChildren<TwoBoneIKConstraint>())
+                                {
+                                    var constraint = GetPreviewTransform(originalConstraint.transform).GetComponent<TwoBoneIKConstraint>();
+                                    constraint.data.root = GetPreviewTransform(originalConstraint.data.root);
+                                    constraint.data.mid = GetPreviewTransform(originalConstraint.data.mid);
+                                    constraint.data.tip = GetPreviewTransform(originalConstraint.data.tip);
+                                    constraint.data.target = GetPreviewTransform(originalConstraint.data.target);
+                                    constraint.data.hint = GetPreviewTransform(originalConstraint.data.hint);
+                                }
+                                {
+                                    var vaRig = newVaRig.GetComponent<VeryAnimationRig>();
+                                    vaRig.basePoseLeftHand.constraint = GetPreviewTransform(originalVaRig.basePoseLeftHand.constraint);
+                                    vaRig.basePoseRightHand.constraint = GetPreviewTransform(originalVaRig.basePoseRightHand.constraint);
+                                    vaRig.basePoseLeftFoot.constraint = GetPreviewTransform(originalVaRig.basePoseLeftFoot.constraint);
+                                    vaRig.basePoseRightFoot.constraint = GetPreviewTransform(originalVaRig.basePoseRightFoot.constraint);
+                                }
+                            }
+                            layers.Add(newVaRig);
+                        }
+                        if (layers.Count > 0)
+                        {
+                            m_VARigBuilder = gameObject.AddComponent<VeryAnimationRigBuilder>();
+                            m_RigBuilder = gameObject.GetComponent<RigBuilder>();
+                            foreach (var layer in layers)
+                            {
+                                var rig = layer.GetComponent<Rig>();
+                                #region RemoveEffector
+                                {
+                                    var effectors = rig.effectors as List<RigEffectorData>;
+                                    effectors.Clear();
+                                }
+                                #endregion
+
+#if UNITY_2020_1_OR_NEWER
+                                var rigLayer = new RigLayer(rig);   //version 0.3.2
+#else
+                                var rigLayer = new RigBuilder.RigLayer(rig);    //version 0.2.5
+#endif
+                                m_RigBuilder.layers.Add(rigLayer);
+                            }
+                        }
+                    }
+                    if (m_VARigBuilder != null && m_RigBuilder != null)
+                    {
+                        m_VARigBuilder.enabled = m_RigBuilder.enabled = EditorPrefs.GetBool(EditorPrefsARConstraint);
+                        if (m_RigBuilder.enabled)
+                        {
+                            m_VARigBuilder.StartPreview();
+                            m_RigBuilder.StartPreview();
+                            rootPlayable = m_VARigBuilder.BuildPreviewGraph(m_PlayableGraph, rootPlayable);
+                            rootPlayable = m_RigBuilder.BuildPreviewGraph(m_PlayableGraph, rootPlayable);
+                        }
+                    }
+                }
+#endif
+
+                if (animator.applyRootMotion)
+                {
+                    bool hasRootMotionBone = false;
+                    if (animator.isHuman)
+                        hasRootMotionBone = true;
+                    else
+                    {
+                        UAvatar uAvatar = new UAvatar();
+                        var genericRootMotionBonePath = uAvatar.GetGenericRootMotionBonePath(animator.avatar);
+                        hasRootMotionBone = !string.IsNullOrEmpty(genericRootMotionBonePath);
+                    }
+                    if (hasRootMotionBone)
+                    {
+                        if (m_UAnimationOffsetPlayable == null)
+                            m_UAnimationOffsetPlayable = new UAnimationOffsetPlayable();
+                        m_AnimationOffsetPlayable = m_UAnimationOffsetPlayable.Create(m_PlayableGraph, transformPoseSave.startLocalPosition, transformPoseSave.startLocalRotation, 1);
+                        m_AnimationOffsetPlayable.SetInputWeight(0, 1f);
+                        m_PlayableGraph.Connect(rootPlayable, 0, m_AnimationOffsetPlayable, 0);
+                        rootPlayable = m_AnimationOffsetPlayable;
+                    }
+                    {
+                        if (m_UAnimationMotionXToDeltaPlayable == null)
+                            m_UAnimationMotionXToDeltaPlayable = new UAnimationMotionXToDeltaPlayable();
+                        m_AnimationMotionXToDeltaPlayable = m_UAnimationMotionXToDeltaPlayable.Create(m_PlayableGraph);
+                        m_UAnimationMotionXToDeltaPlayable.SetAbsoluteMotion(m_AnimationMotionXToDeltaPlayable, true);
+                        m_AnimationMotionXToDeltaPlayable.SetInputWeight(0, 1f);
+                        m_PlayableGraph.Connect(rootPlayable, 0, m_AnimationMotionXToDeltaPlayable, 0);
+                        rootPlayable = m_AnimationMotionXToDeltaPlayable;
+                    }
+                }
+
+                var playableOutput = AnimationPlayableOutput.Create(m_PlayableGraph, "Animation", animator);
+                playableOutput.SetSourcePlayable(rootPlayable);
+#else
                 if (m_Controller == null)
                 {
                     m_Controller = new UnityEditor.Animations.AnimatorController();
@@ -177,24 +365,35 @@ namespace VeryAnimation
                     m_State = m_StateMachine.AddState("preview");
                     uAnimatorState.SetPushUndo(m_State, false);
                     m_State.motion = (Motion)clip;
-                    m_State.iKOnFeet = dg_get_ShowIKOnFeetButton() && dg_get_IKOnFeet();
+                    m_State.iKOnFeet = isIKOnFeet;
                     m_State.hideFlags |= HideFlags.HideAndDontSave;
                 }
-                UnityEditor.Animations.AnimatorController.SetAnimatorController(animator, this.m_Controller);
-
-                animator.fireEvents = false;
-                animator.applyRootMotion = EditorPrefs.GetBool(EditorPrefsApplyRootMotion, false);
+                UnityEditor.Animations.AnimatorController.SetAnimatorController(animator, m_Controller);
+#endif
             }
 
             dg_set_ShowIKOnFeetButton(animator != null && animator.isHuman && clip.isHumanMotion);
-#if !UNITY_2017_3_OR_NEWER
-            mode2D = EditorPrefs.GetBool(EditorPrefs2D, false);
-#endif
-            SetTime(uTimeControl.currentTime);
+
             ForceUpdate();
         }
         private void DestroyController()
         {
+#if UNITY_2019_1_OR_NEWER
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (m_RigBuilder != null)
+            {
+                m_RigBuilder.StopPreview();
+                m_RigBuilder = null;
+            }
+            if (m_VARigBuilder != null)
+            {
+                m_VARigBuilder.StopPreview();
+                m_VARigBuilder = null;
+            }
+#endif
+            if (m_PlayableGraph.IsValid())
+                m_PlayableGraph.Destroy();
+#else
             if (instance != null && animator != null)
                 UnityEditor.Animations.AnimatorController.SetAnimatorController(animator, null);
             if (m_Controller != null)
@@ -206,6 +405,7 @@ namespace VeryAnimation
             m_Controller = null;
             m_StateMachine = null;
             m_State = null;
+#endif
         }
 
         private void OnCurveWasModified(AnimationClip clip, EditorCurveBinding binding, AnimationUtility.CurveModifiedType deleted)
@@ -219,31 +419,33 @@ namespace VeryAnimation
         public void OnPreviewSettings()
         {
             var clip = dg_get_m_SourcePreviewMotion(instance);
-#if !UNITY_2017_3_OR_NEWER
-            {
-                EditorGUI.BeginChangeCheck();
-                var flag = GUILayout.Toggle(mode2D, "2D", "preButton");
-                if (EditorGUI.EndChangeCheck())
-                {
-                    mode2D = flag;
-                    if (mode2D) PreviewDir = Vector2.zero;
-                    else PreviewDir = new Vector2(120f, -20f);
-                    EditorPrefs.SetBool(EditorPrefs2D, mode2D);
-                }
-            }
-#endif
-            if (!clip.legacy && animator != null && animator.runtimeAnimatorController != null)
+
+            if (!clip.legacy && animator != null)
             {
                 var flag = EditorPrefs.GetBool(EditorPrefsApplyRootMotion, false);
                 EditorGUI.BeginChangeCheck();
-                flag = GUILayout.Toggle(flag, "Apply Root Motion", "preButton");
+                flag = GUILayout.Toggle(flag, new GUIContent("Root Motion", "Apply Root Motion"), guiStylePreButton);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    animator.applyRootMotion = flag;
                     EditorPrefs.SetBool(EditorPrefsApplyRootMotion, flag);
                     Reset();
+                    OnAvatarChangeFunc();
                 }
             }
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (m_RigBuilder != null)
+            {
+                var flag = EditorPrefs.GetBool(EditorPrefsARConstraint, false);
+                EditorGUI.BeginChangeCheck();
+                flag = GUILayout.Toggle(flag, new GUIContent("Animation Rigging", "Animation Rigging Constraint"), guiStylePreButton);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    EditorPrefs.SetBool(EditorPrefsARConstraint, flag);
+                    Reset();
+                    OnAvatarChangeFunc();
+                }
+            }
+#endif
             GUILayout.Space(20);
             dg_DoPreviewSettings();
         }
@@ -252,13 +454,13 @@ namespace VeryAnimation
         {
             if (Event.current.type == EventType.Repaint)
             {
+#if UNITY_2019_1_OR_NEWER
+                var beforeCurrentTime = uTimeControl.currentTime;
                 uTimeControl.Update();
-
-#if !UNITY_2017_3_OR_NEWER
-                if (mode2D)
-                {
-                    PreviewDir = Vector2.zero;
-                }
+                if (uTimeControl.playing && uTimeControl.currentTime < beforeCurrentTime)
+                    loopCount++;
+#else
+                uTimeControl.Update();
 #endif
 
                 {
@@ -267,16 +469,38 @@ namespace VeryAnimation
                     uTimeControl.startTime = 0f;
                     uTimeControl.stopTime = clip.length;
                     dg_set_fps(instance, (int)clip.frameRate);
-                    if (!clip.legacy && animator != null && animator.runtimeAnimatorController != null)
+                    if (!clip.legacy && animator != null)
                     {
                         dg_set_ShowIKOnFeetButton(animator.isHuman && clip.isHumanMotion);
-                        AnimationClipSettings animationClipSettings = AnimationUtility.GetAnimationClipSettings(clip);
-                        if (m_State != null)
-                            m_State.iKOnFeet = dg_get_ShowIKOnFeetButton() && dg_get_IKOnFeet();
 
-                        var normalizedTime = animationClipSettings.stopTime - animationClipSettings.startTime == 0.0 ? 0.0f : (float)((uTimeControl.currentTime - animationClipSettings.startTime) / (animationClipSettings.stopTime - animationClipSettings.startTime));
-                        animator.Play(0, 0, normalizedTime);
-                        animator.Update(uTimeControl.deltaTime);
+#if UNITY_2019_1_OR_NEWER
+                        if (m_PlayableGraph.IsValid())
+                        {
+                            if (m_AnimationOffsetPlayable.IsValid())
+                            {
+                                m_UAnimationOffsetPlayable.SetPosition(m_AnimationOffsetPlayable, transformPoseSave.startPosition);
+                                m_UAnimationOffsetPlayable.SetRotation(m_AnimationOffsetPlayable, transformPoseSave.startRotation);
+                            }
+                            m_AnimationClipPlayable.SetApplyFootIK(isIKOnFeet);
+                            m_AnimationClipPlayable.SetTime(loopCount * clip.length + uTimeControl.currentTime);
+#if VERYANIMATION_ANIMATIONRIGGING
+                            if (m_RigBuilder != null && m_RigBuilder.enabled)
+                                m_RigBuilder.UpdatePreviewGraph(m_PlayableGraph);
+#endif
+                            m_PlayableGraph.Evaluate();
+                        }
+#else
+                        if (animator.runtimeAnimatorController != null)
+                        {
+                            AnimationClipSettings animationClipSettings = AnimationUtility.GetAnimationClipSettings(clip);
+                            if (m_State != null)
+                                m_State.iKOnFeet = isIKOnFeet;
+
+                            var normalizedTime = animationClipSettings.stopTime - animationClipSettings.startTime == 0.0 ? 0.0f : (float)((uTimeControl.currentTime - animationClipSettings.startTime) / (animationClipSettings.stopTime - animationClipSettings.startTime));
+                            animator.Play(0, 0, normalizedTime);
+                            animator.Update(uTimeControl.deltaTime);
+                        }
+#endif
                     }
                     else if (animation != null)
                     {
@@ -328,21 +552,36 @@ namespace VeryAnimation
             {
                 blendShapeWeightSave.ResetOriginalWeight();
             }
+
+#if UNITY_2019_1_OR_NEWER
+            loopCount = 0;
+#endif
         }
 
         public void ForceUpdate()
         {
             var clip = dg_get_m_SourcePreviewMotion(instance);
-            if (!clip.legacy && animator != null && animator.runtimeAnimatorController != null)
+            if (!clip.legacy && animator != null)
             {
-                animator.Update(0f);
+#if UNITY_2019_1_OR_NEWER
+                if (m_PlayableGraph.IsValid())
+                {
+                    m_AnimationClipPlayable.SetTime(uTimeControl.currentTime);
+                    m_PlayableGraph.Evaluate();
+                }
+#else
+                if (animator.runtimeAnimatorController != null)
+                {
+                    animator.Update(0f);
+                }
+#endif
             }
             else if (animation != null)
             {
                 clip.SampleAnimation(gameObject, uTimeControl.currentTime);
             }
         }
-        
+
         public Vector2 PreviewDir
         {
             get
@@ -378,5 +617,7 @@ namespace VeryAnimation
                 uTimeControl.playing = value;
             }
         }
+
+        private bool isIKOnFeet { get { return dg_get_ShowIKOnFeetButton() && dg_get_IKOnFeet(); } }
     }
 }

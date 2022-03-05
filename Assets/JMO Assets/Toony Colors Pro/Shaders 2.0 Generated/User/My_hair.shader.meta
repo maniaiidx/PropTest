@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 05c3ac9727242c546ab2b0ac8ce2857c
+timeCreated: 1481360615
+licenseType: Free
+ShaderImporter:
+  defaultTextures: []
+  userData: USER,FBUMP_SCALE,FSPECULAR_MASK,FSPECULAR,FUVMASK1,FMASK1,FALPHA,KSPEC_MASK_CHANNEL:.a,KUV_mask1:Independent
+    UV,KSPEC_SHIN_MASK_CHANNEL:.a,KUV_mask2:Independent UV,KSPEC_MASK:mask1,ch4DED7629,cSM:30,cCF:TCP2_User_Unity5
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
 using UnityEditor;
@@ -10,13 +11,22 @@ namespace VeryAnimation
 {
     public class TransformPoseSave
     {
-        public GameObject rootObject;
-        public Vector3 startPosition;
-        public Quaternion startRotation;
-        public Vector3 startScale;
-        public Vector3 originalPosition;
-        public Quaternion originalRotation;
-        public Vector3 originalScale;
+        public GameObject rootObject { get; private set; }
+        public Vector3 startPosition { get; private set; }
+        public Quaternion startRotation { get; private set; }
+        public Vector3 startScale { get; private set; }
+        public Vector3 startLocalPosition { get; private set; }
+        public Quaternion startLocalRotation { get; private set; }
+        public Vector3 startLocalScale { get; private set; }
+        public Vector3 originalPosition { get; private set; }
+        public Quaternion originalRotation { get; private set; }
+        public Vector3 originalScale { get; private set; }
+        public Vector3 originalLocalPosition { get; private set; }
+        public Quaternion originalLocalRotation { get; private set; }
+        public Vector3 originalLocalScale { get; private set; }
+
+        public Matrix4x4 startMatrix { get { return Matrix4x4.TRS(startPosition, startRotation, startScale); } }
+        public Matrix4x4 originalMatrix { get { return Matrix4x4.TRS(originalPosition, originalRotation, originalScale); } }
 
         public class SaveData
         {
@@ -35,30 +45,19 @@ namespace VeryAnimation
                 position = t.position;
                 rotation = t.rotation;
                 scale = t.lossyScale;
-                syncTransform = null;
             }
             public void LoadLocal(Transform t)
             {
                 t.localPosition = localPosition;
                 t.localRotation = localRotation;
                 t.localScale = localScale;
-                Assert.IsTrue(t != syncTransform);
-                if (syncTransform != null)
-                {
-                    syncTransform.localPosition = localPosition;
-                    syncTransform.localRotation = localRotation;
-                    syncTransform.localScale = localScale;
-                }
             }
             public void LoadWorld(Transform t)
             {
                 t.SetPositionAndRotation(position, rotation);
-                Assert.IsTrue(t != syncTransform);
-                if (syncTransform != null)
-                {
-                    syncTransform.SetPositionAndRotation(position, rotation);
-                }
             }
+            public Matrix4x4 localMatrix { get { return Matrix4x4.TRS(localPosition, localRotation, localScale); } }
+            public Matrix4x4 matrix { get { return Matrix4x4.TRS(position, rotation, scale); } }
 
             public Vector3 localPosition;
             public Quaternion localRotation;
@@ -66,10 +65,10 @@ namespace VeryAnimation
             public Vector3 position;
             public Quaternion rotation;
             public Vector3 scale;
-            public Transform syncTransform;
         }
         private Dictionary<Transform, SaveData> originalTransforms;
         private Dictionary<Transform, SaveData> bindTransforms;
+        private Dictionary<Transform, SaveData> tposeTransforms;
         private Dictionary<Transform, SaveData> prefabTransforms;
 
         public TransformPoseSave(GameObject gameObject)
@@ -78,6 +77,9 @@ namespace VeryAnimation
             startPosition = originalPosition = gameObject.transform.position;
             startRotation = originalRotation = gameObject.transform.rotation;
             startScale = originalScale = gameObject.transform.lossyScale;
+            startLocalPosition = originalLocalPosition = gameObject.transform.localPosition;
+            startLocalRotation = originalLocalRotation = gameObject.transform.localRotation;
+            startLocalScale = originalLocalScale = gameObject.transform.localScale;
             #region originalTransforms
             {
                 originalTransforms = new Dictionary<Transform, SaveData>();
@@ -101,10 +103,15 @@ namespace VeryAnimation
             #region saveTransforms
             {
                 var bindPathTransforms = new Dictionary<string, SaveData>();
+                var tposePathTransforms = new Dictionary<string, SaveData>();
                 var prefabPathTransforms = new Dictionary<string, SaveData>();
                 var defaultPathTransforms = new Dictionary<string, SaveData>();
                 {
+#if UNITY_2018_2_OR_NEWER
+                    var uAvatarSetupTool = new UAvatarSetupTool_2018_2();
+#else
                     var uAvatarSetupTool = new UAvatarSetupTool();
+#endif
                     Action<Dictionary<string, SaveData>, Transform, Transform, bool> SaveTransform = null;
                     SaveTransform = (transforms, t, root, scaleOverwrite) =>
                     {
@@ -137,6 +144,9 @@ namespace VeryAnimation
                         {
                             var goTmp = GameObject.Instantiate<GameObject>(go);
                             goTmp.hideFlags |= HideFlags.HideAndDontSave;
+                            goTmp.transform.localPosition = Vector3.zero;
+                            goTmp.transform.localRotation = Quaternion.identity;
+                            goTmp.transform.localScale = Vector3.one;
                             AddList(goTmp);
                             if (uAvatarSetupTool.SampleBindPose(goTmp))
                             {
@@ -148,6 +158,28 @@ namespace VeryAnimation
                                 #endregion
                                 SaveTransform(defaultPathTransforms, rootT, rootT, false);
                                 SaveTransform(bindPathTransforms, rootT, rootT, false);
+                            }
+                            GameObject.DestroyImmediate(goTmp);
+                        };
+                        Action<GameObject> GetTPose = (go) =>
+                        {
+                            var goTmp = GameObject.Instantiate<GameObject>(go);
+                            goTmp.hideFlags |= HideFlags.HideAndDontSave;
+                            goTmp.transform.localPosition = Vector3.zero;
+                            goTmp.transform.localRotation = Quaternion.identity;
+                            goTmp.transform.localScale = Vector3.one;
+                            AddList(goTmp);
+                            if (uAvatarSetupTool.SampleBindPose(goTmp) &&   //Reset
+                                uAvatarSetupTool.SampleTPose(goTmp))
+                            {
+                                var rootT = goTmp.transform;
+                                #region Root
+                                rootT.localPosition = rootObject.transform.localPosition;
+                                rootT.localRotation = rootObject.transform.localRotation;
+                                rootT.localScale = rootObject.transform.localScale;
+                                #endregion
+                                SaveTransform(defaultPathTransforms, rootT, rootT, false);
+                                SaveTransform(tposePathTransforms, rootT, rootT, false);
                             }
                             GameObject.DestroyImmediate(goTmp);
                         };
@@ -166,6 +198,13 @@ namespace VeryAnimation
                             if (go.GetComponentInChildren<SkinnedMeshRenderer>() != null)
                             {
                                 GetBindPose(go);
+                            }
+                            #endregion
+                            #region TPose
+                            if (go.GetComponent<Animator>() != null &&
+                                go.GetComponent<Animator>().isHuman)
+                            {
+                                GetTPose(go);
                             }
                             #endregion
                             #region PrefabPose
@@ -187,6 +226,13 @@ namespace VeryAnimation
                                 GetBindPose(rootObject);
                             }
                             #endregion
+                            #region TPose
+                            if (rootObject.GetComponent<Animator>() != null &&
+                                rootObject.GetComponent<Animator>().isHuman)
+                            {
+                                GetTPose(rootObject);
+                            }
+                            #endregion
                         }
                         foreach (var go in goList)
                         {
@@ -198,28 +244,37 @@ namespace VeryAnimation
                     SaveTransform(defaultPathTransforms, rootObject.transform, rootObject.transform, false);
                 }
                 bindTransforms = Paths2Transforms(bindPathTransforms, rootObject.transform);
+                tposeTransforms = Paths2Transforms(tposePathTransforms, rootObject.transform);
                 prefabTransforms = Paths2Transforms(prefabPathTransforms, rootObject.transform);
             }
             #endregion
         }
 
-        public void SetRootTransform(Vector3 position, Quaternion rotation, Vector3 scale)
+        public void ChangeStartTransform()
         {
-            Action<Dictionary<Transform, SaveData>> setRootTransform = (list) =>
-            {
-                if (list == null || !list.ContainsKey(rootObject.transform))
-                    return;
-                var save = list[rootObject.transform];
-                save.localPosition = save.position = position;
-                save.localRotation = save.rotation = rotation;
-                save.localScale = save.scale = scale;
-            };
-            setRootTransform(originalTransforms);
-            setRootTransform(bindTransforms);
-            setRootTransform(prefabTransforms);
+            var transform = rootObject.transform;
+            startPosition = transform.position;
+            startRotation = transform.rotation;
+            startScale = transform.lossyScale;
+            startLocalPosition = transform.localPosition;
+            startLocalRotation = transform.localRotation;
+            startLocalScale = transform.localScale;
+            ChangeTransform(transform);
         }
-
-        public void ChangeTransforms(GameObject gameObject)
+        public void ChangeTransform(Transform transform)
+        {
+            Action<Dictionary<Transform, SaveData>, Transform> SetTransform = (list, t) =>
+            {
+                if (list == null)
+                    return;
+                SaveData save;
+                if (!list.TryGetValue(t, out save))
+                    return;
+                save.Save(t);
+            };
+            SetTransform(originalTransforms, transform);
+        }
+        public void ChangeTransformReference(GameObject gameObject)
         {
             var paths = new List<string>(originalTransforms.Count);
             var transforms = new List<Transform>(originalTransforms.Count);
@@ -250,6 +305,7 @@ namespace VeryAnimation
                     };
                     ChangeTransform(originalTransforms, transforms[index], t);
                     ChangeTransform(bindTransforms, transforms[index], t);
+                    ChangeTransform(tposeTransforms, transforms[index], t);
                     ChangeTransform(prefabTransforms, transforms[index], t);
                 }
                 for (int i = 0; i < t.childCount; i++)
@@ -257,57 +313,6 @@ namespace VeryAnimation
             };
             SaveTransform(gameObject.transform, gameObject.transform);
             rootObject = gameObject;
-        }
-
-        public void SetSyncTransforms(GameObject gameObject)
-        {
-            var paths = new List<string>(originalTransforms.Count);
-            var transforms = new List<Transform>(originalTransforms.Count);
-            foreach (var pair in originalTransforms)
-            {
-                paths.Add(AnimationUtility.CalculateTransformPath(pair.Key, rootObject.transform));
-                transforms.Add(pair.Key);
-            }
-
-            Action<Transform, Transform> SaveTransform = null;
-            SaveTransform = (t, root) =>
-            {
-                var path = AnimationUtility.CalculateTransformPath(t, root);
-                var index = paths.IndexOf(path);
-                if (index >= 0)
-                {
-                    Action<Dictionary<Transform, SaveData>, Transform, Transform> SetSyncTransform = (list, oldT, newT) =>
-                    {
-                        if (list != null && list.Count > 0)
-                        {
-                            if (list.ContainsKey(oldT))
-                            {
-                                list[oldT].syncTransform = newT;
-                            }
-                        }
-                    };
-                    SetSyncTransform(originalTransforms, transforms[index], t);
-                    SetSyncTransform(bindTransforms, transforms[index], t);
-                    SetSyncTransform(prefabTransforms, transforms[index], t);
-                }
-                for (int i = 0; i < t.childCount; i++)
-                    SaveTransform(t.GetChild(i), root);
-            };
-            SaveTransform(gameObject.transform, gameObject.transform);
-        }
-        public void ResetSyncTransforms()
-        {
-            Action<Dictionary<Transform, SaveData>> ResetSyncTransform = (list) =>
-            {
-                if (list == null) return;
-                foreach (var pair in list)
-                {
-                    pair.Value.syncTransform = null;
-                }
-            };
-            ResetSyncTransform(originalTransforms);
-            ResetSyncTransform(bindTransforms);
-            ResetSyncTransform(prefabTransforms);
         }
 
         public bool IsRootStartTransform()
@@ -405,6 +410,38 @@ namespace VeryAnimation
             {
                 SaveData data;
                 if (bindTransforms.TryGetValue(t, out data))
+                {
+                    return data;
+                }
+            }
+            return null;
+        }
+        public bool IsEnableTPoseTransform()
+        {
+            return (tposeTransforms != null && tposeTransforms.Count > 0);
+        }
+        public bool ResetTPoseTransform()
+        {
+            if (IsEnableTPoseTransform())
+            {
+                foreach (var trans in tposeTransforms)
+                {
+                    if (trans.Key != null)
+                        trans.Value.LoadLocal(trans.Key);
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public SaveData GetTPoseTransform(Transform t)
+        {
+            if (tposeTransforms != null)
+            {
+                SaveData data;
+                if (tposeTransforms.TryGetValue(t, out data))
                 {
                     return data;
                 }

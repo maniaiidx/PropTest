@@ -26,6 +26,7 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
 {
     //[HideInInspector]
     public DataBridging DB;
+    public ControllerAutoInitializeSystem controllerAutoInitializeSystem;
     public OrderedDictionary<string, bool> staticFlagDict;
 
     #region テスト空間
@@ -88,7 +89,8 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
         FreeCameraAnchorTrs, FreeCameraTrs,
         MessageCanvasTrs,
 
-        Player_DummyTrs, PlayerRHandTrs, PlayerLHandTrs, PlayerRhitosashi02Trs, PlayerLhitosashi03Trs, PlayerLCalfTrs, PlayerLFootTrs,
+        Player_DummyTrs, PlayerRHandTrs, PlayerLHandTrs, PlayerRFootTrs, PlayerLFootTrs,
+        PlayerRhitosashi02Trs, PlayerLhitosashi03Trs, PlayerLCalfTrs,
         PlayerKubiNekkoPosObjTrs,
 
         GirlMeshTrs, GirlColBldMeshsTrs,
@@ -212,7 +214,9 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
         woodFloorCreakingShortPicthMinus6SEStrList = new List<string>(),
         himoKishimiShortSEStrList = new List<string>(),
         kashibakoSEStrList = new List<string>(),
-        KO_PlayerAsioto_DefList = new List<string>();
+        KO_PlayerAsioto_DefList = new List<string>(),
+        KO_PlayerAsioto_SwimList = new List<string>();
+
 
     #endregion
 
@@ -315,7 +319,7 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
         tereDefOffColor;
 
     //呼吸速度調節用
-    Mebiustos.BreathController.OriBreathController
+    public Mebiustos.BreathController.OriBreathController
         OriBreathController;
 
     #endregion
@@ -408,10 +412,10 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
         //割り当てるIKボーン群
         Bip001Trs,
         Bip001NeckTrs, Bip001HeadTrs,
-        Bip001PelvisTrs, Bip001Spine, Bip001Spine1,
-        joint_L_eye00Trs, joint_R_eye00Trs,
-        Bip001_R_UpperArmTrs, Bip001_R_ForearmTrs, Bip001_R_HandTrs,
-        Bip001_L_UpperArmTrs, Bip001_L_ForearmTrs, Bip001_L_HandTrs;
+        Bip001PelvisTrs, Bip001Spine, Bip001Spine1, R_Breast01, L_Breast01,
+          joint_L_eye00Trs, joint_R_eye00Trs,
+        Bip001_R_ClavicleTrs, Bip001_R_UpperArmTrs, Bip001_R_ForearmTrs, Bip001_R_HandTrs,
+        Bip001_L_ClavicleTrs, Bip001_L_UpperArmTrs, Bip001_L_ForearmTrs, Bip001_L_HandTrs;
 
     #region//略群
     //FBBIK
@@ -467,7 +471,7 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
 
     #region//略群
     //FBBIK
-    private IKEffector
+    public IKEffector
         PlayerIKBodyEf,
         PlayerIKLHandEf, PlayerIKLShoulderEf,
         PlayerIKRHandEf, PlayerIKRShoulderEf,
@@ -499,7 +503,7 @@ public partial class DataCounter : SerializedMonoBehaviour//OdinでDictionaryを
         PlayerFBBIKtoHeadEffectorObj;
 
     [HideInInspector]
-    bool //FPS時にプレイヤーの手や体を例外で表示するとき用
+    public bool //FPS時にプレイヤーの手や体を例外で表示するとき用
         isDummyHandVis = false,
         isDummyBodyVis = false;
 
@@ -600,7 +604,6 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         BodyObj,//ちえりのBodyメッシュObj
         SocksObj;//靴下のメッシュObj
 
-
     #endregion
 
     #region 仮想ボタン（OculusTouchなどでトリガーAxisを決定ボタンにする用）(Viveでの同時押しカメラリセット)（ControllerAutoInitializeSystemにある）
@@ -633,8 +636,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #endregion
 
-    UTJ.SpringManager //SpringManager取得（スカートなどの揺れモノのスクリプト）
-        skirtSpringManager;
+    public UTJ.SpringManager
+        //SpringManager取得
+        skirtSpringManager,//（スカートの揺れモノのスクリプト）
+        spine1SpringManager;//（胸の揺れモノのスクリプト）
+
+    public UTJ.SpringBone //胸のSpringBone自体の取得用
+        rBreastSpringBone,
+        lBreastSpringBone;
 
 
     #region □独立システムテンプレ
@@ -950,8 +959,11 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 //0はTPSオフ（FPS）
                 if (tPSModeInt == 0)
                 {
-                    //ONにした瞬間出てしまうのでメニュー非表示時のみ
-                    if (isMenuSystem == false) { SubTitleVis(true, "□FPS MODE", 0.2f, true); }
+                    //ちょくちょくシーン移動とかで出るので、一旦コメントアウト
+                    ////ONにした瞬間出てしまうのでメニュー非表示時のみ
+                    //if (isMenuSystem == false)
+                    //{ SubTitleVis(true, "□FPS MODE", 0.2f, true); }
+
 
                     TPSCamera.enabled = false;
                     //VR時はカメラリセット挟む
@@ -1369,30 +1381,47 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #endregion
 
-    public IEnumerator PlayerFallDownSystemIEnum()
+    public IEnumerator PlayerFallDownSystemIEnum(float speed = 0.2f)
     {
         if (isPlayerFallDownSystem) { yield break; }
         isPlayerFallDownSystem = true;
         List<GameObject> exitDestroyObjList = new List<GameObject>();
 
         #region ■■■初期化
+        #region speed指定に合わせて初期値変更
+        var waitTime = 0.05f;
+        var cameraTime = 0.5f;
+        var motionCrossfadeTime = 0.2f;
+        var tmpEase = Ease.OutBounce;
+
+        //speed指定が0.2以上だったら、色々変更
+        if (speed > 0.2f)
+        {
+            waitTime = speed * 0.25f;
+            cameraTime = speed;
+            motionCrossfadeTime = speed;
+            tmpEase = Ease.InOutSine;
+        }
+
+        #endregion
+
 
         //TPSプレイヤー倒れモーション
         isPlayerUniqueMotion = true;
-        PlayerMotion("liedown_00_Re", 0.2f, 0);
+        PlayerMotion("liedown_00_Re", motionCrossfadeTime, 0);
 
         playerFallDownDefCameraAnchorPos = CameraAnchorTrs.localPosition;
         playerFallDownDefCameraAnchorEul = CameraAnchorTrs.localEulerAngles;
         playerFallDownSlipCameraAnchorPos = new Vector3(0, 0.1f, -0.7f);
         playerFallDownSlipCameraAnchorEul = new Vector3(-90, 0, 0);
 
-        CameraAnchorTrs.DOLocalMove(playerFallDownSlipCameraAnchorPos, 0.5f).SetEase(Ease.OutBounce);
-        yield return new WaitForSeconds(0.05f);
-        CameraAnchorTrs.DOLocalRotate(playerFallDownSlipCameraAnchorEul, 0.05f);
-        yield return new WaitForSeconds(0.05f);
+        CameraAnchorTrs.DOLocalMove(playerFallDownSlipCameraAnchorPos, cameraTime).SetEase(tmpEase);//（元0.5f）
+        yield return new WaitForSeconds(waitTime);//（元0.05）
+        CameraAnchorTrs.DOLocalRotate(playerFallDownSlipCameraAnchorEul, cameraTime);
+        yield return new WaitForSeconds(waitTime);
 
-        CameraAnchorTrs.DOLocalRotate(playerFallDownSlipCameraAnchorEul, 0.2f).SetEase(Ease.InSine);
-        CameraAnchorTrs.DOLocalMove(playerFallDownSlipCameraAnchorPos, 0.5f).SetEase(Ease.OutBounce)
+        CameraAnchorTrs.DOLocalRotate(playerFallDownSlipCameraAnchorEul, cameraTime).SetEase(Ease.InSine);
+        CameraAnchorTrs.DOLocalMove(playerFallDownSlipCameraAnchorPos, cameraTime).SetEase(tmpEase)
             .OnComplete(() =>
             {
                 //カメラリセット（+回転と立ち設定）
@@ -1644,9 +1673,11 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         isPlayerMotionSystem = false;
 
     public bool
-        isPlayerWalk = false,
+        isKO_PlayerWalk = false,
+        isKO_PlayerYotsunbai = false,
         isPlayerUniqueMotion = false,
         isPlayerANRotate = true;
+
     #endregion
 
     IEnumerator PlayerMotionSystemIEnum()
@@ -1697,6 +1728,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             //    }
             //}
             #endregion
+            //Debug.Log("Unique" + isPlayerUniqueMotion + "isKO" + isKOSystem + "isAN" + isANSystem);
 
             //■else ifで状態参照して、下記のどれかが実行される
             #region ■ノーマル時（会話など）　　(特殊モーション中 でも かくれおに移動 でも 脚登り でもない)
@@ -1715,12 +1747,18 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     //VRプレイヤーが立っている時
                     if (PlayerTargetTrs.position.y > PlayerStandFeetCubeTrs.position.y)
                     {
+                        Debug.Log("VRでStand判定１フレ");
+                        Debug.Log(PlayerTargetTrs.position.y + "←target　Feet→" + PlayerStandFeetCubeTrs.position.y);
+
                         isPlayerStand = true;
                         PlayerMotion("idle_01_Re", 0, 0);
                     }
                     //座っている時
                     else if (PlayerTargetTrs.position.y < PlayerStandFeetCubeTrs.position.y)
                     {
+                        Debug.Log("VRでSit判定１フレ");
+                        Debug.Log(PlayerTargetTrs.position.y + "←target　Feet→" + PlayerStandFeetCubeTrs.position.y);
+
                         isPlayerStand = false;
                         PlayerMotion("sit_02_Re", 0, 0);
                     }
@@ -1753,11 +1791,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 }
                 #endregion
 
-                #region トラッキング判定で立ち座りテスト（背比べと同じ判定なので、アンカーが高くなっても立つ）
+                #region トラッキング判定で立ち座りテスト
                 //VRプレイヤーが立っている時
                 if (isPlayerStand == false &&
                     PlayerTargetTrs.position.y > PlayerStandFeetCubeTrs.position.y)
                 {
+                    //Debug.Log("VRでStand判定LOOP");
                     isPlayerStand = true;
                     PlayerMotion("idle_01_Re", 0.2f, 0);
                 }
@@ -1765,10 +1804,13 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 else if (isPlayerStand &&
                     PlayerTargetTrs.position.y < PlayerStandFeetCubeTrs.position.y)
                 {
+                    //Debug.Log("VRでSit判定LOOP");
                     isPlayerStand = false;
                     PlayerMotion("sit_02_Re", 0.2f, 0);
                 }
                 #endregion
+
+
 
                 #region //デフォルト以下なら座り、より高ければ立ち（アンカーのみになるのでやめ）
                 //if (isPlayerStand &&
@@ -1817,10 +1859,20 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     isKakureoni = true;
                     isNormal = isUnique = isAsinobori = false;
 
-                    //追従やめて立ちポーズ化
+                    //追従やめ
                     PlayerFBBIKtoHeadEffectorObj.GetComponent<FullBodyBipedIK>().enabled = false;
-                    PlayerMotion("idle_01_Re", 0.2f, 0);
-                    ChangeStand(true);//強制で立ちポジション
+
+                    //移動方法に合わせてポーズ変化
+                    if (isKO_PlayerYotsunbai)
+                    {
+                        PlayerMotion("四つん這い両手_モブ_Root", 0.2f, 0);
+                    }
+                    else //(isKO_PlayerWalk)
+                    {
+                        PlayerMotion("idle_01_Re", 0.2f, 0);
+                        ChangeStand(true);//強制で立ちポジション(しなくていいかも（四つんばい設定時にここの強制立ちが邪魔だった）)
+                    }
+
                     //脚登りで回転していた場合用にゼロ
                     Player_DummyTrs.localEulerAngles = Vector3.zero;
                     //脚登りでダミーposちょいあげしていた場合用にゼロ
@@ -1843,8 +1895,10 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     if (isKakureoniMove == false)
                     {
                         isKakureoniMove = true;
-                        if (isPlayerWalk)
+                        if (isKO_PlayerWalk)
                         { PlayerMotion("walk_00", 0.2f, 0); }
+                        else if (isKO_PlayerYotsunbai)
+                        { PlayerMotion("四つん這い歩きモーション_Root", 0.2f, 0); }
                         else { PlayerMotion("sprint_00_Re", 0.2f, 0); }
                     }
                     //移動している場所が前フレと違ったら そっち向きなおす
@@ -1867,8 +1921,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     if (isKakureoniMove)
                     {
                         isKakureoniMove = false;
-                        //立ちポーズ化
-                        PlayerMotion("idle_01_Re", 0.2f, 0);
+                        //止まりポーズ化
+                        if (isKO_PlayerYotsunbai)
+                        { PlayerMotion("四つん這い両手_モブ_Root", 0.2f, 0); }
+                        else if (isKO_PlayerWalk)
+                        { PlayerMotion("idle_01_Re", 0.2f, 0); }
+                        else //↑のwalkだけ指定だと、走りがキャンセルされないので、ひとまずelseで同命令　四つんばい移動以外のが増えたら適せんelse ifを追加
+                        { PlayerMotion("idle_01_Re", 0.2f, 0); }
+
                         //移動している場所初期化（前回と同じ方向に進みだした際、向きなおすため）
                         prevMovePos = Vector3.zero;
                     }
@@ -2055,14 +2115,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
         #endregion
 
-        //脚登り時の動き
-        //FinalIKで肘の回転制御？（アオイガイさんが調べる）
-
 
         #region 終了処理
+
+
         for (int i = 0; i < exitDestroyObjList.Count; i++)
         { Destroy(exitDestroyObjList[i]); }
         exitDestroyObjList.Clear();
+
 
         #endregion
         yield break;
@@ -2420,7 +2480,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #endregion
     #region ■カメラ スティックとマウスでの回転
-    Vector3
+    public Vector3
         userCameraControlEul = new Vector3(0, 0, 0),
         ChokusetsuNyuuryokuUserCameraControlEul = Vector3.zero;
 
@@ -2679,14 +2739,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
 
         //カメラリセット
-        if (isCameraResetDown || Input.GetKeyDown(KeyCode.C)) //ひとまずキーボードではC
+        if (isCameraResetDown || (!Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))) //ひとまずキーボードではC（Ctrlを押してない前提）
         {
             CameraReset(null, null, true);
 
             if (isMenuSystem)
             {
                 //■メニューウインドウの位置を見てる方向に
-                GameObject defMenuObj = Resources.Load("EventSystem/Menu/Prefab/MenuFolder") as GameObject;
+                GameObject defMenuObj = ResourceFiles.MenuFolder;
                 MenuFolder.transform.SetParent(VRCameraTrs);
                 MenuFolder.transform.localPosition = defMenuObj.transform.localPosition;
                 MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
@@ -3445,7 +3505,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //■到着位置から20距離Posに設置（そこから飛んでくる）
         hukiPoint0123[listNum].transform.Translate
             ((direction * 20)
-            * nowPlayerLocalScale.z
+            //* nowPlayerLocalScale.z
+            * (CameraObjectsTrs.lossyScale.z / 100)
             , Space.Self);
 
         #endregion
@@ -4078,7 +4139,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
 
 
-    void DelAll_Hukidashi()//フキダシ全消し
+    public void DelAll_Hukidashi()//フキダシ全消し
     {
         foreach (GameObject x in hukidasis)
         {
@@ -4097,7 +4158,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         { StopCoroutine(hukidashiAutoDelCoroutineList[i]); }
         hukidashiAutoDelCoroutineList.Clear();
     }
-    void DelAll_Sentakushi()//選択肢消し
+    public void DelAll_Sentakushi()//選択肢消し
     {
         //空かどうかチェックして
         if (sentakushis.Count != 0)
@@ -5308,7 +5369,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     float
         newHukidashiNovelDistanceChangeDuration = 0;
 
-    void HukidashiNovelDistanceChange(float zPos = 0.5f, float duration = 0)
+    public void HukidashiNovelDistanceChange(float zPos = 0.5f, float duration = 0)
     {
         //指定のzPosから位置とスケール割り出し
         newHukiAreaLclPos = new Vector3(0, 0, zPos);
@@ -5382,6 +5443,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         isNovelSentakushiWait = false;
 
     //ログ表示関係
+
     public List<String>
         novelLogList = new List<string>();
     public bool
@@ -5719,6 +5781,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             //ノベルログモードON
             if (isNovelLogVisIng == false //既に出ているときはしない
                 && isNovelLogLock == false //ロック時はしない
+                && isDebugFaceChange == false //表情デバッグ変更中はしない
+                && isDebugMotionChange == false //モーションデバッグ変更中はしない
                 && (logInputFloat >= 0.1f || Input.GetButtonDown(DB.inputDict["ノベルログ"]))//上キーかログ表示ボタンでON
                 )
             {
@@ -6541,7 +6605,6 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     //boolでONにする。システムがあると競合するので、システムは自動でUnLoadされる。
     //VRBlockAreaPlayerStayPrevPosはシステムが起動してなくても取得し続けられている。
     //オフにするとアジャスト位置は0になる。（＝現在のトラッキング位置に戻る）
-
     #endregion
     #region 変数
     [HeaderAttribute("・VRBlockシステム　カメラ埋まり対策")]
@@ -6565,6 +6628,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         isVRBlockStay;
     public List<Collider> //ぶつかっているコリジョンリスト
         nowVRBlockCollList = new List<Collider>();
+    public List<Collider> //ぶつかっているけど、例外で処理されないコリジョンリスト
+        nowVRBlockThroughCollList = new List<Collider>();
+
     public Vector3 //ぶつかる直前のVRカメラ位置
         VRBlockAreaPlayerStayPrevPos;
 
@@ -6665,7 +6731,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             #region 暗転モードBoolONの場合
             if (isVRBlockBlackOutMode)
             {
-                //カメラ埋まってたら
+                //カメラ埋まってたら 
                 if (isVRBlockStay)
                 {
                     //暗転していなかったら
@@ -6751,6 +6817,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         isVRBlockStay = false;
         nowVRBlockCollList.Clear();
+        nowVRBlockThroughCollList.Clear();
 
         //埋まってる最中ならずらし元に戻し
         CameraAdjustTrackingTrs.localPosition = Vector3.zero;
@@ -6762,14 +6829,15 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     //■VRBlockAreaColliderSphere当たり判定
     public void OnCollisionEnter_VRBlockAreaColliderSphere(Collider collider)
     {
-        if (
+        if (collider.tag == "VRBlockThrough")//例外タグ
+        { nowVRBlockThroughCollList.Add(collider); }
+        else if (
             collider.gameObject.layer == LayerMask.NameToLayer("seeRayBlock")
             //|| collider.tag == "TansakuObj"
             //|| collider.tag == "TansakuSeeCollOnObj"
             //|| collider.tag == "TansakuSeeCollOffObj"
             || collider.tag == "ChieriCollider"
             //|| collider.tag == "ReloadSkinMeshCollider" //Stay中に削除された場合の対処が難しいため一旦保留
-            && collider.tag != "VRBlockThrough"//例外タグ
             )
         {
             //リストに入れる
@@ -6779,14 +6847,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
     public void OnCollisionExit_VRBlockAreaColliderSphere(Collider collider)
     {
-        if (
-            collider.gameObject.layer == LayerMask.NameToLayer("seeRayBlock")
+        if (collider.tag == "VRBlockThrough")//例外タグ
+        { nowVRBlockThroughCollList.Remove(collider); }
+        else if (collider.gameObject.layer == LayerMask.NameToLayer("seeRayBlock")
             //|| collider.tag == "TansakuObj"
             //|| collider.tag == "TansakuSeeCollOnObj"
             //|| collider.tag == "TansakuSeeCollOffObj"
             || collider.tag == "ChieriCollider"
             //|| collider.tag == "ReloadSkinMeshCollider" //Stay中に削除された場合の対処が難しいため一旦保留
-            && collider.tag != "VRBlockThrough"//例外タグ
             )
         {
             nowVRBlockCollList.Remove(collider);
@@ -7021,12 +7089,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             if (Input.GetKey("4"))
             { SeeShrink(); }
 
-
-            //　高さ　子オブジェクト（座りや立ち上がりなど、身長）
-            if (Input.GetKey("5"))
-            { CameraAnchorTrs.Translate(0, 0.5f, 0, Space.Self); }
-            if (Input.GetKey("6"))
-            { CameraAnchorTrs.Translate(0, -0.5f, 0, Space.Self); }
+            //混乱しそうなので一時オフ
+            ////　高さ　子オブジェクト（座りや立ち上がりなど、身長）
+            //if (Input.GetKey("5"))
+            //{ CameraAnchorTrs.Translate(0, 0.5f, 0, Space.Self); }
+            //if (Input.GetKey("6"))
+            //{ CameraAnchorTrs.Translate(0, -0.5f, 0, Space.Self); }
 
             //　高さ　親オブジェクト（着地位置の高さ）
             if (Input.GetKey("7"))
@@ -7204,10 +7272,10 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
             #region システムロード
 
-            //■智恵理表情デバッグモードロードアンロード(LShift+F)
-            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.F) && isDebugFaceChange == false)
+            //■智恵理表情デバッグモードロードアンロード(LShift+M)
+            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.M) && isDebugFaceChange == false)
             { StartCoroutine(FaceDebugVis()); }
-            else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.F) && isDebugFaceChange)
+            else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.M) && isDebugFaceChange)
             { isDebugFaceChange = false; }
 
             //■智恵理モーションデバッグモードロードアンロード(LCtrl+M)
@@ -7422,6 +7490,15 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             }
             #endregion //ホイールで数値と表情とテキスト変更
 
+            #region Ctrl+Cで表情名コピー
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
+            {
+                GUIUtility.systemCopyBuffer = faceHashNameDict[nowFaceInt].Key;
+            }
+
+            #endregion
+
+
             //■リアルタイムで現表情変わったらデバッグに表示
             //現在表情があって（取得エラー防ぎ）
             if (girlAnim.GetCurrentAnimatorStateInfo(2).shortNameHash != -1)
@@ -7438,8 +7515,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                         faceHashNameDict[nowFaceInt].Key + "\n" +
                         nowFaceInt + " / " + faceMaxInt;
                 }
-
             }
+
+
 
             yield return null;
         }
@@ -7559,6 +7637,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 }
             }
             #endregion //ホイールで数値と表情とテキスト変更
+
+            #region Ctrl+Cでモーション名コピー
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
+            {
+                GUIUtility.systemCopyBuffer = MotionHashNameDict[nowMotionInt].Key;
+            }
+
+            #endregion
 
             //■リアルタイムで現モーション変わったらデバッグに表示
             //現在モーションがあって（取得エラー防ぎ）
@@ -8358,8 +8444,11 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //宿題テクスチャ変更用
         drillRenderer = DrillTrs.GetComponent<Renderer>();
-        drillTexturesList.Clear();
-        drillTexturesList = Resources.LoadAll("EventSystem/Homework/DrillTextures/StagesTex", typeof(Texture)).Cast<Texture>().ToList();
+
+        //宿題テクスチャ取得
+        //ResoucesFilesEditorに移行(リソース自動ロード)
+        //drillTexturesList.Clear();
+        //drillTexturesList = Resources.LoadAll("EventSystem/Homework/DrillTextures/StagesTex", typeof(Texture)).Cast<Texture>().ToList();
 
 
         #endregion
@@ -8573,7 +8662,6 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         #region 終了処理
         Destroy(HomeworkObjectsTrs.gameObject);
         Destroy(HW_SeeRayStartPosObj);
-        drillTexturesList.Clear();
 
         //宿題データ保存
         HwDataSave();
@@ -9176,11 +9264,16 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         isRMEHwSystem = false;
 
     //EnmeyのObjリスト
-    public List<GameObject> RMEHWEnmObjList
+    public List<GameObject> RMEHW_enmObjList
         = new List<GameObject>();
 
-    //public float
-    //    RMEHwHitTime = 0;
+    //現在見ているEnemyObjリスト
+    public List<GameObject>
+        RMEHW_nowLookEnmObjList = new List<GameObject>();
+
+    //RMEで宿題時に次のタイムラインアセット受け取ってそれ再生する用
+    public PlayableDirector RMEHWPlayDirector;
+    public PlayableAsset RMEHWEndGoTimelineAsset;
 
 
     #endregion
@@ -9197,17 +9290,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         RaycastHit RMEHwSeeRayHit = new RaycastHit();
 
-        bool
-            isRMEHwEnmVis = false;
-        GameObject
-            nowEnmObj = null;
-
         //ヒエラルキーからRmeHwEnmのObj取得
-        RMEHWEnmObjList = GameObject.FindGameObjectsWithTag("RmeHwEnm").ToList();
+        RMEHW_enmObjList = GameObject.FindGameObjectsWithTag("RmeHwEnm").ToList();
 
-        Debug.Log(RMEHWEnmObjList.Count);
+        Debug.Log("ヒエラルキーに存在する敵の数 " + RMEHW_enmObjList.Count);
 
         #endregion
+
+
 
         #region ■■■ループ
         while (isRMEHwSystem)
@@ -9216,42 +9306,120 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             if (isHwVisLock == false /*&& isTansakuEnter == false && isPlayerAnimReadSystem == false*/)
             {
                 //複数存在を仮定してListFor
-                for (int i = 0; i < RMEHWEnmObjList.Count; i++)
+                for (int i = 0; i < RMEHW_enmObjList.Count; i++)
                 {
-                    // playerSeeRayが宿題Enmと衝突したら(Enm側からコリダーレイ)
-                    if (RMEHWEnmObjList[i].GetComponent<Collider>().Raycast
+                    //■Ray playerSeeRayが宿題Enmと衝突したら(Enm側のコリダーレイをEnmに発射)（プレイヤーが見たかどうか）
+                    if (RMEHW_enmObjList[i].GetComponent<Collider>().Raycast
                         (playerSeeRay, out RMEHwSeeRayHit, Mathf.Infinity))
                     {
-                        //まず いままでと違うEnmObjかどうか
-                        if (nowEnmObj != RMEHwSeeRayHit.collider.gameObject || nowEnmObj == null)
+                        //まず 既に見ているEnmObjかどうか
+                        //見ていなかった
+                        if (RMEHW_nowLookEnmObjList.Contains(RMEHW_enmObjList[i]) == false)
                         {
                             //1フレームだけ実行になるはず
-
-                            //現在のEnmに変更
-                            nowEnmObj = RMEHwSeeRayHit.collider.gameObject;
-                            Debug.Log("RMEHWEnm Hit");
+                            //現在見ているEnmに追加
+                            RMEHW_nowLookEnmObjList.Add(RMEHwSeeRayHit.collider.gameObject);
                         }
+
+                        #region 見ている時の処理
+                        ////Enm側スクリプト取得
+                        //var rmeHwEnm = RMEHWEnmObjList[i].GetComponent<RmeHwEnm>();
+
+                        //Hit位置をEnm側スクリプトに送信（複数あった時一番近いのを出すため）
+                        RMEHW_enmObjList[i].GetComponent<RmeHwEnm>().nowSeePos
+                            = RMEHwSeeRayHit.collider.gameObject.transform.position;
+                        #endregion
 
                     }
                     else//■離れたら
                     {
-                        if (nowEnmObj != null)//1フレームだけ実行
+                        if (RMEHW_nowLookEnmObjList.Contains(RMEHW_enmObjList[i]))
                         {
-                            nowEnmObj = null;
+                            //1フレームだけ実行
+                            RMEHW_nowLookEnmObjList.Remove(RMEHW_enmObjList[i]);
 
+                            //見ている量リセット
+                            RMEHW_enmObjList[i].GetComponent<RmeHwEnm>().nowSeeCount = 0;
                         }
-
                     }
                 }
 
+                #region ダメージ処理判定（Enm側のスクリプトを参照・実行）
+
+                //一個も見てなかったら何もしない
+                if (RMEHW_nowLookEnmObjList.Count == 0) { }
+                //一個だけ見ていたらそのままダメージ処理
+                else if (RMEHW_nowLookEnmObjList.Count == 1) { RMEHW_nowLookEnmObjList[0].GetComponent<RmeHwEnm>().damageCount(); }
+                //もし複数同時に見ていたら（貫通して）
+                else if (RMEHW_nowLookEnmObjList.Count > 1)
+                {
+                    //■一番近いEnmを算出
+
+                    //それぞれの距離一旦取得
+                    //※1個目はfor外で先に取得
+                    float tmpDistance
+                        = Vector3.Distance(playerSeeRay.origin, RMEHW_nowLookEnmObjList[0].GetComponent<RmeHwEnm>().nowSeePos);
+
+                    //※1個目はfor外で先に取得
+                    //ダメージ判定与えるEnmを取得用
+                    RmeHwEnm mostNearEnm
+                        = RMEHW_nowLookEnmObjList[0].GetComponent<RmeHwEnm>();
+
+                    //forでDistance取得して近いのを↑に代入
+                    for (int i = 1; i < RMEHW_nowLookEnmObjList.Count; i++)
+                    {
+                        float nowDistance
+                            = Vector3.Distance(playerSeeRay.origin, RMEHW_nowLookEnmObjList[i].GetComponent<RmeHwEnm>().nowSeePos);
+
+                        //もし前回の直近より、今回が最も近かったら
+                        if (tmpDistance > nowDistance)
+                        {
+                            //前回の直近を更新
+                            tmpDistance = nowDistance;
+                            //暫定一番近いEnmとして取得
+                            mostNearEnm = RMEHW_nowLookEnmObjList[i].GetComponent<RmeHwEnm>();
+                        }
+                    }
+
+                    //ダメージ処理
+                    mostNearEnm.damageCount();
+
+                }
+
+                #endregion
+
             }
 
+            //Enemyなくなったら終了
+            if (RMEHW_enmObjList.Count == 0)
+            { isRMEHwSystem = false; }
 
             yield return null;
         }
         #endregion
 
         #region ■■■終了処理
+
+        //RMEから起動時にDirectorやトラックが引き渡されてたら
+        if (RMEHWPlayDirector != null)
+        {
+            //トラックからアセット取得して再生(Clipからトラックに変数あててるはず)
+            RMEHWPlayDirector.playableAsset = RMEHWEndGoTimelineAsset;
+            RMEHWPlayDirector.time = 0;//先頭に戻す
+            RMEHWPlayDirector.Play();
+        }
+
+        //タイムライン系一応初期化
+        RMEHWPlayDirector = null;
+        RMEHWEndGoTimelineAsset = null;
+
+        //リスト一応初期化
+        RMEHW_enmObjList.Clear();
+        RMEHW_nowLookEnmObjList.Clear();
+
+
+
+
         for (int i = 0; i < exitDestroyObjList.Count; i++)
         { Destroy(exitDestroyObjList[i]); }
         exitDestroyObjList.Clear();
@@ -9492,6 +9660,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         #region 初期化
 
+        //ちえりのGirlColBldMeshsTrsをON
+        GirlColBldMeshsTrs.gameObject.SetActive(true);
+
         //フォルダ
         ReloadSkinMeshColliderFolder = new GameObject();
         ReloadSkinMeshColliderFolder.name = "ReloadSkinMeshChieriColliderFolder";
@@ -9516,6 +9687,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         RSMC_MeshColliderList.Clear();
         RSMC_isMeshReloadList.Clear();
 
+        //各メッシュコリダーに処理
         for (int i = 0; i < ChieriSkinMeshColliderObjArray.Length; i++)
         {
             //SkinMeshあれば
@@ -10066,12 +10238,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 }
                 #endregion
 
-                HitReloadSkinMeshCollider = GameObject.Find(nameof(HitReloadSkinMeshCollider));
-                //初期設定終わったらFixedでのリロード開始
-                isFixedRSMCReload = true;
-
             }
         }
+
+        HitReloadSkinMeshCollider = GameObject.Find(nameof(HitReloadSkinMeshCollider));
+        //初期設定終わったらFixedでのリロード開始
+        isFixedRSMCReload = true;
 
         #endregion
 
@@ -10670,6 +10842,84 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             }
             #endregion
 
+            #region ■時間補正切りエフェクト　開始の点滅のみ
+            if (isPPEffect_ZikanHoseiIntro)
+            {
+                isPPEffect_ZikanHoseiIntro = false;
+                isPPEffectRun = true;
+
+                //まずどちらにしろenable
+                postPB.enabled =
+                postPB.profile.colorGrading.enabled =
+                true;
+
+                //SE
+                SEPlay("heart_def");
+
+                #region ■カラーグレディング設定 初期値と変移用変数
+                float tmpTonemappingNeutralWhiteClip =
+                    PP_colorGradingSets.tonemapping.neutralWhiteClip;//明暗
+                float tmpBasicSaturation =
+                    PP_colorGradingSets.basic.saturation;//彩度
+                float tmpBasicContrast =
+                    PP_colorGradingSets.basic.contrast;//コントラスト
+
+
+                //DOTWeenTO neutralWhiteClip 一瞬白くして　戻して　じわじわ白く
+                DOTween.To(
+                    () => tmpTonemappingNeutralWhiteClip, (x) => tmpTonemappingNeutralWhiteClip = x, 1f, 0.1f)
+                    .OnComplete(() =>
+                    {
+                        DOTween.To(() => tmpTonemappingNeutralWhiteClip, (x) => tmpTonemappingNeutralWhiteClip = x, PP_def_colorGradingSets.tonemapping.neutralWhiteClip, 1f)
+                        .OnComplete(() =>
+                        {
+                            DOTween.To(() => tmpTonemappingNeutralWhiteClip, (x) => tmpTonemappingNeutralWhiteClip = x, 10f, 3f);
+                        });
+                    });
+
+                #endregion
+                #region ■クロマティックアベレーション 初期値と変移用変数
+                float tmpChromaticAberrationIntensity =
+                    PP_chromaticAberrationSets.intensity;
+
+                //DOTWeenTO intensity 一瞬最大値　戻して　じわじわ最大値へ
+                DOTween.To(
+                    () => tmpChromaticAberrationIntensity, (x) => tmpChromaticAberrationIntensity = x, 1f, 0.2f)
+                    .OnComplete(() =>
+                    {
+                        DOTween.To(() => tmpChromaticAberrationIntensity, (x) => tmpChromaticAberrationIntensity = x, 0.2f, 1f)
+                        .OnComplete(() =>
+                        {
+                            DOTween.To(() => tmpChromaticAberrationIntensity, (x) => tmpChromaticAberrationIntensity = x, 1f, 2f);
+                        });
+                    });
+                #endregion
+
+                //■更新し続けループ
+                //こっちは時間で直接指定
+                float
+                    tmpCountFlt = 0,
+                    tmpCountGoalFlt = 1;
+                while (tmpCountFlt < tmpCountGoalFlt)
+                {
+                    //カラーグレディング
+                    PP_colorGradingSets.tonemapping.neutralWhiteClip = tmpTonemappingNeutralWhiteClip;
+                    PP_colorGradingSets.basic.saturation = tmpBasicSaturation;
+                    PP_colorGradingSets.basic.contrast = tmpBasicContrast;
+
+                    //更新
+                    postPB.profile.colorGrading.settings = PP_colorGradingSets;
+
+                    tmpCountFlt += Time.deltaTime * 1;
+                    yield return null;
+                }
+
+                isPPEffectRun = false;
+            }
+            #endregion
+
+
+
             #region ■初期値に戻していく
             if (isPPEffect_FadeToDef)
             {
@@ -10767,15 +11017,23 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
 
     bool isPPEffect_ZikanHosei = false;
-    void PPEffect_ZikanHosei()
+    public void PPEffect_ZikanHosei()
     {
         //システム起動してなければ起動
         if (isPPSyatem == false) { StartCoroutine(PostProcessingEffectSystemCor()); }
         //bool ON（処理は本体にある）
         isPPEffect_ZikanHosei = true;
     }
+    bool isPPEffect_ZikanHoseiIntro = false;
+    public void PPEffect_ZikanHoseiIntro()
+    {
+        //システム起動してなければ起動
+        if (isPPSyatem == false) { StartCoroutine(PostProcessingEffectSystemCor()); }
+        //bool ON（処理は本体にある）
+        isPPEffect_ZikanHoseiIntro = true;
+    }
     bool isPPEffect_FadeToDef = false;
-    void PPEffect_FadeToDef(float durationTime = 3)
+    public void PPEffect_FadeToDef(float durationTime = 3)
     {
         //システム起動してなければ起動
         if (isPPSyatem == false) { StartCoroutine(PostProcessingEffectSystemCor()); }
@@ -10927,7 +11185,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     GameObject //目眩専用Obj
         PPv2MemaiObj;
-    void PPv2Memai(bool isOn = true, float fadeoutTime = 5)
+    void PPv2Memai(bool isOn = true, float fadeoutTime = 5, float noiseValue = 1)
     {
         //オブジェ設置・削除が基礎　Tweenでアニメ処理
         if (isOn)
@@ -11003,7 +11261,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 .OnComplete(() =>
                 {
                     DOTween.To(() => grain.intensity.value, (x) => grain.intensity.value = x
-                    , 1f, 4f);
+                    , noiseValue, 4f);
                 });
             #endregion
         }
@@ -12049,7 +12307,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
 
     public List<GameObject> //隠れ場所オブジェ
-        KO_KakurePosObjsList = new List<GameObject>();
+        KO_KakurePosObjsList = new List<GameObject>(),
+        KO_SimpleKakurePosObjsList = new List<GameObject>();//普通の↑リストを併用すると、シンプルObj削除時に全部消してしまうので単独リストにした
+
 
     Collider //隠れ位置判定用コリダー
         KO_nowSeePosCollider = null,
@@ -12080,10 +12340,11 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     public bool
         KO_isParticleObjMode = true;
 
-    float
-        KO_AsiotoTimeCountFloat = 0,
-        KO_AsiotoTimeCountMaxFloat = 0.35f;
+    public bool
+        KO_isBackLock = false;
 
+    public bool
+        KO_isSystemOffWithCamRot = false;
     #endregion
 
     //■かくれおに プレイヤー移動システム
@@ -12100,7 +12361,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             //かくれおにPrefabなければ生成
             if (GameObject.Find("EV_C_KakureOni") == null)
             {
-                EV_C_KakureOni = Instantiate(Resources.Load("EventSystem/KakureOni/Prefab/EV_C_KakureOni") as GameObject);
+                EV_C_KakureOni = Instantiate(ResourceFiles.EV_C_KakureOni);
                 EV_C_KakureOni.transform.SetParent(EventObjectsTrs, false);
             }
             //編集用にすでに配置してある場合
@@ -12509,17 +12770,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                             //アニメ用に現在移動しているポイントをクラス変数に
                             KO_nowMovePos = KO_nowMovePosCollider.transform.position;
                             #endregion
-                            #region 足音
-                            if (KO_AsiotoTimeCountFloat < KO_AsiotoTimeCountMaxFloat)
-                            {
-                                KO_AsiotoTimeCountFloat += 1 * Time.deltaTime;
-                            }
-                            else
-                            {
-                                KO_AsiotoTimeCountFloat = 0;
-                                SEPlay(UISEObj, KO_PlayerAsioto_DefList[UnityEngine.Random.Range(0, KO_PlayerAsioto_DefList.Count)], 0.3f);
-                            }
-                            #endregion
+                            KO_Asioto();
                         }
                         //到着してるのでアニメやめ
                         else { if (KO_isMove) { KO_isMove = false; } }
@@ -12527,7 +12778,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     }
                     else if (
                         //切り分けのためアナログはずし //Input.GetAxis(DB.inputDict["移動ポイント前進後退アナログ"]) < 0 ||
-                        isBack == true)
+                        isBack == true
+                        && KO_isBackLock == false)
                     {
                         //到着後ぶるぶるしないように距離計り(高さ無視)
                         float distanceFlt =
@@ -12568,6 +12820,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                             //アニメ用に現在移動しているポイントをクラス変数に
                             KO_nowMovePos = backMovePos;
                             #endregion
+                            KO_Asioto();
                         }
                         //到着してるのでアニメやめ
                         else { if (KO_isMove) { KO_isMove = false; } }
@@ -12652,8 +12905,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         #endregion
     }
 
+
     //■プレイヤー移動システムシンプル起動（移動ポイントの読み込みと設置なし 手動で設置してリストに入れる）
-    public IEnumerator KakureOniSimpleSystemLoad()
+    public IEnumerator KakureOniSimpleSystemLoad(bool isSmallest = false)
     {
         //初期化・終了処理用bool判定true さらにそれを利用して重複阻止
         if (isKOSystem == true) { yield break; }
@@ -12681,19 +12935,44 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         KO_CharacterController.radius = 0.25f;
         KO_CharacterController.slopeLimit = 60;//シンプルでのみ、登れる坂の角度60度に（デフォルトは45）
 
+
+        //小さすぎるとエラー出て判定機能しないので、泥縄だけど値設定して再設定
+        if (isSmallest)
+        {
+            //こんなエラーが出るので、こんな設定に。（ステップオフセットは、<スケーリングされた高さ> + <スケーリングされた半径> * 2以下である必要があります）
+            KO_CharacterController.stepOffset = KO_CharacterController.stepOffset * CameraObjectsTrs.lossyScale.y;
+
+            //かつ、SkinWidthを極小に（0.08のままだと、浮いちゃう）
+            KO_CharacterController.skinWidth = 0.0001f;
+
+            //適用するために1フレオフ
+            KO_CharacterController.enabled = false;
+            yield return null;
+            KO_CharacterController.enabled = true;
+        }
+
         RaycastHit
             KO_kakurePosRayHit;
         Vector3 //バックする場合の位置（行き先決定時の位置）
             backMovePos = CameraObjectsTrs.position;
+
+
+        //試しに、起動時に判定とって立ち座り変化(四つんばい搭載時に設定)
+        if (isKO_PlayerWalk)
+        { CameraAnchorTrs.localPosition = DB.cameraStandAnchorDefLocalPos; }
+        else if (isKO_PlayerYotsunbai)
+        { CameraAnchorTrs.localPosition = DB.cameraSitAnchorDefLocalPos; }
+
         #endregion
 
         //起動時にSeeRay当たってるとエラーになるので1フレ待ち
         yield return null;
 
-        //Debug.Log("かくれおに移動システム設置・初期化完了");
-
         //ロード終了
         isKOSystemLoading = false;
+
+        //ダミーの回転取得用（カメラ回転維持させる用）
+        Vector3 dummyEul = new Vector3();
 
         #region ループ（隠れポジション選択・移動）
 
@@ -12923,6 +13202,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                             KO_moveDirection = KO_nowMovePosCollider.transform.position - CameraObjectsTrs.position;
                             //ノーマライズ
                             KO_moveDirection = KO_moveDirection.normalized;
+
+
                             //■移動（ワールド座標なのでYがゼロ（浮かせない））
                             CameraObjectsTrs.Translate(new Vector3(KO_moveDirection.x, 0, KO_moveDirection.z)
                                 * inputSpeed
@@ -12932,20 +13213,20 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                                 * nowPlayerLocalScale.z
                                 , Space.World);
 
+                            ////テストでSimpleMoveで移動
+                            //↓テスト中 ひとまず歩きはしたけど、スピード調整とスロープリミットとかの設定が大変そう。あと判定が強めになっている？（手潰しの時動き初めがひっかかる）
+                            //KO_CharacterController.SimpleMove(new Vector3(KO_moveDirection.x, 0, KO_moveDirection.z)
+                            //    * inputSpeed
+                            //    * playerMoveSpeed
+                            //    * Time.deltaTime
+                            //    * GameObjectsTrs.localScale.z
+                            //    * nowPlayerLocalScale.z * 50);
+
+
                             //アニメ用に現在移動しているポイントをクラス変数に
                             KO_nowMovePos = KO_nowMovePosCollider.transform.position;
                             #endregion
-                            #region 足音
-                            if (KO_AsiotoTimeCountFloat < KO_AsiotoTimeCountMaxFloat)
-                            {
-                                KO_AsiotoTimeCountFloat += 1 * Time.deltaTime;
-                            }
-                            else
-                            {
-                                KO_AsiotoTimeCountFloat = 0;
-                                SEPlay(UISEObj, KO_PlayerAsioto_DefList[UnityEngine.Random.Range(0, KO_PlayerAsioto_DefList.Count)], 0.3f);
-                            }
-                            #endregion
+                            KO_Asioto();
                         }
                         //到着してるのでアニメやめ
                         else { if (KO_isMove) { KO_isMove = false; } }
@@ -12953,7 +13234,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     }
                     else if (
                         //切り分けのためアナログはずし //Input.GetAxis(DB.inputDict["移動ポイント前進後退アナログ"]) < 0 ||
-                        isBack == true)
+                        isBack == true
+                        && KO_isBackLock == false)
                     {
                         //到着後ぶるぶるしないように距離計り(高さ無視)
                         float distanceFlt =
@@ -12994,6 +13276,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                             //アニメ用に現在移動しているポイントをクラス変数に
                             KO_nowMovePos = backMovePos;
                             #endregion
+                            KO_Asioto();
                         }
                         //到着してるのでアニメやめ
                         else { if (KO_isMove) { KO_isMove = false; } }
@@ -13016,13 +13299,62 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             }
 
             #endregion //RayでPosオブジェ選択、ボタン押しで移動
+
+            #region Dummyの回転を取得しておく（終了時に回転をカメラに適用させる場合用）（プレイヤーモーション機能によりisKOSystemがオフと同時に0にされるため、ここにないとだめ）
+            dummyEul = Player_DummyTrs.localEulerAngles;
+            #endregion
             yield return null;
         }
         #endregion □隠れポジション選択・移動ループ
 
         #region 終了処理 リストに入れたポイントObj削除もここ
+
+        //終了時にダミーの方向をカメラ方向に適用する場合（移動ポイント終わったときに元の方向に戻さない）
+        if (KO_isSystemOffWithCamRot)
+        {
+            Debug.Log("回転維持");
+
+            #region ユーザーカメラ回転維持しつつ、CameraObjects回転
+            //最終CameraObjects向き取得
+            var lastRot = CameraObjectsTrs.localEulerAngles + dummyEul;
+
+            //変化分を抜き出す　最終回転 - 現カメラ回転
+            Vector3 tmpV3
+                = lastRot - CameraObjectsTrs.localEulerAngles;
+
+            //userコントロールから変化分を引いた数を
+            tmpV3 = CameraUserControlTrs.localEulerAngles - tmpV3;
+
+            //Userコントロールに与える
+            CameraUserControlTrs.localEulerAngles = tmpV3;
+
+            //最終CameraObjects向き適用
+            CameraObjectsTrs.localEulerAngles = lastRot;
+            #endregion
+
+            #region 現在の回転でカメラリセット値を更新
+            DB.cameraObjectsResetLocalEul = CameraObjectsTrs.localEulerAngles;
+
+            #endregion
+
+
+            //実行したらフラグオフ
+            KO_isSystemOffWithCamRot = false;
+        }
+
         KO_isMovePosLock = false;//移動止め解除
         KO_isMovePosSet = false;//移動先なしに
+
+        //移動状態の判定をオフ　と同時にモーション付与
+        isKO_PlayerWalk = false;
+        PlayerMotion("idle_01_Re", 0.2f, 0);
+        //四つんばい歩きからの復帰なら四つんばいに
+        if (isKO_PlayerYotsunbai)
+        {
+            isKO_PlayerYotsunbai = false;
+            PlayerMotion("四つん這い両手_モブ_Root", 0.2f, 0);
+        }
+
 
         //Destroy(EV_C_KakureOni);
         Destroy(KO_CharacterController);
@@ -13030,17 +13362,71 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //他にポインターシステム使用するものが起動してなければ終了させる
         SeePointSystemOff();
 
-        //隠れ場所オブジェ削除
-        for (int i = 0; i < KO_KakurePosObjsList.Count; i++)
+        //Simple隠れ場所オブジェ削除
+        for (int i = 0; i < KO_SimpleKakurePosObjsList.Count; i++)
         {
-            Destroy(KO_KakurePosObjsList[i]);
+            Destroy(KO_SimpleKakurePosObjsList[i]);
         }
+        KO_SimpleKakurePosObjsList.Clear();
 
         //Resources.UnloadUnusedAssets();
         Debug.Log("シンプル移動システム終了処理完了");
 
         #endregion
     }
+
+    #region 足音複雑化してきたので、再生をメソッド化
+
+    #region 変数
+    public float
+        KO_AsiotoTimeCountFloat = 0,
+        KO_AsiotoTimeCountMaxFloat = 0.35f;
+
+    //KO（かくれおに移動）でのSEList切り替え用enum
+    public enum KO_PlayerAsiotoListEnum
+    {
+        歩く_KO_PlayerAsioto_DefList,
+        泳ぐ_KO_PlayerAsioto_SwimList,
+        無音_mute,
+        __//RME用
+    }
+    //判定用
+    public KO_PlayerAsiotoListEnum nowKO_PlayerAsiotoListEnum;
+
+    #endregion
+
+
+    public void KO_Asioto()
+    {
+        //■enumで再生するリスト変更
+        if (nowKO_PlayerAsiotoListEnum == KO_PlayerAsiotoListEnum.無音_mute)
+        {
+            //muteは何もしない
+        }
+        else if (nowKO_PlayerAsiotoListEnum == KO_PlayerAsiotoListEnum.歩く_KO_PlayerAsioto_DefList)
+        {
+            if (KO_AsiotoTimeCountFloat < KO_AsiotoTimeCountMaxFloat)
+            { KO_AsiotoTimeCountFloat += 1 * Time.deltaTime; }
+            else
+            {
+                KO_AsiotoTimeCountFloat = 0;
+                SEPlay(UISEObj, KO_PlayerAsioto_DefList[UnityEngine.Random.Range(0, KO_PlayerAsioto_DefList.Count)], 0.3f);
+            }
+        }
+        else if (nowKO_PlayerAsiotoListEnum == KO_PlayerAsiotoListEnum.泳ぐ_KO_PlayerAsioto_SwimList)
+        {
+            if (KO_AsiotoTimeCountFloat < KO_AsiotoTimeCountMaxFloat)
+            { KO_AsiotoTimeCountFloat += 1 * Time.deltaTime; }
+            else
+            {
+                KO_AsiotoTimeCountFloat = 0;
+                SEPlay(UISEObj, KO_PlayerAsioto_SwimList[UnityEngine.Random.Range(0, KO_PlayerAsioto_SwimList.Count)], 0.3f);
+            }
+
+        }
+    }
+
+    #endregion
 
 
     //新移動ポイント出現拡縮演出メソッド
@@ -17488,7 +17874,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //■怪獣バトルPrefabなければ生成
         if (GameObject.Find("EV_C_KaijuBattle") == null)
         {
-            EV_C_KaijuBattle = Instantiate(Resources.Load("EventSystem/KaijuBattle/Prefab/EV_C_KaijuBattle") as GameObject);
+            EV_C_KaijuBattle = Instantiate(ResourceFiles.EV_C_KaijuBattle);
             EV_C_KaijuBattle.transform.SetParent(EventObjectsTrs, false);
         }
         //編集用にすでに配置してある場合
@@ -19437,12 +19823,10 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     //このコリダーRayが当たっている間のみ、メニュー内のマウスコリダー判定を取る（UIのマスクだけでは画面外も判定とってしまうので）
     [HideInInspector]
     public GameObject
-        MouseOnMenuColliderObj,
-        MouseOutMenuColliderObj;
+        MouseOnMenuColliderObj;
     [HideInInspector]
     public BoxCollider
-        MouseOnMenuCollider,
-        MouseOutMenuCollider;
+        MouseOnMenuCollider;
 
     //フローチャートのみこのコリダーRayも当たっている間のみ（欄外コマの判定を取らないよう）
     [HideInInspector]
@@ -19510,7 +19894,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //MenuFolderのPrefabなければ生成
         if (CameraAnchorTrs.Find("MenuFolder") == null)
         {
-            MenuFolder = Instantiate(Resources.Load("EventSystem/Menu/Prefab/MenuFolder") as GameObject
+            MenuFolder = Instantiate(ResourceFiles.MenuFolder
                 , CameraAnchorTrs, false);//Unity2018バグでInstantiateから直接ペアレントしないとColliderRayがEnableONOFFするまで動かなかった
         }
         //編集用にすでに配置してある場合
@@ -19525,7 +19909,6 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //■一層目
         MouseOnMenuColliderObj = MenuFolder.transform.Find("MouseOnMenuCollider").gameObject;
-        MouseOutMenuColliderObj = MenuFolder.transform.Find("MouseOutMenuCollider").gameObject;
         TabBarWindowCanvasObj = MenuFolder.transform.Find("TabBarWindowCanvas").gameObject;
         MainMenuWindowCanvasObj = MenuFolder.transform.Find("MainMenuWindowCanvas").gameObject;
         GraphicWindowCanvasObj = MenuFolder.transform.Find("GraphicWindowCanvas").gameObject;
@@ -19537,8 +19920,6 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //メニューウインドウ内にマウスカーソルRayが来ているか判定用コリダー取得 （Rayはメニューウインドウそのもの範囲用 と ボタンやスライダー用に2本飛ばす）
         MouseOnMenuCollider = MouseOnMenuColliderObj.GetComponent<BoxCollider>();
-        //メニュー外にマウス出たらPCマウス表示する用
-        MouseOutMenuCollider = MouseOutMenuColliderObj.GetComponent<BoxCollider>();
 
         #region 二層目以降（タブバー　操作ウィンドウ）
         GameObject
@@ -19596,7 +19977,6 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //メニューの範囲内だけRay飛ばす判定用のRayのRaycastHit（ヒット判定しか取らず取得したデータ自体は使わない。のでダミーとしている）
         RaycastHit
             tmpDummyMouseOnMenuColliderRayHit,
-            tmpDummyMouseOutMenuColliderRayHit,
             //フローチャート用のも
             tmpDummyMouseOnFlowChartColliderRayHit;
 
@@ -19608,7 +19988,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             GraphicProtFolder = GraphicWindowCanvasObj.transform.Find("ProtFolder").gameObject;
 
 
-        #region ■トグル 取得と設定反映
+        #region ■トグル 取得とセーブデータ設定反映
         GameObject
             Toggle_JapaneseObj,
             Toggle_EnglishObj;
@@ -19640,6 +20020,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             Toggle_VRUpDownRotateObj = GraphicWindowCanvasObj.transform.Find("Toggle_VRUpDownRotate").gameObject,
             Toggle_VRSmoothRotateObj = GraphicWindowCanvasObj.transform.Find("Toggle_VRSmoothRotate").gameObject,
             //今はメニュー表示しない//Toggle_FreeCameraModeObj = GraphicWindowCanvasObj.transform.Find("Toggle_FreeCameraMode").gameObject,
+            Toggle_PSControllerObj = SousaWindowCanvasObj.transform.Find("Toggle_PSController").gameObject,
             Toggle_FixityOutfitObj = ClothsWindowCanvasObj.transform.Find("Toggle_FixityOutfit").gameObject,
             Toggle_BarefootObj = ClothsWindowCanvasObj.transform.Find("Toggle_Barefoot").gameObject,
             Toggle_TanktopObj = ClothsWindowCanvasObj.transform.Find("Toggle_Tanktop").gameObject,
@@ -19671,15 +20052,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         if (DB.isUserInfoVisMakotoHeightUnlock == false && DB.isDebugMode == false)
         { Toggle_NowPlayerSintyouObj.SetActive(false); }
 
-        //■Cloths
-        TogglleChange(Toggle_FixityOutfitObj, DB.isUserFixityOutfit);
-        TogglleChange(Toggle_BarefootObj, DB.isUserClothsBarefoot);
-        TogglleChange(Toggle_TanktopObj, DB.isUserClothsTankTop);
-        TogglleChange(Toggle_BikiniObj, DB.isUserClothsBikini);
+        ////■Cloths 210711廃止
+        //TogglleChange(Toggle_FixityOutfitObj, DB.isUserFixityOutfit);
+        //TogglleChange(Toggle_BarefootObj, DB.isUserClothsBarefoot);
+        //TogglleChange(Toggle_TanktopObj, DB.isUserClothsTankTop);
+        //TogglleChange(Toggle_BikiniObj, DB.isUserClothsBikini);
 
-        //ビキニがON時はBarefootトグルObjオフ
-        if (DB.isUserClothsBikini) { Toggle_BarefootObj.SetActive(false); }
-
+        ////ビキニがON時はBarefootトグルObjオフ
+        //if (DB.isUserClothsBikini) { Toggle_BarefootObj.SetActive(false); }
 
         //VRRotate関係 まずActiveオフ
         Toggle_VRUpDownRotateObj.SetActive(false);
@@ -19723,6 +20103,15 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
 
 
+        //PSコントローラーFixがONかOFFか
+        if (DB.isUserPSControllerFix)
+        {
+            TogglleChange(Toggle_PSControllerObj, true);
+        }
+        else
+        {
+            TogglleChange(Toggle_PSControllerObj, false);
+        }
 
         #endregion
 
@@ -20032,6 +20421,16 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     //問題ないため（転送やシュリがあってもなくても（ダミーであっても）BADのダミーは作っていないので）
                     //本体をContentにペアレント
                     NewKoma.transform.SetParent(FlowChartContentObj.transform.Find(tmpFolderName), false);
+
+                    //そのフォルダーにDummyKomaがあったら、ペアレント最下段に（転送都市ルートで分岐する場合、"分岐する先"のフォルダ名統一することで合わせるのでそれを参照し、シュリルートから離すためにダミーは最下段に置く）
+                    if (FlowChartContentObj.transform.Find(tmpFolderName).Find("DummyKoma") == true)
+                    {
+                        FlowChartContentObj.transform.Find(tmpFolderName).Find("DummyKoma").SetAsLastSibling();
+                    }
+
+                    //そのコマは最上段に（恐らく左にある方がバッドっぽいので）
+                    NewKoma.transform.SetAsFirstSibling();
+
                 }
                 //おまけだったら（既存（タイトルなど）の左に置くために フォルダ内で 0おまけ 1既存 2ダミー の順にする）
                 else if (tmpKomaData.flowChartLine == flowChartLine.おまけ)
@@ -20209,12 +20608,49 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //身長テキスト
         //言語名（メニューの）
-        Toggle_NowPlayerSintyouObj.transform.Find("Text").GetComponent<TextMeshProUGUI>().text
+            Toggle_NowPlayerSintyouObj.transform.Find("Text").GetComponent<TextMeshProUGUI>().text
             = nowPlayerSintyouFloat.ToString("f1") + " cm";
 
 
+
+        #region 身長オフセット設定（リアルタイム表示の「InfoVisSystemIEnum」からコピーして編集）（本当は共有して同じところから読み取りたいけど）
+
+        bool isOffsetObj = true;
+        var tmpSintyouFlt = nowPlayerSintyouFloat;
+
+        //オフセット設定がオンなら、
+        if (isMakotoSizeOffset)
+        {
+            //オフセットObjがnullなら
+            if (MakotoSizeOffsetObj == null)
+            {
+                //表示を「？？？」にするためFalse
+                isOffsetObj = false;
+            }
+            else
+            {
+                //オフセットObjのScale値を割り算(相対的に大きくしたものを指定してその分割り算)
+                tmpSintyouFlt /= MakotoSizeOffsetObj.transform.localScale.y;
+            }
+        }
+
+        //■■代入
+        Toggle_NowPlayerSintyouObj.transform.Find("Text").GetComponent<TextMeshProUGUI>().text
+            = tmpSintyouFlt.ToString("f1") + " cm";
+
+        //オフセットObjがないなら「？？？」に
+        if (isOffsetObj == false)
+        {
+            Toggle_NowPlayerSintyouObj.transform.Find("Text").GetComponent<TextMeshProUGUI>().text
+                = "？？？";
+        }
+
+
+        #endregion
+
+
         //メニューウインドウの位置を見てる方向に
-        GameObject defMenuObj = Resources.Load("EventSystem/Menu/Prefab/MenuFolder") as GameObject;
+        GameObject defMenuObj = ResourceFiles.MenuFolder;
         MenuFolder.transform.SetParent(VRCameraTrs);
         MenuFolder.transform.localPosition = defMenuObj.transform.localPosition;
         MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
@@ -20256,120 +20692,172 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         #endregion
 
+        #region ゆろーどさん着替えメニューPrefab設置
+        //Prefab設置
+        Gobj_ydloadMenu = Instantiate(ResourceFiles.yd_loadClothsWindowCanvas
+            , MenuFolder.transform, false);
+        //設置したPrefabの名前変更
+        Gobj_ydloadMenu.name = "yd_loadClothsWindowCanvas";
+
+        //ゆろーどさんのスクリプトファイルのメソッドで初期化など
+        MenuStart_ydload();
+
+        //最初はメインが表示されるのでオフ
+        Gobj_ydloadMenu.SetActive(false);
+
         #endregion
+
+        #endregion
+
+        //ゆろーどさんメニューを使用するかどうか
+        bool ydloadMenu = true;
 
         #region ループ
         while (isMenuSystem)
         {
+
             #region ■メニュー挙動（マウスカーソルシステム動いてること前提の色々）
 
             //マウス、ユーザーゲームポーズじゃない状態前提
             if (isMouseCursorSystem)
             {
-                //メニュー範囲外コリダー内かつ
-                if (MouseOutMenuCollider.Raycast(mouseRay, out tmpDummyMouseOutMenuColliderRayHit, Mathf.Infinity))
+                //「マウス効く範囲コリダー」に当たってる場合のみ動作
+                if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
                 {
-                    //「マウス効く範囲コリダー」に当たってる場合のみ動作
-                    if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
+                    #region カーソル消してたらつけ
+                    if (MouseCursorImage.enabled == false)
                     {
-                        #region カーソル消してたらつけ
-                        if (MouseCursorImage.enabled == false)
+                        MouseCursorImage.enabled = true;
+                        Cursor.visible = false;//PCは消し
+                    }
+                    #endregion
+
+                    //マウスRayがコリダーに当たっていること前提
+                    if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
+                    {
+                        #region ■Y■ゆろーどさん用ループ処理部分
+
+                        #region ※Clothsのサンプル
+                        //決定（マウス左）押したときに
+                        if (isKetteiDown == true)
                         {
-                            MouseCursorImage.enabled = true;
-                            Cursor.visible = false;//PCは消し
+                            RayhitCheck();
                         }
                         #endregion
 
-                        //マウスRayがコリダーに当たっていること前提
-                        if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
-                        {
-                            //Debug.DrawRay(mouseRay.origin, mouseRay.direction * 100, Color.red);
-                            Debug.DrawLine(mouseRay.origin, mouseOnMenuRayHit.point, Color.red);
+                        #endregion
 
-                            #region 各ボタンに当たっている時
-                            if (mouseOnMenuRayHit.collider.tag == "MenuButton")
+                        //Scene上でRay描画して発射されているか確認
+                        Debug.DrawLine(mouseRay.origin, mouseOnMenuRayHit.point, Color.red);
+
+                        #region 各ボタンに当たっている時
+                        if (mouseOnMenuRayHit.collider.tag == "MenuButton")
+                        {
+                            //決定押したときに
+                            if (isKetteiDown == true)
                             {
-                                //決定押したときに
-                                if (isKetteiDown == true)
+                                #region タブメニューボタン
+                                if ("TabButton_Main" == mouseOnMenuRayHit.collider.gameObject.name)
                                 {
-                                    #region タブメニューボタン
-                                    if ("TabButton_Main" == mouseOnMenuRayHit.collider.gameObject.name)
+                                    #region メニュー■ グラフィック□ フローチャート□ 操作□ 着替え□
+                                    //ウィンドウ自体のOnOff（タブボタンではない）
+                                    MainMenuWindowCanvasObj.SetActive(true);
+                                    GraphicWindowCanvasObj.SetActive(false);
+                                    FlowChartWindowCanvasObj.SetActive(false);
+                                    SousaWindowCanvasObj.SetActive(false);
+                                    ClothsWindowCanvasObj.SetActive(false); Gobj_ydloadMenu.SetActive(false);
+
+                                    //タブボタンのカラー
+                                    tabButton_MainImg.color =
+                                        tabOnColor;
+                                    tabButton_GraphicImg.color =
+                                    tabButton_FlowChartImg.color =
+                                    tabButton_SousaImg.color =
+                                    tabButton_ClothsImg.color =
+                                        tabOffColor;
+                                    #endregion
+                                }
+                                else if ("TabButton_Graphic" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    #region メニュー□ グラフィック■ フローチャート□ 操作□ 着替え□
+                                    MainMenuWindowCanvasObj.SetActive(false);
+                                    GraphicWindowCanvasObj.SetActive(true);
+                                    FlowChartWindowCanvasObj.SetActive(false);
+                                    SousaWindowCanvasObj.SetActive(false);
+                                    ClothsWindowCanvasObj.SetActive(false); Gobj_ydloadMenu.SetActive(false);
+
+                                    tabButton_MainImg.color =
+                                        tabOffColor;
+                                    tabButton_GraphicImg.color =
+                                        tabOnColor;
+                                    tabButton_FlowChartImg.color =
+                                    tabButton_SousaImg.color =
+                                    tabButton_ClothsImg.color =
+                                        tabOffColor;
+                                    #endregion
+                                }
+                                else if ("TabButton_FlowChart" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    #region メニュー□ グラフィック□ フローチャート■ 操作□ 着替え□
+                                    MainMenuWindowCanvasObj.SetActive(false);
+                                    GraphicWindowCanvasObj.SetActive(false);
+                                    FlowChartWindowCanvasObj.SetActive(true);
+                                    SousaWindowCanvasObj.SetActive(false);
+                                    ClothsWindowCanvasObj.SetActive(false); Gobj_ydloadMenu.SetActive(false);
+
+                                    tabButton_MainImg.color =
+                                    tabButton_GraphicImg.color =
+                                    tabOffColor;
+                                    tabButton_FlowChartImg.color = tabOnColor;
+                                    tabButton_SousaImg.color =
+                                    tabButton_ClothsImg.color =
+                                        tabOffColor;
+                                    #endregion
+                                }
+                                else if ("TabButton_Sousa" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    #region メニュー□ グラフィック□ フローチャート□ 操作■ 着替え□
+                                    MainMenuWindowCanvasObj.SetActive(false);
+                                    GraphicWindowCanvasObj.SetActive(false);
+                                    FlowChartWindowCanvasObj.SetActive(false);
+                                    SousaWindowCanvasObj.SetActive(true);
+                                    ClothsWindowCanvasObj.SetActive(false); Gobj_ydloadMenu.SetActive(false);
+
+                                    tabButton_MainImg.color =
+                                    tabButton_GraphicImg.color =
+                                    tabButton_FlowChartImg.color =
+                                        tabOffColor;
+                                    tabButton_SousaImg.color =
+                                        tabOnColor;
+                                    tabButton_ClothsImg.color =
+                                        tabOffColor;
+                                    #endregion
+                                }
+                                else if ("TabButton_Cloths" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    if (ydloadMenu)//ゆろーどさんメニューを使用する場合
                                     {
-                                        #region メニュー■ グラフィック□ フローチャート□ 操作□ 着替え□
+                                        #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え□ 新着替え■
                                         //ウィンドウ自体のOnOff（タブボタンではない）
-                                        MainMenuWindowCanvasObj.SetActive(true);
+                                        MainMenuWindowCanvasObj.SetActive(false);
                                         GraphicWindowCanvasObj.SetActive(false);
                                         FlowChartWindowCanvasObj.SetActive(false);
                                         SousaWindowCanvasObj.SetActive(false);
                                         ClothsWindowCanvasObj.SetActive(false);
+                                        Gobj_ydloadMenu.SetActive(true);
 
                                         //タブボタンのカラー
                                         tabButton_MainImg.color =
-                                            tabOnColor;
                                         tabButton_GraphicImg.color =
                                         tabButton_FlowChartImg.color =
                                         tabButton_SousaImg.color =
+                                        //tabButton_ClothsImg.color =
+                                            tabOffColor;
                                         tabButton_ClothsImg.color =
-                                            tabOffColor;
-                                        #endregion
-                                    }
-                                    else if ("TabButton_Graphic" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        #region メニュー□ グラフィック■ フローチャート□ 操作□ 着替え□
-                                        MainMenuWindowCanvasObj.SetActive(false);
-                                        GraphicWindowCanvasObj.SetActive(true);
-                                        FlowChartWindowCanvasObj.SetActive(false);
-                                        SousaWindowCanvasObj.SetActive(false);
-                                        ClothsWindowCanvasObj.SetActive(false);
-
-                                        tabButton_MainImg.color =
-                                            tabOffColor;
-                                        tabButton_GraphicImg.color =
                                             tabOnColor;
-                                        tabButton_FlowChartImg.color =
-                                        tabButton_SousaImg.color =
-                                        tabButton_ClothsImg.color =
-                                            tabOffColor;
                                         #endregion
                                     }
-                                    else if ("TabButton_FlowChart" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        #region メニュー□ グラフィック□ フローチャート■ 操作□ 着替え□
-                                        MainMenuWindowCanvasObj.SetActive(false);
-                                        GraphicWindowCanvasObj.SetActive(false);
-                                        FlowChartWindowCanvasObj.SetActive(true);
-                                        SousaWindowCanvasObj.SetActive(false);
-                                        ClothsWindowCanvasObj.SetActive(false);
-
-                                        tabButton_MainImg.color =
-                                        tabButton_GraphicImg.color =
-                                        tabOffColor;
-                                        tabButton_FlowChartImg.color = tabOnColor;
-                                        tabButton_SousaImg.color =
-                                        tabButton_ClothsImg.color =
-                                            tabOffColor;
-                                        #endregion
-                                    }
-                                    else if ("TabButton_Sousa" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        #region メニュー□ グラフィック□ フローチャート□ 操作■ 着替え□
-                                        MainMenuWindowCanvasObj.SetActive(false);
-                                        GraphicWindowCanvasObj.SetActive(false);
-                                        FlowChartWindowCanvasObj.SetActive(false);
-                                        SousaWindowCanvasObj.SetActive(true);
-                                        ClothsWindowCanvasObj.SetActive(false);
-
-                                        tabButton_MainImg.color =
-                                        tabButton_GraphicImg.color =
-                                        tabButton_FlowChartImg.color =
-                                            tabOffColor;
-                                        tabButton_SousaImg.color =
-                                            tabOnColor;
-                                        tabButton_ClothsImg.color =
-                                            tabOffColor;
-                                        #endregion
-                                    }
-                                    else if ("TabButton_Cloths" == mouseOnMenuRayHit.collider.gameObject.name)
+                                    else //使用しない旧状態
                                     {
                                         #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え■
                                         MainMenuWindowCanvasObj.SetActive(false);
@@ -20387,9 +20875,572 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                                             tabOnColor;
                                         #endregion
                                     }
+                                }
+                                #endregion
+                                else if ("Button_CameraReset" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    CameraReset(null, null, true);//VRポジションリセット
+
+                                    //■メニューウインドウの位置を見てる方向に
+                                    MenuFolder.transform.SetParent(VRCameraTrs);
+                                    MenuFolder.transform.localPosition = defMenuObj.transform.localPosition;
+                                    MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
+                                    yield return null;
+                                    MenuFolder.transform.SetParent(CameraAnchorTrs);
+                                    SEPlay(UISEObj, "UI_pin");
+                                }
+                                else if ("Button_Save&Exit" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    SEPlay(UISEObj, "UI_p");
+                                    StartCoroutine(SaveUserData());
+
+                                    #region ゲーム終了確認ウインドウ（フローチャートのを流用）
+
+                                    #region ウインドウ出現演出
+                                    //シーン移動イメージとテキストの親非表示
+                                    GameObject tmpRootObj =
+                                        FlowChartMoveWindowCanvasObj.transform.Find("ConfirmImgaeText").gameObject;
+                                    tmpRootObj.SetActive(false);
+
+                                    Vector3
+                                        tmpDefScl = FlowChartMoveWindowCanvasObj.transform.localScale;
+                                    FlowChartMoveWindowCanvasObj.transform.localScale = Vector3.zero;
+
+                                    yield return null;
+
+                                    FlowChartMoveWindowCanvasObj.SetActive(true);
+
+                                    FlowChartMoveWindowCanvasObj.transform.DOScale(tmpDefScl, 0.1f)
+                                        //.SetEase(Ease.OutBack)
+                                        .SetUpdate(true);
+
+                                    //EXTRA非表示
+                                    FlowChartMoveWindowCanvasObj.transform.Find("Button_MoveEXTRA").gameObject.SetActive(false);
+
                                     #endregion
-                                    else if ("Button_CameraReset" == mouseOnMenuRayHit.collider.gameObject.name)
+                                    yield return null;
+
+                                    //ゲーム終了説明文表示
+                                    FlowChartMoveWindowCanvasObj.transform.Find("GameExitText").gameObject.SetActive(true);
+
+                                    while (isMenuSystem)//Menu終了したら強制終了
                                     {
+                                        #region 確認ウィンドウ専用でレイ処理（メニューのとほぼ同じ）
+                                        //動いてること前提
+                                        if (isMouseCursorSystem)
+                                        {
+                                            //「マウス効く範囲コリダー」に当たってる場合のみ動作
+                                            if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
+                                            {
+                                                #region カーソル消してたらつけ
+                                                if (MouseCursorImage.enabled == false)
+                                                {
+                                                    MouseCursorImage.enabled = true;
+                                                    Cursor.visible = false;//PCは消し
+                                                }
+                                                #endregion
+                                                //マウスRayがコリダーに当たっていること前提
+                                                if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
+                                                {
+                                                    //決定押したときに
+                                                    if (isKetteiDown == true)
+                                                    {
+                                                        //OKなら
+                                                        if ("Button_MoveOK" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        {
+                                                            //セーブしてゲーム終了
+                                                            SEPlay(UISEObj, "UI_fuwa-", 0.4f);
+                                                            isFlowChartEventMove = true;//閉じSEなし
+                                                            isMenuSystem = false;
+#if UNITY_EDITOR
+                                                            EditorApplication.isPlaying = false;
+#elif UNITY_STANDALONE
+      Application.Quit();
+#endif
+                                                            break;
+                                                        }
+                                                        //キャンセルなら
+                                                        else if ("Button_MoveCancel" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        {
+                                                            //確認ウィンドウ消して抜け
+                                                            SEPlay(UISEObj, "UI_pata");
+                                                            FlowChartMoveWindowCanvasObj.SetActive(false);
+                                                            break;
+                                                        }
+                                                        //ウィンドウ内のなにもないところなら
+                                                        else if ("MoveWindowCollider" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        { }//なにもしないけど、一応命令保持
+                                                           //ウィンドウ外なら
+                                                        else
+                                                        {
+                                                            //キャンセルと同じ扱い
+                                                            SEPlay(UISEObj, "UI_pata");
+                                                            FlowChartMoveWindowCanvasObj.SetActive(false);
+                                                            break;
+                                                        }
+                                                    }
+                                                    //Bボタンを押したら
+                                                    else if (isBackDown == true)
+                                                    {
+                                                        //キャンセル扱い
+                                                        SEPlay(UISEObj, "UI_pata");
+                                                        FlowChartMoveWindowCanvasObj.SetActive(false);
+                                                        break;
+                                                    }
+
+                                                }
+                                            }
+                                            else //「マウス効く範囲コリダー」外
+                                            {
+                                                #region PCマウスかつPCプレイならゲームカーソル消し
+                                                if (isMouseStickControll == false)
+                                                {
+                                                    if (XRSettings.enabled == false)
+                                                    {
+                                                        if (MouseCursorImage.enabled)
+                                                        {
+                                                            MouseCursorImage.enabled = false;
+                                                            Cursor.visible = true;//PCはつけ
+                                                        }
+                                                    }
+                                                }
+                                                #endregion
+                                            }
+                                        }
+                                        #endregion
+                                        yield return null;
+                                    }
+                                    //ゲーム終了説明文非表示
+                                    FlowChartMoveWindowCanvasObj.transform.Find("GameExitText").gameObject.SetActive(false);
+
+                                    #endregion
+                                }
+                                else if ("Button_GraphicDefault" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    #region 各Graphic設定をデフォルトの値に戻して反映処理
+                                    DB.isUserAntialiasing =
+                                    DB.isUserAmbientOcclusion =
+                                    DB.isUserBloom = true;
+                                    //Dof 強制オフでなければ
+                                    if (isForceDoF == false) { DB.isUserDepthOfFieldV1 = false; }
+                                    //Fov
+                                    DB.isUserFog = false;
+
+                                    PPv2FPSLayerComponent.antialiasingMode =
+                                    PPv2TPSLayerComponent.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
+                                    nowPPv2AmbientOcclusion.active =
+                                    nowPPv2Bloom.active = true;
+                                    //Dof 強制オフでなければ
+                                    if (isForceDoF == false) { postPB.profile.depthOfField.enabled = false; }
+                                    //Fov
+                                    PPv2FPSLayerComponent.fog.enabled =
+                                    PPv2TPSLayerComponent.fog.enabled = false;
+                                    RenderSettings.fog = false;
+
+                                    TogglleChange(Toggle_AntialiasingObj, true);
+                                    TogglleChange(Toggle_AmbientOcclusionObj, true);
+                                    TogglleChange(Toggle_BloomObj, true);
+
+                                    //Dof 強制オフでなければ
+                                    if (isForceDoF == false) { TogglleChange(Toggle_DepthOfFieldObj, false); }
+                                    //Fov
+                                    TogglleChange(Toggle_FogObj, false);
+
+
+                                    //■スライダーValueと本値
+                                    //Dof 強制オフでなければ
+                                    if (isForceDoF == false)
+                                    {
+                                        TogglleChange(Toggle_DepthOfFieldObj, false);
+
+                                        Slider_DepthOfFieldSlider.value = DB.defaultDepthOfFieldV1x50Float - DB.adjustDepthOfFieldV1x50MinFloat;
+                                        nowPPv1DepthOfFieldSetting.focusDistance
+                                            = DB.userDepthOfFieldV1Float
+                                            = DB.defaultDepthOfFieldV1x50Float;
+                                        postPB.profile.depthOfField.settings = nowPPv1DepthOfFieldSetting;
+                                    }
+
+                                    //FoV
+                                    Slider_FieldOfViewSlider.value = DB.defaultFieldOfViewFloat - DB.adjustFieldOfViewMinFloat;
+                                    VRCamera.fieldOfView
+                                        = DB.userFieldOfViewFloat
+                                        = DB.defaultFieldOfViewFloat;
+
+                                    #endregion
+                                    SEPlay(UISEObj, "UI_pin");
+                                }
+                                else if ("Button_DebugInfoOutput" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    SEPlay("UI_pin");
+                                    #region 情報出力処理
+                                    string tmpStr = "スペック\n";
+                                    tmpStr += string.Format("OS: {0}", SystemInfo.operatingSystem);
+                                    tmpStr += "\n";
+                                    tmpStr += string.Format("CPU: {0} / {1}cores", SystemInfo.processorType, SystemInfo.processorCount);
+                                    tmpStr += "\n";
+                                    tmpStr += string.Format("GPU: {0} / {1}MB API: {2}", SystemInfo.graphicsDeviceName, SystemInfo.graphicsMemorySize, SystemInfo.graphicsDeviceType);
+                                    tmpStr += "\n";
+
+                                    const uint mega = 1024 * 1024;
+                                    tmpStr += string.Format("Memory: {0:####.0} / {1}.0MB GCCount: {2}", Profiler.usedHeapSizeLong / (float)mega, SystemInfo.systemMemorySize, System.GC.CollectionCount(0));
+                                    tmpStr += "\n";
+
+                                    //tmpStr += string.Format("Performance: {0:#0.#}fps", m_fps);
+                                    //tmpStr += "\n";
+
+                                    Resolution reso = Screen.currentResolution;
+                                    tmpStr += string.Format("Resolution: {0} x {1} RefreshRate: {2}Hz", reso.width, reso.height, reso.refreshRate);
+                                    tmpStr += "\n";
+
+                                    //コントローラー
+                                    tmpStr += "\nコントローラー\n";
+                                    for (int i = 0; i < Input.GetJoystickNames().Length; i++)
+                                    {
+                                        tmpStr += Input.GetJoystickNames()[i] + "\n";
+                                    }
+
+                                    //VR情報　一部
+                                    tmpStr += "\n\nVR接続 " + XRSettings.enabled;
+                                    tmpStr += "\nXRDevice.model " + XRDevice.model;
+                                    tmpStr += "\nXRSettings.loadedDeviceName " + XRSettings.loadedDeviceName;
+                                    tmpStr += "\nXRSettings.eyeTextureDesc " + XRSettings.eyeTextureDesc;
+                                    tmpStr += "\nXRSettings.eyeTextureHeight " + XRSettings.eyeTextureHeight;
+                                    tmpStr += "\nXRSettings.eyeTextureResolutionScale " + XRSettings.eyeTextureResolutionScale;
+                                    tmpStr += "\nXRSettings.eyeTextureWidth " + XRSettings.eyeTextureWidth;
+                                    tmpStr += "\nXRSettings.gameViewRenderMode " + XRSettings.gameViewRenderMode;
+                                    tmpStr += "\nXRSettings.isDeviceActive " + XRSettings.isDeviceActive;
+                                    tmpStr += "\nXRSettings.showDeviceView " + XRSettings.showDeviceView;
+                                    for (int i = 0; i < XRSettings.supportedDevices.Length; i++)
+                                    { tmpStr += "\nXRSettings.supportedDevices " + "i " + XRSettings.supportedDevices[i]; }
+
+
+                                    #region ファイル名用に時間取得
+                                    var tmpTimeStr = System.DateTime.Now.Year.ToString("D4");
+                                    tmpTimeStr += System.DateTime.Now.Month.ToString("D2");
+                                    tmpTimeStr += System.DateTime.Now.Day.ToString("D2");
+                                    tmpTimeStr += System.DateTime.Now.Hour.ToString("D2");
+                                    tmpTimeStr += System.DateTime.Now.Minute.ToString("D2");
+                                    tmpTimeStr += System.DateTime.Now.Second.ToString("D2");
+                                    #endregion
+
+                                    //ファイルに書き出し
+                                    using (StreamWriter
+                                        writer = new StreamWriter(Application.streamingAssetsPath + "/DebugInfo" + tmpTimeStr + ".json"
+                                        , false
+                                        , Encoding.GetEncoding("utf-8")))
+                                    {
+                                        writer.WriteLine(tmpStr);
+                                    }
+
+
+                                    Debug.Log(tmpStr);
+                                    #endregion
+                                    SubTitleVis(true
+                                        , "<size=30>ResizeMe_Data/StreamingAssets/DebugInfo_.json</size>\n<size=40>デバッグ情報テキストを出力しました。</size>"
+                                        , 0, true, 0);
+                                    mouseOnMenuRayHit.collider.gameObject.SetActive(false);
+                                }
+                                else if ("Button_MoveSetumei" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    SEPlay(UISEObj, "UI_pin");
+                                    SousaWindowCanvasObj.SetActive(false);
+                                    #region 操作説明 移動ポイント説明表示
+                                    GameObject SousaSetumeiKOWindowCanvas;
+                                    if (DB.isEnglish)
+                                    {
+                                        SousaSetumeiKOWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiKOEngWindowCanvas") as GameObject
+                                            , VRCameraTrs, false);
+                                    }
+                                    else
+                                    {
+                                        SousaSetumeiKOWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiKOWindowCanvas") as GameObject
+                                            , VRCameraTrs, false);
+                                    }
+
+                                    //FadeBlack(0.5f, 0.5f);
+
+                                    yield return null;//キーDown解除待ち
+
+                                    SousaSetumeiKOWindowCanvas.transform.SetParent(MenuFolder.transform);
+
+                                    while (
+                                        isKetteiDown == false
+                                        && isMenuPauseDown == false
+                                        )
+                                    {
+                                        yield return null;
+                                    }
+
+                                    //FadeBlack(0, 0.5f);
+                                    Destroy(SousaSetumeiKOWindowCanvas);
+                                    #endregion
+                                    SousaWindowCanvasObj.SetActive(true);
+                                    SEPlay(UISEObj, "UI_pata");
+                                }
+                                else if ("Button_ClimbSetumei" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    SEPlay(UISEObj, "UI_pin");
+                                    SousaWindowCanvasObj.SetActive(false);
+                                    #region 操作説明 登り操作説明表示
+                                    GameObject SousaSetumeiANWindowCanvas;
+                                    if (DB.isEnglish)
+                                    {
+                                        SousaSetumeiANWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiANEngWindowCanvas") as GameObject
+                                            , VRCameraTrs, false);
+                                    }
+                                    else
+                                    {
+                                        SousaSetumeiANWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiANWindowCanvas") as GameObject
+                                            , VRCameraTrs, false);
+                                    }
+
+                                    //FadeBlack(0.5f, 0.5f);
+
+                                    yield return null;//キーUp待ち
+
+                                    SousaSetumeiANWindowCanvas.transform.SetParent(MenuFolder.transform);
+
+                                    while (
+                                        isKetteiDown == false
+                                        && isMenuPauseDown == false
+                                        )
+                                    {
+                                        yield return null;
+                                    }
+
+                                    //FadeBlack(0, 0.5f);
+                                    Destroy(SousaSetumeiANWindowCanvas);
+                                    #endregion
+                                    SousaWindowCanvasObj.SetActive(true);
+                                    SEPlay(UISEObj, "UI_pata");
+                                }
+                                else if ("Button_TansakuSetumei" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    SEPlay(UISEObj, "UI_pin");
+                                    SousaWindowCanvasObj.SetActive(false);
+                                    #region 操作説明 探索操作説明表示
+                                    GameObject SousaSetumeiTansakuWindowCanvas;
+                                    if (DB.isEnglish)
+                                    {
+                                        SousaSetumeiTansakuWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTansakuEngWindowCanvas") as GameObject
+                                            , VRCameraTrs, false);
+                                    }
+                                    else
+                                    {
+                                        SousaSetumeiTansakuWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTansakuWindowCanvas") as GameObject
+                                            , VRCameraTrs, false);
+                                    }
+
+                                    //FadeBlack(0.5f, 0.5f);
+
+                                    yield return null;//キーUp待ち
+
+                                    SousaSetumeiTansakuWindowCanvas.transform.SetParent(MenuFolder.transform);
+
+                                    while (
+                                        isKetteiDown == false
+                                        && isMenuPauseDown == false
+                                        )
+                                    {
+                                        yield return null;
+                                    }
+
+                                    //FadeBlack(0, 0.5f);
+                                    Destroy(SousaSetumeiTansakuWindowCanvas);
+                                    #endregion
+                                    SousaWindowCanvasObj.SetActive(true);
+                                    SEPlay(UISEObj, "UI_pata");
+                                }
+                                else if ("Button_InitialSettingOK" == mouseOnMenuRayHit.collider.gameObject.name)
+                                {
+                                    //閉じ
+                                    isMouseCursorSystem =
+                                    isMenuSystem = false;
+
+                                    //初期設定完了
+                                    DB.isUserInitialSetting = true;
+                                    SEPlay(UISEObj, "ui_scifi_hightech_confirm");
+                                }
+                            }
+                        }
+                        #endregion
+
+                        #region 各トグルに当たっている時
+                        else if (mouseOnMenuRayHit.collider.tag == "MenuToggle")
+                        {
+                            //決定押したときに
+                            if (isKetteiDown == true)
+                            {
+                                GameObject
+                                    itToggleObj = mouseOnMenuRayHit.collider.gameObject;
+
+                                #region ■それぞれif処理
+
+                                #region 言語設定トグル
+                                if (Toggle_EnglishObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isEnglish)
+                                    {
+                                        //なにもしない
+                                    }
+                                    else
+                                    {
+                                        DB.isEnglish = true;
+                                        TogglleChange(itToggleObj, true);
+                                        TogglleChange(Toggle_JapaneseObj, false);
+                                        LanguageChangeRealTIme();
+                                    }
+                                }
+                                else if (Toggle_JapaneseObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isEnglish)
+                                    {
+                                        DB.isEnglish = false;
+                                        TogglleChange(itToggleObj, true);
+                                        TogglleChange(Toggle_EnglishObj, false);
+                                        LanguageChangeRealTIme();
+                                    }
+                                    else
+                                    {
+                                        //なにもしない
+                                    }
+                                }
+                                #endregion
+
+                                #region 身長
+                                else if (Toggle_NowPlayerSintyouObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    //bool変更 //処理自体はInfoVisSystemIEnum()
+                                    if (DB.isUserFixityMakotoHeightVis)
+                                    {
+                                        DB.isUserFixityMakotoHeightVis =
+                                        isInfoMakotoHeightVis = false;//同時に表示も
+
+                                        TogglleChange(Toggle_NowPlayerSintyouObj, DB.isUserFixityMakotoHeightVis);
+                                    }
+                                    else
+                                    {
+                                        DB.isUserFixityMakotoHeightVis =
+                                        isInfoMakotoHeightVis = true;//同時に表示も
+
+                                        TogglleChange(itToggleObj, DB.isUserFixityMakotoHeightVis);
+                                    }
+                                }
+                                #endregion
+
+                                #region ■Graphicのトグル
+                                else if (Toggle_AntialiasingObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isUserAntialiasing)
+                                    {
+                                        DB.isUserAntialiasing = false;
+                                        PPv2FPSLayerComponent.antialiasingMode =
+                                        PPv2TPSLayerComponent.antialiasingMode = PostProcessLayer.Antialiasing.None;
+                                        TogglleChange(itToggleObj, false);
+                                    }
+                                    else
+                                    {
+                                        DB.isUserAntialiasing = true;
+                                        PPv2FPSLayerComponent.antialiasingMode =
+                                        PPv2TPSLayerComponent.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
+                                        TogglleChange(itToggleObj, true);
+                                    }
+                                }
+                                else if (Toggle_AmbientOcclusionObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isUserAmbientOcclusion)
+                                    {
+                                        DB.isUserAmbientOcclusion = false;
+                                        nowPPv2AmbientOcclusion.active = false;
+                                        TogglleChange(itToggleObj, false);
+                                    }
+                                    else
+                                    {
+                                        DB.isUserAmbientOcclusion = true;
+                                        nowPPv2AmbientOcclusion.active = true;
+                                        TogglleChange(itToggleObj, true);
+                                    }
+                                }
+                                else if (Toggle_BloomObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isUserBloom)
+                                    {
+                                        DB.isUserBloom = false;
+                                        nowPPv2Bloom.active = false;
+                                        TogglleChange(itToggleObj, false);
+                                    }
+                                    else
+                                    {
+                                        DB.isUserBloom = true;
+                                        nowPPv2Bloom.active = true;
+                                        TogglleChange(itToggleObj, true);
+                                    }
+                                }
+                                else if (Toggle_DepthOfFieldObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isUserDepthOfFieldV1)
+                                    {
+                                        DB.isUserDepthOfFieldV1 = false;
+                                        postPB.profile.depthOfField.enabled = false;
+                                        TogglleChange(itToggleObj, false);
+                                    }
+                                    else
+                                    {
+                                        DB.isUserDepthOfFieldV1 = true;
+                                        postPB.profile.depthOfField.enabled = true;
+                                        TogglleChange(itToggleObj, true);
+                                    }
+                                }
+                                else if (Toggle_FogObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    //ためしにこれだけDBのBoolを利用した設定
+                                    if (DB.isUserFog)
+                                    { DB.isUserFog = false; }
+                                    else
+                                    { DB.isUserFog = true; }
+
+                                    PPv2FPSLayerComponent.fog.enabled =
+                                    PPv2TPSLayerComponent.fog.enabled = DB.isUserFog;
+                                    RenderSettings.fog = DB.isUserFog;
+                                    TogglleChange(itToggleObj, DB.isUserFog);
+
+                                }//FieldOfViewはゲージのみ
+
+                                else if (Toggle_TPSModeObj == mouseOnMenuRayHit.collider.gameObject)
+                                {
+                                    if (DB.isUserTPSMode)
+                                    {
+                                        DB.isUserTPSMode = false;
+                                        isTPSCameraSystem = false;
+                                        TogglleChange(itToggleObj, false);
+
+                                        #region VRRotate関係オフ
+                                        DB.isUserVRUpDownRotate = DB.isUserVRSmoothRotate = false;
+                                        Toggle_VRUpDownRotateObj.SetActive(false);
+                                        Toggle_VRSmoothRotateObj.SetActive(false);
+                                        TogglleChange(Toggle_VRUpDownRotateObj, false);
+                                        TogglleChange(Toggle_VRSmoothRotateObj, false);
+                                        #endregion
+                                    }
+                                    else
+                                    {
+                                        DB.isUserTPSMode = true;
+                                        //TPSCameraシステム起動
+                                        StartCoroutine(TPSCameraSystemIEnum());
+                                        TogglleChange(itToggleObj, true);
+
+                                        //VR時ならRotate関係 Activeオン
+                                        if (XRSettings.enabled)
+                                        {
+                                            Toggle_VRUpDownRotateObj.SetActive(true);
+                                            Toggle_VRSmoothRotateObj.SetActive(true);
+                                        }
+
+                                        GraphicWindowCanvasObj.SetActive(false);
+                                        #region TPS説明表示
+                                        SEPlay("UI_pin");
+
+                                        #region カメラトラッキングリセット
                                         CameraReset(null, null, true);//VRポジションリセット
 
                                         //■メニューウインドウの位置を見てる方向に
@@ -20398,322 +21449,23 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                                         MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
                                         yield return null;
                                         MenuFolder.transform.SetParent(CameraAnchorTrs);
-                                        SEPlay(UISEObj, "UI_pin");
-                                    }
-                                    else if ("Button_Save&Exit" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        SEPlay(UISEObj, "UI_p");
-                                        StartCoroutine(SaveUserData());
-
-                                        #region ゲーム終了確認ウインドウ（フローチャートのを流用）
-
-                                        #region ウインドウ出現演出
-                                        //シーン移動イメージとテキストの親非表示
-                                        GameObject tmpRootObj =
-                                            FlowChartMoveWindowCanvasObj.transform.Find("ConfirmImgaeText").gameObject;
-                                        tmpRootObj.SetActive(false);
-
-                                        Vector3
-                                            tmpDefScl = FlowChartMoveWindowCanvasObj.transform.localScale;
-                                        FlowChartMoveWindowCanvasObj.transform.localScale = Vector3.zero;
-
-                                        yield return null;
-
-                                        FlowChartMoveWindowCanvasObj.SetActive(true);
-
-                                        FlowChartMoveWindowCanvasObj.transform.DOScale(tmpDefScl, 0.1f)
-                                            //.SetEase(Ease.OutBack)
-                                            .SetUpdate(true);
-
-                                        //EXTRA非表示
-                                        FlowChartMoveWindowCanvasObj.transform.Find("Button_MoveEXTRA").gameObject.SetActive(false);
-
-                                        #endregion
-                                        yield return null;
-
-                                        //ゲーム終了説明文表示
-                                        FlowChartMoveWindowCanvasObj.transform.Find("GameExitText").gameObject.SetActive(true);
-
-                                        while (isMenuSystem)//Menu終了したら強制終了
-                                        {
-                                            #region 確認ウィンドウ専用でレイ処理（メニューのとほぼ同じ）
-                                            //動いてること前提
-                                            if (isMouseCursorSystem)
-                                            {
-                                                //メニュー範囲外コリダー内かつ
-                                                if (MouseOutMenuCollider.Raycast(mouseRay, out tmpDummyMouseOutMenuColliderRayHit, Mathf.Infinity))
-                                                {
-                                                    //「マウス効く範囲コリダー」に当たってる場合のみ動作
-                                                    if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
-                                                    {
-                                                        #region カーソル消してたらつけ
-                                                        if (MouseCursorImage.enabled == false)
-                                                        {
-                                                            MouseCursorImage.enabled = true;
-                                                            Cursor.visible = false;//PCは消し
-                                                        }
-                                                        #endregion
-                                                        //マウスRayがコリダーに当たっていること前提
-                                                        if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
-                                                        {
-                                                            //決定押したときに
-                                                            if (isKetteiDown == true)
-                                                            {
-                                                                //OKなら
-                                                                if ("Button_MoveOK" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                {
-                                                                    //セーブしてゲーム終了
-                                                                    SEPlay(UISEObj, "UI_fuwa-", 0.4f);
-                                                                    isFlowChartEventMove = true;//閉じSEなし
-                                                                    isMenuSystem = false;
-#if UNITY_EDITOR
-                                                                    EditorApplication.isPlaying = false;
-#elif UNITY_STANDALONE
-      Application.Quit();
-#endif
-                                                                    break;
-                                                                }
-                                                                //キャンセルなら
-                                                                else if ("Button_MoveCancel" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                {
-                                                                    //確認ウィンドウ消して抜け
-                                                                    SEPlay(UISEObj, "UI_pata");
-                                                                    FlowChartMoveWindowCanvasObj.SetActive(false);
-                                                                    break;
-                                                                }
-                                                                //ウィンドウ内のなにもないところなら
-                                                                else if ("MoveWindowCollider" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                { }//なにもしないけど、一応命令保持
-                                                                   //ウィンドウ外なら
-                                                                else
-                                                                {
-                                                                    //キャンセルと同じ扱い
-                                                                    SEPlay(UISEObj, "UI_pata");
-                                                                    FlowChartMoveWindowCanvasObj.SetActive(false);
-                                                                    break;
-                                                                }
-                                                            }
-                                                            //Bボタンを押したら
-                                                            else if (isBackDown == true)
-                                                            {
-                                                                //キャンセル扱い
-                                                                SEPlay(UISEObj, "UI_pata");
-                                                                FlowChartMoveWindowCanvasObj.SetActive(false);
-                                                                break;
-                                                            }
-
-                                                        }
-                                                    }
-                                                    else //「マウス効く範囲コリダー」外
-                                                    {
-                                                        #region PCマウスかつPCプレイならゲームカーソル消し
-                                                        if (isMouseStickControll == false)
-                                                        {
-                                                            if (XRSettings.enabled == false)
-                                                            {
-                                                                if (MouseCursorImage.enabled)
-                                                                {
-                                                                    MouseCursorImage.enabled = false;
-                                                                    Cursor.visible = true;//PCはつけ
-                                                                }
-                                                            }
-                                                        }
-                                                        #endregion
-                                                    }
-                                                }
-                                            }
-                                            #endregion
-                                            yield return null;
-                                        }
-                                        //ゲーム終了説明文非表示
-                                        FlowChartMoveWindowCanvasObj.transform.Find("GameExitText").gameObject.SetActive(false);
-
-                                        #endregion
-                                    }
-                                    else if ("Button_GraphicDefault" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        #region 各Graphic設定をデフォルトの値に戻して反映処理
-                                        DB.isUserAntialiasing =
-                                        DB.isUserAmbientOcclusion =
-                                        DB.isUserBloom = true;
-                                        //Dof 強制オフでなければ
-                                        if (isForceDoF == false) { DB.isUserDepthOfFieldV1 = false; }
-                                        //Fov
-                                        DB.isUserFog = false;
-
-                                        PPv2FPSLayerComponent.antialiasingMode =
-                                        PPv2TPSLayerComponent.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
-                                        nowPPv2AmbientOcclusion.active =
-                                        nowPPv2Bloom.active = true;
-                                        //Dof 強制オフでなければ
-                                        if (isForceDoF == false) { postPB.profile.depthOfField.enabled = false; }
-                                        //Fov
-                                        PPv2FPSLayerComponent.fog.enabled =
-                                        PPv2TPSLayerComponent.fog.enabled = false;
-                                        RenderSettings.fog = false;
-
-                                        TogglleChange(Toggle_AntialiasingObj, true);
-                                        TogglleChange(Toggle_AmbientOcclusionObj, true);
-                                        TogglleChange(Toggle_BloomObj, true);
-
-                                        //Dof 強制オフでなければ
-                                        if (isForceDoF == false) { TogglleChange(Toggle_DepthOfFieldObj, false); }
-                                        //Fov
-                                        TogglleChange(Toggle_FogObj, false);
-
-
-                                        //■スライダーValueと本値
-                                        //Dof 強制オフでなければ
-                                        if (isForceDoF == false)
-                                        {
-                                            TogglleChange(Toggle_DepthOfFieldObj, false);
-
-                                            Slider_DepthOfFieldSlider.value = DB.defaultDepthOfFieldV1x50Float - DB.adjustDepthOfFieldV1x50MinFloat;
-                                            nowPPv1DepthOfFieldSetting.focusDistance
-                                                = DB.userDepthOfFieldV1Float
-                                                = DB.defaultDepthOfFieldV1x50Float;
-                                            postPB.profile.depthOfField.settings = nowPPv1DepthOfFieldSetting;
-                                        }
-
-                                        //FoV
-                                        Slider_FieldOfViewSlider.value = DB.defaultFieldOfViewFloat - DB.adjustFieldOfViewMinFloat;
-                                        VRCamera.fieldOfView
-                                            = DB.userFieldOfViewFloat
-                                            = DB.defaultFieldOfViewFloat;
-
-                                        #endregion
-                                        SEPlay(UISEObj, "UI_pin");
-                                    }
-                                    else if ("Button_DebugInfoOutput" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        SEPlay("UI_pin");
-                                        #region 情報出力処理
-                                        string tmpStr = "スペック\n";
-                                        tmpStr += string.Format("OS: {0}", SystemInfo.operatingSystem);
-                                        tmpStr += "\n";
-                                        tmpStr += string.Format("CPU: {0} / {1}cores", SystemInfo.processorType, SystemInfo.processorCount);
-                                        tmpStr += "\n";
-                                        tmpStr += string.Format("GPU: {0} / {1}MB API: {2}", SystemInfo.graphicsDeviceName, SystemInfo.graphicsMemorySize, SystemInfo.graphicsDeviceType);
-                                        tmpStr += "\n";
-
-                                        const uint mega = 1024 * 1024;
-                                        tmpStr += string.Format("Memory: {0:####.0} / {1}.0MB GCCount: {2}", Profiler.usedHeapSizeLong / (float)mega, SystemInfo.systemMemorySize, System.GC.CollectionCount(0));
-                                        tmpStr += "\n";
-
-                                        //tmpStr += string.Format("Performance: {0:#0.#}fps", m_fps);
-                                        //tmpStr += "\n";
-
-                                        Resolution reso = Screen.currentResolution;
-                                        tmpStr += string.Format("Resolution: {0} x {1} RefreshRate: {2}Hz", reso.width, reso.height, reso.refreshRate);
-                                        tmpStr += "\n";
-
-                                        //コントローラー
-                                        tmpStr += "\nコントローラー\n";
-                                        for (int i = 0; i < Input.GetJoystickNames().Length; i++)
-                                        {
-                                            tmpStr += Input.GetJoystickNames()[i] + "\n";
-                                        }
-
-                                        //VR情報　一部
-                                        tmpStr += "\n\nVR接続 " + XRSettings.enabled;
-                                        tmpStr += "\nXRDevice.model " + XRDevice.model;
-                                        tmpStr += "\nXRSettings.loadedDeviceName " + XRSettings.loadedDeviceName;
-                                        tmpStr += "\nXRSettings.eyeTextureDesc " + XRSettings.eyeTextureDesc;
-                                        tmpStr += "\nXRSettings.eyeTextureHeight " + XRSettings.eyeTextureHeight;
-                                        tmpStr += "\nXRSettings.eyeTextureResolutionScale " + XRSettings.eyeTextureResolutionScale;
-                                        tmpStr += "\nXRSettings.eyeTextureWidth " + XRSettings.eyeTextureWidth;
-                                        tmpStr += "\nXRSettings.gameViewRenderMode " + XRSettings.gameViewRenderMode;
-                                        tmpStr += "\nXRSettings.isDeviceActive " + XRSettings.isDeviceActive;
-                                        tmpStr += "\nXRSettings.showDeviceView " + XRSettings.showDeviceView;
-                                        for (int i = 0; i < XRSettings.supportedDevices.Length; i++)
-                                        { tmpStr += "\nXRSettings.supportedDevices " + "i " + XRSettings.supportedDevices[i]; }
-
-
-                                        #region ファイル名用に時間取得
-                                        var tmpTimeStr = System.DateTime.Now.Year.ToString("D4");
-                                        tmpTimeStr += System.DateTime.Now.Month.ToString("D2");
-                                        tmpTimeStr += System.DateTime.Now.Day.ToString("D2");
-                                        tmpTimeStr += System.DateTime.Now.Hour.ToString("D2");
-                                        tmpTimeStr += System.DateTime.Now.Minute.ToString("D2");
-                                        tmpTimeStr += System.DateTime.Now.Second.ToString("D2");
                                         #endregion
 
-                                        //ファイルに書き出し
-                                        using (StreamWriter
-                                            writer = new StreamWriter(Application.streamingAssetsPath + "/DebugInfo" + tmpTimeStr + ".json"
-                                            , false
-                                            , Encoding.GetEncoding("utf-8")))
-                                        {
-                                            writer.WriteLine(tmpStr);
-                                        }
-
-
-                                        Debug.Log(tmpStr);
-                                        #endregion
-                                        SubTitleVis(true
-                                            , "<size=30>ResizeMe_Data/StreamingAssets/DebugInfo_.json</size>\n<size=40>デバッグ情報テキストを出力しました。</size>"
-                                            , 0, true, 0);
-                                        mouseOnMenuRayHit.collider.gameObject.SetActive(false);
-                                    }
-                                    else if ("Button_MoveSetumei" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        SEPlay(UISEObj, "UI_pin");
-                                        SousaWindowCanvasObj.SetActive(false);
-                                        #region 操作説明 移動ポイント説明表示
-                                        GameObject SousaSetumeiKOWindowCanvas;
+                                        GameObject SousaSetumeiTPSWindowCanvas;
                                         if (DB.isEnglish)
                                         {
-                                            SousaSetumeiKOWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiKOEngWindowCanvas") as GameObject
+                                            SousaSetumeiTPSWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTPSEngWindowCanvas") as GameObject
                                                 , VRCameraTrs, false);
                                         }
                                         else
                                         {
-                                            SousaSetumeiKOWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiKOWindowCanvas") as GameObject
+                                            SousaSetumeiTPSWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTPSWindowCanvas") as GameObject
                                                 , VRCameraTrs, false);
                                         }
-
-                                        //FadeBlack(0.5f, 0.5f);
-
-                                        yield return null;//キーDown解除待ち
-
-                                        SousaSetumeiKOWindowCanvas.transform.SetParent(MenuFolder.transform);
-
-                                        while (
-                                            isKetteiDown == false
-                                            && isMenuPauseDown == false
-                                            )
-                                        {
-                                            yield return null;
-                                        }
-
-                                        //FadeBlack(0, 0.5f);
-                                        Destroy(SousaSetumeiKOWindowCanvas);
-                                        #endregion
-                                        SousaWindowCanvasObj.SetActive(true);
-                                        SEPlay(UISEObj, "UI_pata");
-                                    }
-                                    else if ("Button_ClimbSetumei" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        SEPlay(UISEObj, "UI_pin");
-                                        SousaWindowCanvasObj.SetActive(false);
-                                        #region 操作説明 登り操作説明表示
-                                        GameObject SousaSetumeiANWindowCanvas;
-                                        if (DB.isEnglish)
-                                        {
-                                            SousaSetumeiANWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiANEngWindowCanvas") as GameObject
-                                                , VRCameraTrs, false);
-                                        }
-                                        else
-                                        {
-                                            SousaSetumeiANWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiANWindowCanvas") as GameObject
-                                                , VRCameraTrs, false);
-                                        }
-
-                                        //FadeBlack(0.5f, 0.5f);
 
                                         yield return null;//キーUp待ち
 
-                                        SousaSetumeiANWindowCanvas.transform.SetParent(MenuFolder.transform);
+                                        SousaSetumeiTPSWindowCanvas.transform.SetParent(MenuFolder.transform);
 
                                         while (
                                             isKetteiDown == false
@@ -20723,996 +21475,748 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                                             yield return null;
                                         }
 
-                                        //FadeBlack(0, 0.5f);
-                                        Destroy(SousaSetumeiANWindowCanvas);
+                                        Destroy(SousaSetumeiTPSWindowCanvas);
                                         #endregion
-                                        SousaWindowCanvasObj.SetActive(true);
-                                        SEPlay(UISEObj, "UI_pata");
-                                    }
-                                    else if ("Button_TansakuSetumei" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        SEPlay(UISEObj, "UI_pin");
-                                        SousaWindowCanvasObj.SetActive(false);
-                                        #region 操作説明 探索操作説明表示
-                                        GameObject SousaSetumeiTansakuWindowCanvas;
-                                        if (DB.isEnglish)
-                                        {
-                                            SousaSetumeiTansakuWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTansakuEngWindowCanvas") as GameObject
-                                                , VRCameraTrs, false);
-                                        }
-                                        else
-                                        {
-                                            SousaSetumeiTansakuWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTansakuWindowCanvas") as GameObject
-                                                , VRCameraTrs, false);
-                                        }
-
-                                        //FadeBlack(0.5f, 0.5f);
-
-                                        yield return null;//キーUp待ち
-
-                                        SousaSetumeiTansakuWindowCanvas.transform.SetParent(MenuFolder.transform);
-
-                                        while (
-                                            isKetteiDown == false
-                                            && isMenuPauseDown == false
-                                            )
-                                        {
-                                            yield return null;
-                                        }
-
-                                        //FadeBlack(0, 0.5f);
-                                        Destroy(SousaSetumeiTansakuWindowCanvas);
-                                        #endregion
-                                        SousaWindowCanvasObj.SetActive(true);
-                                        SEPlay(UISEObj, "UI_pata");
-                                    }
-                                    else if ("Button_InitialSettingOK" == mouseOnMenuRayHit.collider.gameObject.name)
-                                    {
-                                        //閉じ
-                                        isMouseCursorSystem =
-                                        isMenuSystem = false;
-
-                                        //初期設定完了
-                                        DB.isUserInitialSetting = true;
+                                        GraphicWindowCanvasObj.SetActive(true);
                                         SEPlay(UISEObj, "ui_scifi_hightech_confirm");
                                     }
                                 }
-                            }
-                            #endregion
-
-                            #region 各トグルに当たっている時
-                            else if (mouseOnMenuRayHit.collider.tag == "MenuToggle")
-                            {
-                                //決定押したときに
-                                if (isKetteiDown == true)
+                                else if (Toggle_VRUpDownRotateObj == mouseOnMenuRayHit.collider.gameObject)
                                 {
-                                    GameObject
-                                        itToggleObj = mouseOnMenuRayHit.collider.gameObject;
-
-                                    #region それぞれif処理
-
-                                    #region 言語設定トグル
-                                    if (Toggle_EnglishObj == mouseOnMenuRayHit.collider.gameObject)
+                                    if (DB.isUserVRUpDownRotate)
                                     {
-                                        if (DB.isEnglish)
-                                        {
-                                            //なにもしない
-                                        }
-                                        else
-                                        {
-                                            DB.isEnglish = true;
-                                            TogglleChange(itToggleObj, true);
-                                            TogglleChange(Toggle_JapaneseObj, false);
-                                            LanguageChangeRealTIme();
-                                        }
+                                        DB.isUserVRUpDownRotate = false;
+                                        TogglleChange(itToggleObj, false);
                                     }
-                                    else if (Toggle_JapaneseObj == mouseOnMenuRayHit.collider.gameObject)
+                                    else
                                     {
-                                        if (DB.isEnglish)
-                                        {
-                                            DB.isEnglish = false;
-                                            TogglleChange(itToggleObj, true);
-                                            TogglleChange(Toggle_EnglishObj, false);
-                                            LanguageChangeRealTIme();
-                                        }
-                                        else
-                                        {
-                                            //なにもしない
-                                        }
-                                    }
-                                    #endregion
-
-                                    #region 身長
-                                    else if (Toggle_NowPlayerSintyouObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        //bool変更 //処理自体はInfoVisSystemIEnum()
-                                        if (DB.isUserFixityMakotoHeightVis)
-                                        {
-                                            DB.isUserFixityMakotoHeightVis =
-                                            isInfoMakotoHeightVis = false;//同時に表示も
-
-                                            TogglleChange(Toggle_NowPlayerSintyouObj, DB.isUserFixityMakotoHeightVis);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserFixityMakotoHeightVis =
-                                            isInfoMakotoHeightVis = true;//同時に表示も
-
-                                            TogglleChange(itToggleObj, DB.isUserFixityMakotoHeightVis);
-                                        }
-                                    }
-                                    #endregion
-
-                                    #region ■Graphicのトグル
-                                    else if (Toggle_AntialiasingObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserAntialiasing)
-                                        {
-                                            DB.isUserAntialiasing = false;
-                                            PPv2FPSLayerComponent.antialiasingMode =
-                                            PPv2TPSLayerComponent.antialiasingMode = PostProcessLayer.Antialiasing.None;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserAntialiasing = true;
-                                            PPv2FPSLayerComponent.antialiasingMode =
-                                            PPv2TPSLayerComponent.antialiasingMode = PostProcessLayer.Antialiasing.FastApproximateAntialiasing;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    else if (Toggle_AmbientOcclusionObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserAmbientOcclusion)
-                                        {
-                                            DB.isUserAmbientOcclusion = false;
-                                            nowPPv2AmbientOcclusion.active = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserAmbientOcclusion = true;
-                                            nowPPv2AmbientOcclusion.active = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    else if (Toggle_BloomObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserBloom)
-                                        {
-                                            DB.isUserBloom = false;
-                                            nowPPv2Bloom.active = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserBloom = true;
-                                            nowPPv2Bloom.active = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    else if (Toggle_DepthOfFieldObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserDepthOfFieldV1)
-                                        {
-                                            DB.isUserDepthOfFieldV1 = false;
-                                            postPB.profile.depthOfField.enabled = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserDepthOfFieldV1 = true;
-                                            postPB.profile.depthOfField.enabled = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    else if (Toggle_FogObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        //ためしにこれだけDBのBoolを利用した設定
-                                        if (DB.isUserFog)
-                                        { DB.isUserFog = false; }
-                                        else
-                                        { DB.isUserFog = true; }
-
-                                        PPv2FPSLayerComponent.fog.enabled =
-                                        PPv2TPSLayerComponent.fog.enabled = DB.isUserFog;
-                                        RenderSettings.fog = DB.isUserFog;
-                                        TogglleChange(itToggleObj, DB.isUserFog);
-
-                                    }//FieldOfViewはゲージのみ
-
-                                    else if (Toggle_TPSModeObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserTPSMode)
-                                        {
-                                            DB.isUserTPSMode = false;
-                                            isTPSCameraSystem = false;
-                                            TogglleChange(itToggleObj, false);
-
-                                            #region VRRotate関係オフ
-                                            DB.isUserVRUpDownRotate = DB.isUserVRSmoothRotate = false;
-                                            Toggle_VRUpDownRotateObj.SetActive(false);
-                                            Toggle_VRSmoothRotateObj.SetActive(false);
-                                            TogglleChange(Toggle_VRUpDownRotateObj, false);
-                                            TogglleChange(Toggle_VRSmoothRotateObj, false);
-                                            #endregion
-                                        }
-                                        else
-                                        {
-                                            DB.isUserTPSMode = true;
-                                            //TPSCameraシステム起動
-                                            StartCoroutine(TPSCameraSystemIEnum());
-                                            TogglleChange(itToggleObj, true);
-
-                                            //VR時ならRotate関係 Activeオン
-                                            if (XRSettings.enabled)
-                                            {
-                                                Toggle_VRUpDownRotateObj.SetActive(true);
-                                                Toggle_VRSmoothRotateObj.SetActive(true);
-                                            }
-
-                                            GraphicWindowCanvasObj.SetActive(false);
-                                            #region TPS説明表示
-                                            SEPlay("UI_pin");
-
-                                            #region カメラトラッキングリセット
-                                            CameraReset(null, null, true);//VRポジションリセット
-
-                                            //■メニューウインドウの位置を見てる方向に
-                                            MenuFolder.transform.SetParent(VRCameraTrs);
-                                            MenuFolder.transform.localPosition = defMenuObj.transform.localPosition;
-                                            MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
-                                            yield return null;
-                                            MenuFolder.transform.SetParent(CameraAnchorTrs);
-                                            #endregion
-
-                                            GameObject SousaSetumeiTPSWindowCanvas;
-                                            if (DB.isEnglish)
-                                            {
-                                                SousaSetumeiTPSWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTPSEngWindowCanvas") as GameObject
-                                                    , VRCameraTrs, false);
-                                            }
-                                            else
-                                            {
-                                                SousaSetumeiTPSWindowCanvas = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiTPSWindowCanvas") as GameObject
-                                                    , VRCameraTrs, false);
-                                            }
-
-                                            yield return null;//キーUp待ち
-
-                                            SousaSetumeiTPSWindowCanvas.transform.SetParent(MenuFolder.transform);
-
-                                            while (
-                                                isKetteiDown == false
-                                                && isMenuPauseDown == false
-                                                )
-                                            {
-                                                yield return null;
-                                            }
-
-                                            Destroy(SousaSetumeiTPSWindowCanvas);
-                                            #endregion
-                                            GraphicWindowCanvasObj.SetActive(true);
-                                            SEPlay(UISEObj, "ui_scifi_hightech_confirm");
-                                        }
-                                    }
-                                    else if (Toggle_VRUpDownRotateObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserVRUpDownRotate)
-                                        {
-                                            DB.isUserVRUpDownRotate = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserVRUpDownRotate = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    else if (Toggle_VRSmoothRotateObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        if (DB.isUserVRSmoothRotate)
-                                        {
-                                            DB.isUserVRSmoothRotate = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserVRSmoothRotate = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    #region //フリーカメラモード//（今はメニューに表示しない）
-                                    //else if (Toggle_FreeCameraModeObj == mouseOnMenuRayHit.collider.gameObject)
-                                    //{
-                                    //    if (DB.isUserFreeCameraMode)
-                                    //    {
-                                    //        DB.isUserFreeCameraMode = false;
-                                    //        //DB.isUserFreeCameraModeは FreeをONOFFできるようにするのみで 実システムのオフはこっち
-                                    //        isFreeCameraModeSystem = false;
-
-                                    //        TogglleChange(itToggleObj, false);
-
-                                    //        //終了
-                                    //    }
-                                    //    else
-                                    //    {
-                                    //        DB.isUserFreeCameraMode = true;
-                                    //        TogglleChange(itToggleObj, true);
-
-                                    //        GraphicWindowCanvasObj.SetActive(false);
-                                    //        #region 説明表示
-                                    //        SEPlay("UI_pin");
-
-                                    //        #region カメラトラッキングリセット
-                                    //        CameraReset(null, null, true);//VRポジションリセット
-
-                                    //        //■メニューウインドウの位置を見てる方向に
-                                    //        MenuFolder.transform.SetParent(VRCameraTrs);
-                                    //        MenuFolder.transform.localPosition = defMenuObj.transform.localPosition;
-                                    //        MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
-                                    //        yield return null;
-                                    //        MenuFolder.transform.SetParent(CameraAnchorTrs);
-                                    //        #endregion
-
-                                    //        GameObject SousaSetumeiFreeCameraWindowCanvas;
-                                    //        if (DB.isEnglish)
-                                    //        {
-                                    //            SousaSetumeiFreeCameraWindowCanvas
-                                    //                = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiFreeCameraEngWindowCanvas") as GameObject
-                                    //                , VRCameraTrs, false);
-                                    //        }
-                                    //        else
-                                    //        {
-                                    //            SousaSetumeiFreeCameraWindowCanvas
-                                    //                = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiFreeCameraWindowCanvas") as GameObject
-                                    //                , VRCameraTrs, false);
-                                    //        }
-
-                                    //        yield return null;//キーUp待ち
-
-                                    //        SousaSetumeiFreeCameraWindowCanvas.transform.SetParent(MenuFolder.transform);
-
-                                    //        while (
-                                    //            isKetteiDown == false
-                                    //            && isMenuPauseDown == false
-                                    //            )
-                                    //        {
-                                    //            yield return null;
-                                    //        }
-
-                                    //        Destroy(SousaSetumeiFreeCameraWindowCanvas);
-                                    //        #endregion
-                                    //        GraphicWindowCanvasObj.SetActive(true);
-                                    //        SEPlay(UISEObj, "ui_scifi_hightech_confirm");
-                                    //    }
-                                    //}
-                                    #endregion
-
-                                    #endregion
-
-                                    #region Cloths
-                                    else if (Toggle_FixityOutfitObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        //bool変更
-                                        if (DB.isUserFixityOutfit)
-                                        {
-                                            DB.isUserFixityOutfit = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserFixityOutfit = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-                                    }
-                                    else if (Toggle_BarefootObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        //bool変更
-                                        if (DB.isUserClothsBarefoot)
-                                        {
-                                            DB.isUserClothsBarefoot = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserClothsBarefoot = true;
-                                            TogglleChange(itToggleObj, true);
-                                        }
-
-                                        //処理自体はメソッドで
-                                        ClothsApply();
-                                    }
-                                    else if (Toggle_TanktopObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        //bool変更
-                                        if (DB.isUserClothsTankTop)
-                                        {
-                                            DB.isUserClothsTankTop = false;
-                                            TogglleChange(itToggleObj, false);
-                                        }
-                                        else
-                                        {
-                                            DB.isUserClothsTankTop = true;
-                                            TogglleChange(itToggleObj, true);
-
-                                            //もしビキニから切り替えだったら
-                                            if (DB.isUserClothsBikini)
-                                            {
-                                                //barefootを表示 トグルオン DBオン
-                                                Toggle_BarefootObj.SetActive(true);
-                                                TogglleChange(Toggle_BarefootObj, true);
-                                                DB.isUserClothsBarefoot = true;
-
-                                                //ビキニ トグルオフ DBオフ
-                                                TogglleChange(Toggle_BikiniObj, false);
-                                                DB.isUserClothsBikini = false;
-                                            }
-
-                                        }
-
-                                        //処理自体はメソッドで
-                                        ClothsApply();
-                                    }
-                                    else if (Toggle_BikiniObj == mouseOnMenuRayHit.collider.gameObject)
-                                    {
-                                        //bool変更
-                                        if (DB.isUserClothsBikini)
-                                        {
-                                            DB.isUserClothsBikini = false;
-                                            TogglleChange(itToggleObj, false);
-
-                                            //barefootを表示 トグルオフ DBオフ
-                                            Toggle_BarefootObj.SetActive(true);
-                                            TogglleChange(Toggle_BarefootObj, false);
-                                            DB.isUserClothsBarefoot = false;
-
-                                            //※結果 制服靴下になる
-                                        }
-                                        else
-                                        {
-                                            DB.isUserClothsBikini = true;
-                                            TogglleChange(itToggleObj, true);
-
-                                            //barefootを非表示 トグルオフ DBオフ
-                                            Toggle_BarefootObj.SetActive(false);
-                                            TogglleChange(Toggle_BarefootObj, false);
-                                            DB.isUserClothsBarefoot = false;
-
-                                            //Tanktopトグルオフ DBオフ
-                                            TogglleChange(Toggle_TanktopObj, false);
-                                            DB.isUserClothsTankTop = false;
-
-                                            //※ 結果ビキニになる
-                                        }
-
-                                        //処理自体はメソッドで
-                                        ClothsApply();
-                                    }
-                                    #endregion
-
-                                    #endregion
-                                }
-                            }
-                            #endregion
-
-                            #region スライダーに当たっている時
-                            else if (mouseOnMenuRayHit.collider.tag == "MenuSlider")
-                            {
-                                //決定押したときに、スライダー値変更（マウス離すまで）
-                                if (isKetteiDown == true)
-                                {
-                                    //■座標からスライダー値入力
-                                    //Width
-                                    float width =
-                                        mouseOnMenuRayHit.collider.transform.GetComponent<RectTransform>().sizeDelta.x;
-                                    //MaxValue
-                                    float maxValue =
-                                        mouseOnMenuRayHit.collider.transform.parent.GetComponent<Slider>().maxValue;
-
-                                    while (isKettei)
-                                    {
-                                        //スライダーのローカルから見たマウス位置
-                                        float sliderMouseLocalX =
-                                            mouseOnMenuRayHit.collider.transform.InverseTransformPoint(MouseCursorObj.transform.position).x;
-
-                                        //当たった位置を、スライダーBackImageのローカルから見てのx位置を、スライダーの値に変換
-                                        //((当たった位置ローカルX / Width) * MaxValue = 位置をValueに変換した値)
-                                        mouseOnMenuRayHit.collider.transform.parent.GetComponent<Slider>().value
-                                            = (sliderMouseLocalX / width) * maxValue;
-                                        //□座標からスライダー値入力ここまで
-
-
-                                        #region それぞれif処理
-                                        //最大値から最小値を引いた数がMaxなので最小値をプラスする（スライダー操作が最小値0でないといけない（Rayで座標から入力しているので））
-                                        if (Slider_DepthOfFieldObj == mouseOnMenuRayHit.collider.transform.parent.gameObject)
-                                        {
-                                            nowPPv1DepthOfFieldSetting.focusDistance =
-                                                DB.userDepthOfFieldV1Float =
-                                                (Slider_DepthOfFieldSlider.value + DB.adjustDepthOfFieldV1x50MinFloat);
-
-                                            //代入
-                                            postPB.profile.depthOfField.settings = nowPPv1DepthOfFieldSetting;
-
-                                            //後にx100でやる場合は大きさかイベントでif取る予定
-
-                                        }
-                                        else if (Slider_FieldOfViewObj == mouseOnMenuRayHit.collider.transform.parent.gameObject)
-                                        {
-                                            VRCamera.fieldOfView =
-                                            TPSCamera.fieldOfView =
-                                            DB.userFieldOfViewFloat =
-                                                (Slider_FieldOfViewSlider.value + DB.adjustFieldOfViewMinFloat);
-                                        }
-                                        #endregion
-
-                                        //音量とマウスレートはスライダーから直接処理されている
-
-                                        yield return null;
-                                    }
-
-                                }
-                            }
-                            #endregion
-
-                            #region フローチャートウィンドウに当たっている時（欄外コマをクリックしないようフローチャートのみ専用範囲コリダー兼）
-                            else if (MouseOnFlowChartCollider.Raycast(mouseRay, out tmpDummyMouseOnFlowChartColliderRayHit, Mathf.Infinity))
-                            {
-                                //コマに当たっている時（↑のフローチャートウィンドウRayではないことに注意）
-                                if (mouseOnMenuRayHit.collider.tag == "FlowChartKoma")
-                                {
-                                    //前回番号と違ったら一回処理
-                                    if (nowMouseOnKomaEventInt != int.Parse(mouseOnMenuRayHit.collider.name.Substring(0, 3)))//intに変換 頭三文字
-                                    {
-                                        //前のアウトライン消してオブジェ更新
-                                        if (nowMouseOnKomaObj != null)
-                                        { nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(false); }
-                                        nowMouseOnKomaObj = mouseOnMenuRayHit.collider.gameObject;
-
-                                        //番号更新（名前がイベントインデックスナンバーなのでintに変換（3桁なので頭三文字）して取得してList参照に使う）
-                                        nowMouseOnKomaEventInt = int.Parse(mouseOnMenuRayHit.collider.name.Substring(0, 3));
-
-                                        #region サムネイルをデータ画面に拡大表示
-                                        //コマデータ変数に。
-                                        var tmpKomaData = flowChartKomaDataObjList[nowMouseOnKomaEventInt].GetComponent<FlowChartKoma>();
-
-                                        //■サムネイルを拡大の方へ更新
-                                        //nullならなにもしない
-                                        if (tmpKomaData.thumbnailImageSprite == null) { }
-                                        //ヒント状態なら（ヒントコマでTrueで、プレイヤー到達状態Falseなら）
-                                        else if (tmpKomaData.isHintVisFlag && tmpKomaData.isPlayerVisFlag == false)
-                                        {
-                                            //image消して透明
-                                            komaThumbnailZoomImage.sprite = null;
-                                            komaThumbnailZoomImage.color = new Color(0, 0, 0, 1);
-                                        }
-                                        //前と別画像なら更新 
-                                        else if (tmpKomaData.thumbnailImageSprite != komaThumbnailZoomImage.sprite)
-                                        {
-                                            komaThumbnailZoomImage.sprite = tmpKomaData.thumbnailImageSprite;
-                                            komaThumbnailZoomImage.color = new Color(1, 1, 1, 1);//ヒントで消してた時用にカラー更新
-                                        }
-
-                                        //コマタイトルをテキストへ
-                                        if (DB.isEnglish)
-                                        { komaThumbnailTitleText.text = tmpKomaData.eventNameEnglish; }
-                                        else
-                                        { komaThumbnailTitleText.text = tmpKomaData.eventName; }
-                                        //ヒント状態ならヒント
-                                        if (tmpKomaData.isHintVisFlag && tmpKomaData.isPlayerVisFlag == false)
-                                        {
-                                            if (DB.isEnglish)
-                                            { komaThumbnailTitleText.text = tmpKomaData.hintMessageEng; }
-                                            else { komaThumbnailTitleText.text = tmpKomaData.hintMessage; }
-                                        }
-                                        #endregion
-
-                                        #region 選択肢List読み取り データ画面へ生成反映
-
-                                        //■まず前回の選択肢オブジェ削除
-                                        for (int i = 0; i < nowVisRemaineSentakusiObjList.Count; i++)
-                                        { Destroy(nowVisRemaineSentakusiObjList[i]); }
-                                        nowVisRemaineSentakusiObjList.Clear();
-
-
-                                        //タイトルの数だけ処理
-                                        for (int i = 0; i < tmpKomaData.sentakushiTitleList.Count; i++)
-                                        {
-                                            //プロットからクローン生成
-                                            GameObject tmpRemainSentakushiObj = Instantiate(RemainSentkusiObjProt);
-                                            //選択肢タイトル名に
-                                            tmpRemainSentakushiObj.name = tmpKomaData.sentakushiTitleList[i];
-                                            //ペアレント（プロットと同じ場所）
-                                            tmpRemainSentakushiObj.transform.SetParent(RemainSentkusiObjProt.transform.parent, false);
-                                            //Activeに
-                                            tmpRemainSentakushiObj.SetActive(true);
-                                            //後で削除用にリストへ
-                                            nowVisRemaineSentakusiObjList.Add(tmpRemainSentakushiObj);
-
-
-
-                                            //選択肢穴Objプロット取得
-                                            GameObject sentakushiHoleObjProt = tmpRemainSentakushiObj.transform.GetChild(0).gameObject;
-
-                                            //選択肢sを配列に
-                                            string[] tmpSentakushisArray =
-                                                tmpKomaData.sentakushisList[i].Split(new string[] { "_s" }, StringSplitOptions.None);
-
-                                            //配列にしたのを今までどおりの処理
-                                            for (int k = 0; k < tmpSentakushisArray.Length - 1; k++)//Split配列だと最後空白が入るので-1
-                                            {
-                                                //生成
-                                                GameObject tmpHoleObj
-                                                    = Instantiate(sentakushiHoleObjProt
-                                                        , tmpRemainSentakushiObj.transform
-                                                        , false);
-
-                                                //名前つけ
-                                                tmpHoleObj.name = tmpSentakushisArray[k]; //※k = コマデータの中の選択肢sListの中のそれぞれ選択肢を分割したString
-
-                                                //名前に■(選択済みマーク)があれば OnマークTrue
-                                                if (tmpHoleObj.name.IndexOf("■") >= 0)
-                                                { tmpHoleObj.transform.GetChild(2).gameObject.SetActive(true); }
-
-                                                //名前に□(現在選択しているマーク)があれば アウトラインTrue
-                                                if (tmpHoleObj.name.IndexOf("□") == 0)
-                                                { tmpHoleObj.transform.GetChild(0).gameObject.SetActive(true); }
-                                            }
-                                            //プロット表示オフ
-                                            sentakushiHoleObjProt.SetActive(false);
-
-                                        }
-
-
-                                        #endregion
-                                        #region //Old_選択肢Obj読み取り データ画面へ生成反映
-
-                                        ////■まず前回の選択肢オブジェ削除
-                                        //for (int i = 0; i < nowVisRemaineSentakusiObjList.Count; i++)
-                                        //{ Destroy(nowVisRemaineSentakusiObjList[i]); }
-                                        //nowVisRemaineSentakusiObjList.Clear();
-
-
-                                        ////コマデータオブジェから選択肢Obj検索
-                                        //foreach (Transform k in flowChartKomaDataObjList[nowMouseOnKomaEventInt].transform)
-                                        //{
-                                        //    //■選択肢Objだったら
-                                        //    if (k.name.IndexOf("S_") == 0)
-                                        //    {
-                                        //        //プロットからクローン生成
-                                        //        GameObject tmpRemainSentakushiObj = Instantiate(RemainSentkusiObjProt);
-                                        //        //一応選択肢タイトル名に
-                                        //        tmpRemainSentakushiObj.name = k.name;
-                                        //        //ペアレント（プロットと同じ場所）
-                                        //        tmpRemainSentakushiObj.transform.SetParent(RemainSentkusiObjProt.transform.parent, false);
-                                        //        //Activeに
-                                        //        tmpRemainSentakushiObj.SetActive(true);
-                                        //        //後で削除用にリストへ
-                                        //        nowVisRemaineSentakusiObjList.Add(tmpRemainSentakushiObj);
-
-
-                                        //        //選択肢穴Objプロット取得
-                                        //        GameObject sentakushiHoleObjProt = tmpRemainSentakushiObj.transform.GetChild(0).gameObject;
-                                        //        //■選択肢の数だけ穴生成　(※最初forでやったがやはり変になった（全部にActive命令が入ったりした）のでforeach)
-                                        //        foreach (Transform l in k)
-                                        //        {
-                                        //            //生成
-                                        //            GameObject tmpHoleObj
-                                        //                = Instantiate(sentakushiHoleObjProt
-                                        //                    , tmpRemainSentakushiObj.transform
-                                        //                    , false);
-
-                                        //            //名前つけ
-                                        //            tmpHoleObj.name = l.name; //※l = コマデータObjの中の選択肢Objの中のそれぞれ選択肢ObjTrs
-
-                                        //            //名前に■(選択済みマーク)があれば OnマークTrue
-                                        //            if (tmpHoleObj.name.IndexOf("■") >= 0)
-                                        //            { tmpHoleObj.transform.GetChild(2).gameObject.SetActive(true); }
-
-                                        //            //名前に□(現在選択しているマーク)があれば アウトラインTrue
-                                        //            if (tmpHoleObj.name.IndexOf("□") == 0)
-                                        //            { tmpHoleObj.transform.GetChild(0).gameObject.SetActive(true); }
-                                        //        }
-                                        //        //プロット表示オフ
-                                        //        sentakushiHoleObjProt.SetActive(false);
-                                        //    }
-                                        //}
-
-
-
-
-                                        #endregion
-                                        //↑隠し選択肢の処理は保留（□■以外のマークをつけておき、周回boolかintで判定し、表示する予定（選択肢フキダシ自体の表示も同じように））
-
-                                        #region BADエンドデータ読み込み データ画面へ生成反映
-
-                                        //■まず前回のBADオブジェ削除
-                                        for (int i = 0; i < nowVisRemaineBADObjList.Count; i++)
-                                        { Destroy(nowVisRemaineBADObjList[i]); }
-                                        nowVisRemaineBADObjList.Clear();
-
-                                        //BADエンド存在すれば
-                                        if (tmpKomaData.badEndList.Count > 0)
-                                        {
-                                            for (int i = 0; i < tmpKomaData.badEndList.Count; i++)
-                                            {
-                                                //プロットからクローン生成
-                                                GameObject tmpBADObj = Instantiate(RemainBADHoleObjProt);
-                                                //一応BADタイトル名に
-                                                tmpBADObj.name = tmpKomaData.badEndList[i];
-                                                //ペアレント（プロットと同じ場所）
-                                                tmpBADObj.transform.SetParent(RemainBADHoleObjProt.transform.parent, false);
-                                                //Activeに
-                                                tmpBADObj.SetActive(true);
-                                                //後で削除用にリストへ
-                                                nowVisRemaineBADObjList.Add(tmpBADObj);
-
-                                                //名前に■(選択済みマーク)があれば OnマークTrue
-                                                if (tmpBADObj.name.IndexOf("■") >= 0)
-                                                { tmpBADObj.transform.GetChild(2).gameObject.SetActive(true); }
-                                            }
-                                        }
-
-                                        #endregion
-
-
-                                        //アウトライン発光
-                                        nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(true);
-                                    }
-
-                                    //決定でイベント移動確認ウインドウへ
-                                    if (isKetteiDown == true)
-                                    {
-                                        //コマデータ取得
-                                        var tmpKomaData =
-                                            flowChartKomaDataObjList[nowMouseOnKomaEventInt].GetComponent<FlowChartKoma>();
-
-                                        //ヒント状態なら
-                                        if (tmpKomaData.isHintVisFlag && tmpKomaData.isPlayerVisFlag == false)
-                                        { goto 抜け; }
-
-                                        SEPlay(UISEObj, "UI_p");
-                                        #region ウインドウ出現演出
-                                        Vector3
-                                            tmpDefScl = FlowChartMoveWindowCanvasObj.transform.localScale;
-                                        FlowChartMoveWindowCanvasObj.transform.localScale = Vector3.zero;
-
-                                        yield return null;
-
-                                        FlowChartMoveWindowCanvasObj.SetActive(true);
-
-                                        FlowChartMoveWindowCanvasObj.transform.DOScale(tmpDefScl, 0.1f)
-                                            //.SetEase(Ease.OutBack)
-                                            .SetUpdate(true);
-
-                                        #endregion
-                                        yield return null;
-
-                                        #region 確認テキスト イメージ表示
-                                        //イメージとテキストの親表示
-                                        GameObject tmpRootObj =
-                                            FlowChartMoveWindowCanvasObj.transform.Find("ConfirmImgaeText").gameObject;
-                                        tmpRootObj.SetActive(true);
-
-                                        //■サムネイルとコマタイトルを設定
-                                        Image tmpImg =
-                                            tmpRootObj.transform.Find("ThumbnailImage").GetComponent<Image>();
-                                        TextMeshProUGUI tmpKomaTitleText =
-                                            tmpImg.transform.Find("Text").GetComponent<TextMeshProUGUI>();
-
-                                        //Image
-                                        if (tmpKomaData.thumbnailImageSprite == null) { }
-                                        else
-                                        { tmpImg.sprite = tmpKomaData.thumbnailImageSprite; }
-
-                                        //Text
-                                        if (DB.isEnglish)
-                                        { tmpKomaTitleText.text = tmpKomaData.eventNameEnglish; }
-                                        else
-                                        { tmpKomaTitleText.text = tmpKomaData.eventName; }
-
-                                        //EXTRA非表示
-                                        FlowChartMoveWindowCanvasObj.transform.Find("Button_MoveEXTRA").gameObject.SetActive(false);
-                                        //EXTRA
-                                        if (tmpKomaData.isEXTRA)
-                                        { FlowChartMoveWindowCanvasObj.transform.Find("Button_MoveEXTRA").gameObject.SetActive(true); }
-
-                                        #endregion
-
-                                        while (isMenuSystem)//Menu終了したら強制終了
-                                        {
-                                            #region 確認ウィンドウ専用でレイ処理（メニューのとほぼ同じ）
-                                            //動いてること前提
-                                            if (isMouseCursorSystem)
-                                            {
-                                                //メニュー範囲外コリダー内かつ
-                                                if (MouseOutMenuCollider.Raycast(mouseRay, out tmpDummyMouseOutMenuColliderRayHit, Mathf.Infinity))
-                                                {
-                                                    //「マウス効く範囲コリダー」に当たってる場合のみ動作
-                                                    if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
-                                                    {
-                                                        #region カーソル消してたらつけ
-                                                        if (MouseCursorImage.enabled == false)
-                                                        {
-                                                            MouseCursorImage.enabled = true;
-                                                            Cursor.visible = false;//PCは消し
-                                                        }
-                                                        #endregion
-                                                        //マウスRayがコリダーに当たっていること前提
-                                                        if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
-                                                        {
-                                                            //決定押したときに
-                                                            if (isKetteiDown == true)
-                                                            {
-                                                                DB.isEXTRAEnter = false;//事前オフ
-                                                                //OKなら
-                                                                if ("Button_MoveOK" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                {
-                                                                    //メニュー終了してイベント移動
-                                                                    SEPlay(UISEObj, "ui_scifi_hightech_confirm");
-                                                                    SEPlay(UISEObj, "UI_fuwa-", 0.4f);
-
-                                                                    BGMPlay(false, null, 0, 3f, 3f);//BGMフェードアウト
-                                                                    isFlowChartEventMove = true;//閉じSEなし
-                                                                    isMenuSystem = false;//メニュー消し
-                                                                    isMenuLock = true;//メニューロック
-                                                                    isANSystem = false;
-
-                                                                    EventMove(nowMouseOnKomaEventInt, true, true);
-                                                                    break;
-                                                                }
-                                                                //キャンセルなら
-                                                                else if ("Button_MoveCancel" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                {
-                                                                    //確認ウィンドウ消して抜け
-                                                                    SEPlay(UISEObj, "UI_pata");
-                                                                    FlowChartMoveWindowCanvasObj.SetActive(false);
-                                                                    break;
-                                                                }
-                                                                //EXTRAなら
-                                                                else if ("Button_MoveEXTRA" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                {
-                                                                    //メニュー終了してイベント移動
-                                                                    SEPlay(UISEObj, "ui_scifi_hightech_confirm");
-                                                                    SEPlay(UISEObj, "UI_fuwa-", 0.4f);
-
-                                                                    BGMPlay(false, null, 0, 3f, 3f);//BGMフェードアウト
-                                                                    isFlowChartEventMove = true;//閉じSEなし
-                                                                    isMenuSystem = false;//メニュー消し
-                                                                    isMenuLock = true;//メニューロック
-                                                                    isANSystem = false;
-                                                                    DB.isEXTRAEnter = true;
-
-                                                                    EventMove(nowMouseOnKomaEventInt, true, true);
-                                                                    break;
-                                                                }                                                                //ウィンドウ内のなにもないところなら
-                                                                else if ("MoveWindowCollider" == mouseOnMenuRayHit.collider.gameObject.name)
-                                                                { }//なにもしないけど、一応命令保持
-                                                                   //ウィンドウ外なら
-                                                                else
-                                                                {
-                                                                    //キャンセルと同じ扱い
-                                                                    SEPlay(UISEObj, "UI_pata");
-                                                                    FlowChartMoveWindowCanvasObj.SetActive(false);
-                                                                    break;
-                                                                }
-                                                            }
-                                                            //Bボタンを押したら
-                                                            else if (isBackDown == true)
-                                                            {
-                                                                //キャンセル扱い
-                                                                SEPlay(UISEObj, "UI_pata");
-                                                                FlowChartMoveWindowCanvasObj.SetActive(false);
-                                                                break;
-                                                            }
-
-                                                        }
-                                                    }
-                                                    else //「マウス効く範囲コリダー」外
-                                                    {
-                                                        #region PCマウスかつPCプレイならゲームカーソル消し
-                                                        if (isMouseStickControll == false)
-                                                        {
-                                                            if (XRSettings.enabled == false)
-                                                            {
-                                                                if (MouseCursorImage.enabled)
-                                                                {
-                                                                    MouseCursorImage.enabled = false;
-                                                                    Cursor.visible = true;//PCはつけ
-                                                                }
-                                                            }
-                                                        }
-                                                        #endregion
-                                                    }
-                                                }
-                                            }
-                                            #endregion
-                                            yield return null;
-                                        }
-                                    }
-                                    抜け:;
-                                }
-                                //何も指してない（指してるのがコマじゃなかったら）
-                                else
-                                {
-                                    //番号-1じゃなければ一回処理
-                                    if (nowMouseOnKomaEventInt != -1)
-                                    {
-                                        //番号nullの代わりに-1
-                                        nowMouseOnKomaEventInt = -1;
-
-                                        //アウトライン消し コマオブジェ指定null
-                                        if (nowMouseOnKomaObj != null)
-                                        {
-                                            nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(false);
-                                            nowMouseOnKomaObj = null;
-                                        }
+                                        DB.isUserVRUpDownRotate = true;
+                                        TogglleChange(itToggleObj, true);
                                     }
                                 }
-                                #region マウススクロールでContentスクロール
-                                if (mouseWheelFloat != 0f)
+                                else if (Toggle_VRSmoothRotateObj == mouseOnMenuRayHit.collider.gameObject)
                                 {
-                                    flowChartContentRectTrs.anchoredPosition
-                                          -= new Vector2(0, (mouseWheelFloat * 30) * Time.unscaledDeltaTime);
+                                    if (DB.isUserVRSmoothRotate)
+                                    {
+                                        DB.isUserVRSmoothRotate = false;
+                                        TogglleChange(itToggleObj, false);
+                                    }
+                                    else
+                                    {
+                                        DB.isUserVRSmoothRotate = true;
+                                        TogglleChange(itToggleObj, true);
+                                    }
                                 }
+                                #region //フリーカメラモード//（今はメニューに表示しない）
+                                //else if (Toggle_FreeCameraModeObj == mouseOnMenuRayHit.collider.gameObject)
+                                //{
+                                //    if (DB.isUserFreeCameraMode)
+                                //    {
+                                //        DB.isUserFreeCameraMode = false;
+                                //        //DB.isUserFreeCameraModeは FreeをONOFFできるようにするのみで 実システムのオフはこっち
+                                //        isFreeCameraModeSystem = false;
+
+                                //        TogglleChange(itToggleObj, false);
+
+                                //        //終了
+                                //    }
+                                //    else
+                                //    {
+                                //        DB.isUserFreeCameraMode = true;
+                                //        TogglleChange(itToggleObj, true);
+
+                                //        GraphicWindowCanvasObj.SetActive(false);
+                                //        #region 説明表示
+                                //        SEPlay("UI_pin");
+
+                                //        #region カメラトラッキングリセット
+                                //        CameraReset(null, null, true);//VRポジションリセット
+
+                                //        //■メニューウインドウの位置を見てる方向に
+                                //        MenuFolder.transform.SetParent(VRCameraTrs);
+                                //        MenuFolder.transform.localPosition = defMenuObj.transform.localPosition;
+                                //        MenuFolder.transform.localEulerAngles = defMenuObj.transform.localEulerAngles;
+                                //        yield return null;
+                                //        MenuFolder.transform.SetParent(CameraAnchorTrs);
+                                //        #endregion
+
+                                //        GameObject SousaSetumeiFreeCameraWindowCanvas;
+                                //        if (DB.isEnglish)
+                                //        {
+                                //            SousaSetumeiFreeCameraWindowCanvas
+                                //                = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiFreeCameraEngWindowCanvas") as GameObject
+                                //                , VRCameraTrs, false);
+                                //        }
+                                //        else
+                                //        {
+                                //            SousaSetumeiFreeCameraWindowCanvas
+                                //                = Instantiate(Resources.Load("EventSystem/Menu/Prefab/SousaSetumeiFreeCameraWindowCanvas") as GameObject
+                                //                , VRCameraTrs, false);
+                                //        }
+
+                                //        yield return null;//キーUp待ち
+
+                                //        SousaSetumeiFreeCameraWindowCanvas.transform.SetParent(MenuFolder.transform);
+
+                                //        while (
+                                //            isKetteiDown == false
+                                //            && isMenuPauseDown == false
+                                //            )
+                                //        {
+                                //            yield return null;
+                                //        }
+
+                                //        Destroy(SousaSetumeiFreeCameraWindowCanvas);
+                                //        #endregion
+                                //        GraphicWindowCanvasObj.SetActive(true);
+                                //        SEPlay(UISEObj, "ui_scifi_hightech_confirm");
+                                //    }
+                                //}
                                 #endregion
-                                #region 上下入力ボタンダウン化しint1ずつ操作（Contentスクロール）（今は選択上下AXIS兼のため、XBOX時のみに）
-                                if (DB.playerController == DataBridging.PlayerVRController.Xbox)
+
+                                #endregion
+
+                                #region 操作
+                                if (Toggle_PSControllerObj == mouseOnMenuRayHit.collider.gameObject)
                                 {
-                                    if (sentakuAxisY == 1f || sentakuAxisY == 1f)
+                                    if (DB.isUserPSControllerFix)
                                     {
-                                        //Debug.Log("Up Key");
-                                        flowChartContentRectTrs.anchoredPosition -= new Vector2(0,
-                                            1 * Time.unscaledDeltaTime);
+                                        DB.isUserPSControllerFix = false;
+                                        TogglleChange(itToggleObj, false);
+                                        controllerAutoInitializeSystem.ControllerSetting(DB.playerController, true);
                                     }
-                                    if (sentakuAxisY == -1f || sentakuAxisY == -1f)
+                                    else
                                     {
-                                        //Debug.Log("Down Key");
-                                        flowChartContentRectTrs.anchoredPosition += new Vector2(0,
-                                            1 * Time.unscaledDeltaTime);
+                                        DB.isUserPSControllerFix = true;
+                                        TogglleChange(itToggleObj, true);
+                                        controllerAutoInitializeSystem.ControllerSetting(DB.playerController, true);
                                     }
                                 }
 
 
                                 #endregion
-                            }
 
-                            #endregion
-                        }
-                    }
-                    //何も指してない（メニューウインドウ外だったら）
-                    else
-                    {
-                        #region PCマウスかつPCプレイならゲームカーソル消し
-                        if (isMouseStickControll == false)
-                        {
-                            if (XRSettings.enabled == false)
-                            {
-                                if (MouseCursorImage.enabled)
-                                {
-                                    MouseCursorImage.enabled = false;
-                                    Cursor.visible = true;//PCはつけ
-                                }
+                                #region //Cloths 210711廃止
+                                //else if (Toggle_FixityOutfitObj == mouseOnMenuRayHit.collider.gameObject)
+                                //{
+                                //    //bool変更
+                                //    if (DB.isUserFixityOutfit)
+                                //    {
+                                //        DB.isUserFixityOutfit = false;
+                                //        TogglleChange(itToggleObj, false);
+                                //    }
+                                //    else
+                                //    {
+                                //        DB.isUserFixityOutfit = true;
+                                //        TogglleChange(itToggleObj, true);
+                                //    }
+                                //}
+                                //else if (Toggle_BarefootObj == mouseOnMenuRayHit.collider.gameObject)
+                                //{
+                                //    //bool変更
+                                //    if (DB.isUserClothsBarefoot)
+                                //    {
+                                //        DB.isUserClothsBarefoot = false;
+                                //        TogglleChange(itToggleObj, false);
+                                //    }
+                                //    else
+                                //    {
+                                //        DB.isUserClothsBarefoot = true;
+                                //        TogglleChange(itToggleObj, true);
+                                //    }
+
+                                //    //処理自体はメソッドで
+                                //    //ClothsApply();
+                                //    ClothsApply_ydload();
+                                //}
+                                //else if (Toggle_TanktopObj == mouseOnMenuRayHit.collider.gameObject)
+                                //{
+                                //    //bool変更
+                                //    if (DB.isUserClothsTankTop)
+                                //    {
+                                //        DB.isUserClothsTankTop = false;
+                                //        TogglleChange(itToggleObj, false);
+                                //    }
+                                //    else
+                                //    {
+                                //        DB.isUserClothsTankTop = true;
+                                //        TogglleChange(itToggleObj, true);
+
+                                //        //もしビキニから切り替えだったら
+                                //        if (DB.isUserClothsBikini)
+                                //        {
+                                //            //barefootを表示 トグルオン DBオン
+                                //            Toggle_BarefootObj.SetActive(true);
+                                //            TogglleChange(Toggle_BarefootObj, true);
+                                //            DB.isUserClothsBarefoot = true;
+
+                                //            //ビキニ トグルオフ DBオフ
+                                //            TogglleChange(Toggle_BikiniObj, false);
+                                //            DB.isUserClothsBikini = false;
+                                //        }
+
+                                //    }
+
+                                //    //処理自体はメソッドで
+                                //    //ClothsApply();
+                                //    ClothsApply_ydload();
+                                //}
+                                //else if (Toggle_BikiniObj == mouseOnMenuRayHit.collider.gameObject)
+                                //{
+                                //    //bool変更
+                                //    if (DB.isUserClothsBikini)
+                                //    {
+                                //        DB.isUserClothsBikini = false;
+                                //        TogglleChange(itToggleObj, false);
+
+                                //        //barefootを表示 トグルオフ DBオフ
+                                //        Toggle_BarefootObj.SetActive(true);
+                                //        TogglleChange(Toggle_BarefootObj, false);
+                                //        DB.isUserClothsBarefoot = false;
+
+                                //        //※結果 制服靴下になる
+                                //    }
+                                //    else
+                                //    {
+                                //        DB.isUserClothsBikini = true;
+                                //        TogglleChange(itToggleObj, true);
+
+                                //        //barefootを非表示 トグルオフ DBオフ
+                                //        Toggle_BarefootObj.SetActive(false);
+                                //        TogglleChange(Toggle_BarefootObj, false);
+                                //        DB.isUserClothsBarefoot = false;
+
+                                //        //Tanktopトグルオフ DBオフ
+                                //        TogglleChange(Toggle_TanktopObj, false);
+                                //        DB.isUserClothsTankTop = false;
+
+                                //        //※ 結果ビキニになる
+                                //    }
+
+                                //    //処理自体はメソッドで
+                                //    //ClothsApply();
+                                //    ClothsApply_ydload();
+                                //}
+                                #endregion
+
+                                #endregion
                             }
                         }
                         #endregion
 
-                        #region フローチャート ・アウトライン消し
-                        //番号-1じゃなければ一回処理
-                        if (nowMouseOnKomaEventInt != -1)
+                        #region スライダーに当たっている時
+                        else if (mouseOnMenuRayHit.collider.tag == "MenuSlider")
                         {
-                            //番号nullの代わりに-1
-                            nowMouseOnKomaEventInt = -1;
-
-                            //アウトライン消し コマオブジェ指定null
-                            if (nowMouseOnKomaObj != null)
+                            //決定押したときに、スライダー値変更（マウス離すまで）
+                            if (isKetteiDown == true)
                             {
-                                nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(false);
-                                nowMouseOnKomaObj = null;
+                                //■座標からスライダー値入力
+                                //Width
+                                float width =
+                                    mouseOnMenuRayHit.collider.transform.GetComponent<RectTransform>().sizeDelta.x;
+                                //MaxValue
+                                float maxValue =
+                                    mouseOnMenuRayHit.collider.transform.parent.GetComponent<Slider>().maxValue;
+
+                                while (isKettei)
+                                {
+                                    //スライダーのローカルから見たマウス位置
+                                    float sliderMouseLocalX =
+                                        mouseOnMenuRayHit.collider.transform.InverseTransformPoint(MouseCursorObj.transform.position).x;
+
+                                    //当たった位置を、スライダーBackImageのローカルから見てのx位置を、スライダーの値に変換
+                                    //((当たった位置ローカルX / Width) * MaxValue = 位置をValueに変換した値)
+                                    mouseOnMenuRayHit.collider.transform.parent.GetComponent<Slider>().value
+                                        = (sliderMouseLocalX / width) * maxValue;
+                                    //□座標からスライダー値入力ここまで
+
+
+                                    #region ■それぞれif処理
+                                    //最大値から最小値を引いた数がMaxなので最小値をプラスする（スライダー操作が最小値0でないといけない（Rayで座標から入力しているので））
+                                    if (Slider_DepthOfFieldObj == mouseOnMenuRayHit.collider.transform.parent.gameObject)
+                                    {
+                                        nowPPv1DepthOfFieldSetting.focusDistance =
+                                            DB.userDepthOfFieldV1Float =
+                                            (Slider_DepthOfFieldSlider.value + DB.adjustDepthOfFieldV1x50MinFloat);
+
+                                        //代入
+                                        postPB.profile.depthOfField.settings = nowPPv1DepthOfFieldSetting;
+
+                                        //後にx100でやる場合は大きさかイベントでif取る予定
+
+                                    }
+                                    else if (Slider_FieldOfViewObj == mouseOnMenuRayHit.collider.transform.parent.gameObject)
+                                    {
+                                        VRCamera.fieldOfView =
+                                        TPSCamera.fieldOfView =
+                                        DB.userFieldOfViewFloat =
+                                            (Slider_FieldOfViewSlider.value + DB.adjustFieldOfViewMinFloat);
+                                    }
+                                    #endregion
+
+                                    //音量とマウスレートはスライダーから直接処理されている
+
+                                    yield return null;
+                                }
+
                             }
                         }
-                        #endregion                        
+                        #endregion
+
+                        #region フローチャートウィンドウに当たっている時（欄外コマをクリックしないようフローチャートのみ専用範囲コリダー兼）
+                        else if (MouseOnFlowChartCollider.Raycast(mouseRay, out tmpDummyMouseOnFlowChartColliderRayHit, Mathf.Infinity))
+                        {
+                            //コマに当たっている時（↑のフローチャートウィンドウRayではないことに注意）
+                            if (mouseOnMenuRayHit.collider.tag == "FlowChartKoma")
+                            {
+                                //前回番号と違ったら一回処理
+                                if (nowMouseOnKomaEventInt != int.Parse(mouseOnMenuRayHit.collider.name.Substring(0, 3)))//intに変換 頭三文字
+                                {
+                                    //前のアウトライン消してオブジェ更新
+                                    if (nowMouseOnKomaObj != null)
+                                    { nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(false); }
+                                    nowMouseOnKomaObj = mouseOnMenuRayHit.collider.gameObject;
+
+                                    //番号更新（名前がイベントインデックスナンバーなのでintに変換（3桁なので頭三文字）して取得してList参照に使う）
+                                    nowMouseOnKomaEventInt = int.Parse(mouseOnMenuRayHit.collider.name.Substring(0, 3));
+
+                                    #region サムネイルをデータ画面に拡大表示
+                                    //コマデータ変数に。
+                                    var tmpKomaData = flowChartKomaDataObjList[nowMouseOnKomaEventInt].GetComponent<FlowChartKoma>();
+
+                                    //■サムネイルを拡大の方へ更新
+                                    //nullならなにもしない
+                                    if (tmpKomaData.thumbnailImageSprite == null) { }
+                                    //ヒント状態なら（ヒントコマでTrueで、プレイヤー到達状態Falseなら）
+                                    else if (tmpKomaData.isHintVisFlag && tmpKomaData.isPlayerVisFlag == false)
+                                    {
+                                        //image消して透明
+                                        komaThumbnailZoomImage.sprite = null;
+                                        komaThumbnailZoomImage.color = new Color(0, 0, 0, 1);
+                                    }
+                                    //前と別画像なら更新 
+                                    else if (tmpKomaData.thumbnailImageSprite != komaThumbnailZoomImage.sprite)
+                                    {
+                                        komaThumbnailZoomImage.sprite = tmpKomaData.thumbnailImageSprite;
+                                        komaThumbnailZoomImage.color = new Color(1, 1, 1, 1);//ヒントで消してた時用にカラー更新
+                                    }
+
+                                    //コマタイトルをテキストへ
+                                    if (DB.isEnglish)
+                                    { komaThumbnailTitleText.text = tmpKomaData.eventNameEnglish; }
+                                    else
+                                    { komaThumbnailTitleText.text = tmpKomaData.eventName; }
+                                    //ヒント状態ならヒント
+                                    if (tmpKomaData.isHintVisFlag && tmpKomaData.isPlayerVisFlag == false)
+                                    {
+                                        if (DB.isEnglish)
+                                        { komaThumbnailTitleText.text = tmpKomaData.hintMessageEng; }
+                                        else { komaThumbnailTitleText.text = tmpKomaData.hintMessage; }
+                                    }
+                                    #endregion
+
+                                    #region 選択肢List読み取り データ画面へ生成反映
+
+                                    //■まず前回の選択肢オブジェ削除
+                                    for (int i = 0; i < nowVisRemaineSentakusiObjList.Count; i++)
+                                    { Destroy(nowVisRemaineSentakusiObjList[i]); }
+                                    nowVisRemaineSentakusiObjList.Clear();
+
+
+                                    //タイトルの数だけ処理
+                                    for (int i = 0; i < tmpKomaData.sentakushiTitleList.Count; i++)
+                                    {
+                                        //プロットからクローン生成
+                                        GameObject tmpRemainSentakushiObj = Instantiate(RemainSentkusiObjProt);
+                                        //選択肢タイトル名に
+                                        tmpRemainSentakushiObj.name = tmpKomaData.sentakushiTitleList[i];
+                                        //ペアレント（プロットと同じ場所）
+                                        tmpRemainSentakushiObj.transform.SetParent(RemainSentkusiObjProt.transform.parent, false);
+                                        //Activeに
+                                        tmpRemainSentakushiObj.SetActive(true);
+                                        //後で削除用にリストへ
+                                        nowVisRemaineSentakusiObjList.Add(tmpRemainSentakushiObj);
+
+
+
+                                        //選択肢穴Objプロット取得
+                                        GameObject sentakushiHoleObjProt = tmpRemainSentakushiObj.transform.GetChild(0).gameObject;
+
+                                        //選択肢sを配列に
+                                        string[] tmpSentakushisArray =
+                                            tmpKomaData.sentakushisList[i].Split(new string[] { "_s" }, StringSplitOptions.None);
+
+                                        //配列にしたのを今までどおりの処理
+                                        for (int k = 0; k < tmpSentakushisArray.Length - 1; k++)//Split配列だと最後空白が入るので-1
+                                        {
+                                            //生成
+                                            GameObject tmpHoleObj
+                                                = Instantiate(sentakushiHoleObjProt
+                                                    , tmpRemainSentakushiObj.transform
+                                                    , false);
+
+                                            //名前つけ
+                                            tmpHoleObj.name = tmpSentakushisArray[k]; //※k = コマデータの中の選択肢sListの中のそれぞれ選択肢を分割したString
+
+                                            //名前に■(選択済みマーク)があれば OnマークTrue
+                                            if (tmpHoleObj.name.IndexOf("■") >= 0)
+                                            { tmpHoleObj.transform.GetChild(2).gameObject.SetActive(true); }
+
+                                            //名前に□(現在選択しているマーク)があれば アウトラインTrue
+                                            if (tmpHoleObj.name.IndexOf("□") == 0)
+                                            { tmpHoleObj.transform.GetChild(0).gameObject.SetActive(true); }
+                                        }
+                                        //プロット表示オフ
+                                        sentakushiHoleObjProt.SetActive(false);
+
+                                    }
+
+
+                                    #endregion
+                                    #region //Old_選択肢Obj読み取り データ画面へ生成反映
+
+                                    ////■まず前回の選択肢オブジェ削除
+                                    //for (int i = 0; i < nowVisRemaineSentakusiObjList.Count; i++)
+                                    //{ Destroy(nowVisRemaineSentakusiObjList[i]); }
+                                    //nowVisRemaineSentakusiObjList.Clear();
+
+
+                                    ////コマデータオブジェから選択肢Obj検索
+                                    //foreach (Transform k in flowChartKomaDataObjList[nowMouseOnKomaEventInt].transform)
+                                    //{
+                                    //    //■選択肢Objだったら
+                                    //    if (k.name.IndexOf("S_") == 0)
+                                    //    {
+                                    //        //プロットからクローン生成
+                                    //        GameObject tmpRemainSentakushiObj = Instantiate(RemainSentkusiObjProt);
+                                    //        //一応選択肢タイトル名に
+                                    //        tmpRemainSentakushiObj.name = k.name;
+                                    //        //ペアレント（プロットと同じ場所）
+                                    //        tmpRemainSentakushiObj.transform.SetParent(RemainSentkusiObjProt.transform.parent, false);
+                                    //        //Activeに
+                                    //        tmpRemainSentakushiObj.SetActive(true);
+                                    //        //後で削除用にリストへ
+                                    //        nowVisRemaineSentakusiObjList.Add(tmpRemainSentakushiObj);
+
+
+                                    //        //選択肢穴Objプロット取得
+                                    //        GameObject sentakushiHoleObjProt = tmpRemainSentakushiObj.transform.GetChild(0).gameObject;
+                                    //        //■選択肢の数だけ穴生成　(※最初forでやったがやはり変になった（全部にActive命令が入ったりした）のでforeach)
+                                    //        foreach (Transform l in k)
+                                    //        {
+                                    //            //生成
+                                    //            GameObject tmpHoleObj
+                                    //                = Instantiate(sentakushiHoleObjProt
+                                    //                    , tmpRemainSentakushiObj.transform
+                                    //                    , false);
+
+                                    //            //名前つけ
+                                    //            tmpHoleObj.name = l.name; //※l = コマデータObjの中の選択肢Objの中のそれぞれ選択肢ObjTrs
+
+                                    //            //名前に■(選択済みマーク)があれば OnマークTrue
+                                    //            if (tmpHoleObj.name.IndexOf("■") >= 0)
+                                    //            { tmpHoleObj.transform.GetChild(2).gameObject.SetActive(true); }
+
+                                    //            //名前に□(現在選択しているマーク)があれば アウトラインTrue
+                                    //            if (tmpHoleObj.name.IndexOf("□") == 0)
+                                    //            { tmpHoleObj.transform.GetChild(0).gameObject.SetActive(true); }
+                                    //        }
+                                    //        //プロット表示オフ
+                                    //        sentakushiHoleObjProt.SetActive(false);
+                                    //    }
+                                    //}
+
+
+
+
+                                    #endregion
+                                    //↑隠し選択肢の処理は保留（□■以外のマークをつけておき、周回boolかintで判定し、表示する予定（選択肢フキダシ自体の表示も同じように））
+
+                                    #region BADエンドデータ読み込み データ画面へ生成反映
+
+                                    //■まず前回のBADオブジェ削除
+                                    for (int i = 0; i < nowVisRemaineBADObjList.Count; i++)
+                                    { Destroy(nowVisRemaineBADObjList[i]); }
+                                    nowVisRemaineBADObjList.Clear();
+
+                                    //BADエンド存在すれば
+                                    if (tmpKomaData.badEndList.Count > 0)
+                                    {
+                                        for (int i = 0; i < tmpKomaData.badEndList.Count; i++)
+                                        {
+                                            //プロットからクローン生成
+                                            GameObject tmpBADObj = Instantiate(RemainBADHoleObjProt);
+                                            //一応BADタイトル名に
+                                            tmpBADObj.name = tmpKomaData.badEndList[i];
+                                            //ペアレント（プロットと同じ場所）
+                                            tmpBADObj.transform.SetParent(RemainBADHoleObjProt.transform.parent, false);
+                                            //Activeに
+                                            tmpBADObj.SetActive(true);
+                                            //後で削除用にリストへ
+                                            nowVisRemaineBADObjList.Add(tmpBADObj);
+
+                                            //名前に■(選択済みマーク)があれば OnマークTrue
+                                            if (tmpBADObj.name.IndexOf("■") >= 0)
+                                            { tmpBADObj.transform.GetChild(2).gameObject.SetActive(true); }
+                                        }
+                                    }
+
+                                    #endregion
+
+
+                                    //アウトライン発光
+                                    nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(true);
+                                }
+
+                                //決定でイベント移動確認ウインドウへ
+                                if (isKetteiDown == true)
+                                {
+                                    //コマデータ取得
+                                    var tmpKomaData =
+                                        flowChartKomaDataObjList[nowMouseOnKomaEventInt].GetComponent<FlowChartKoma>();
+
+                                    //ヒント状態なら
+                                    if (tmpKomaData.isHintVisFlag && tmpKomaData.isPlayerVisFlag == false)
+                                    { goto 抜け; }
+
+                                    SEPlay(UISEObj, "UI_p");
+                                    #region ウインドウ出現演出
+                                    Vector3
+                                        tmpDefScl = FlowChartMoveWindowCanvasObj.transform.localScale;
+                                    FlowChartMoveWindowCanvasObj.transform.localScale = Vector3.zero;
+
+                                    yield return null;
+
+                                    FlowChartMoveWindowCanvasObj.SetActive(true);
+
+                                    FlowChartMoveWindowCanvasObj.transform.DOScale(tmpDefScl, 0.1f)
+                                        //.SetEase(Ease.OutBack)
+                                        .SetUpdate(true);
+
+                                    #endregion
+                                    yield return null;
+
+                                    #region 確認テキスト イメージ表示
+                                    //イメージとテキストの親表示
+                                    GameObject tmpRootObj =
+                                        FlowChartMoveWindowCanvasObj.transform.Find("ConfirmImgaeText").gameObject;
+                                    tmpRootObj.SetActive(true);
+
+                                    //■サムネイルとコマタイトルを設定
+                                    Image tmpImg =
+                                        tmpRootObj.transform.Find("ThumbnailImage").GetComponent<Image>();
+                                    TextMeshProUGUI tmpKomaTitleText =
+                                        tmpImg.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+
+                                    //Image
+                                    if (tmpKomaData.thumbnailImageSprite == null) { }
+                                    else
+                                    { tmpImg.sprite = tmpKomaData.thumbnailImageSprite; }
+
+                                    //Text
+                                    if (DB.isEnglish)
+                                    { tmpKomaTitleText.text = tmpKomaData.eventNameEnglish; }
+                                    else
+                                    { tmpKomaTitleText.text = tmpKomaData.eventName; }
+
+                                    //EXTRA非表示
+                                    FlowChartMoveWindowCanvasObj.transform.Find("Button_MoveEXTRA").gameObject.SetActive(false);
+                                    //EXTRA
+                                    if (tmpKomaData.isEXTRA)
+                                    { FlowChartMoveWindowCanvasObj.transform.Find("Button_MoveEXTRA").gameObject.SetActive(true); }
+
+                                    #endregion
+
+                                    while (isMenuSystem)//Menu終了したら強制終了
+                                    {
+                                        #region 確認ウィンドウ専用でレイ処理（メニューのとほぼ同じ）
+                                        //動いてること前提
+                                        if (isMouseCursorSystem)
+                                        {
+                                            //「マウス効く範囲コリダー」に当たってる場合のみ動作
+                                            if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
+                                            {
+                                                #region カーソル消してたらつけ
+                                                if (MouseCursorImage.enabled == false)
+                                                {
+                                                    MouseCursorImage.enabled = true;
+                                                    Cursor.visible = false;//PCは消し
+                                                }
+                                                #endregion
+                                                //マウスRayがコリダーに当たっていること前提
+                                                if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
+                                                {
+                                                    //決定押したときに
+                                                    if (isKetteiDown == true)
+                                                    {
+                                                        DB.isEXTRAEnter = false;//事前オフ
+                                                                                //OKなら
+                                                        if ("Button_MoveOK" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        {
+                                                            //メニュー終了してイベント移動
+                                                            SEPlay(UISEObj, "ui_scifi_hightech_confirm");
+                                                            SEPlay(UISEObj, "UI_fuwa-", 0.4f);
+
+                                                            BGMPlay(false, null, 0, 3f, 3f);//BGMフェードアウト
+                                                            isFlowChartEventMove = true;//閉じSEなし
+                                                            isMenuSystem = false;//メニュー消し
+                                                            isMenuLock = true;//メニューロック
+                                                            isANSystem = false;
+
+                                                            EventMove(nowMouseOnKomaEventInt, true, true);
+                                                            break;
+                                                        }
+                                                        //キャンセルなら
+                                                        else if ("Button_MoveCancel" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        {
+                                                            //確認ウィンドウ消して抜け
+                                                            SEPlay(UISEObj, "UI_pata");
+                                                            FlowChartMoveWindowCanvasObj.SetActive(false);
+                                                            break;
+                                                        }
+                                                        //EXTRAなら
+                                                        else if ("Button_MoveEXTRA" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        {
+                                                            //メニュー終了してイベント移動
+                                                            SEPlay(UISEObj, "ui_scifi_hightech_confirm");
+                                                            SEPlay(UISEObj, "UI_fuwa-", 0.4f);
+
+                                                            BGMPlay(false, null, 0, 3f, 3f);//BGMフェードアウト
+                                                            isFlowChartEventMove = true;//閉じSEなし
+                                                            isMenuSystem = false;//メニュー消し
+                                                            isMenuLock = true;//メニューロック
+                                                            isANSystem = false;
+                                                            DB.isEXTRAEnter = true;
+
+                                                            EventMove(nowMouseOnKomaEventInt, true, true);
+                                                            break;
+                                                        }                                                                //ウィンドウ内のなにもないところなら
+                                                        else if ("MoveWindowCollider" == mouseOnMenuRayHit.collider.gameObject.name)
+                                                        { }//なにもしないけど、一応命令保持
+                                                           //ウィンドウ外なら
+                                                        else
+                                                        {
+                                                            //キャンセルと同じ扱い
+                                                            SEPlay(UISEObj, "UI_pata");
+                                                            FlowChartMoveWindowCanvasObj.SetActive(false);
+                                                            break;
+                                                        }
+                                                    }
+                                                    //Bボタンを押したら
+                                                    else if (isBackDown == true)
+                                                    {
+                                                        //キャンセル扱い
+                                                        SEPlay(UISEObj, "UI_pata");
+                                                        FlowChartMoveWindowCanvasObj.SetActive(false);
+                                                        break;
+                                                    }
+
+                                                }
+                                            }
+                                            else //「マウス効く範囲コリダー」外
+                                            {
+                                                #region PCマウスかつPCプレイならゲームカーソル消し
+                                                if (isMouseStickControll == false)
+                                                {
+                                                    if (XRSettings.enabled == false)
+                                                    {
+                                                        if (MouseCursorImage.enabled)
+                                                        {
+                                                            MouseCursorImage.enabled = false;
+                                                            Cursor.visible = true;//PCはつけ
+                                                        }
+                                                    }
+                                                }
+                                                #endregion
+                                            }
+                                        }
+                                        #endregion
+                                        yield return null;
+                                    }
+                                }
+                                抜け:;
+                            }
+                            //何も指してない（指してるのがコマじゃなかったら）
+                            else
+                            {
+                                //番号-1じゃなければ一回処理
+                                if (nowMouseOnKomaEventInt != -1)
+                                {
+                                    //番号nullの代わりに-1
+                                    nowMouseOnKomaEventInt = -1;
+
+                                    //アウトライン消し コマオブジェ指定null
+                                    if (nowMouseOnKomaObj != null)
+                                    {
+                                        nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(false);
+                                        nowMouseOnKomaObj = null;
+                                    }
+                                }
+                            }
+                            #region マウススクロールでContentスクロール
+                            if (mouseWheelFloat != 0f)
+                            {
+                                flowChartContentRectTrs.anchoredPosition
+                                      -= new Vector2(0, (mouseWheelFloat * 30) * Time.unscaledDeltaTime);
+                            }
+                            #endregion
+                            #region 上下入力ボタンダウン化しint1ずつ操作（Contentスクロール）（今は選択上下AXIS兼のため、XBOX時のみに）
+                            if (DB.playerController == DataBridging.PlayerVRController.Xbox)
+                            {
+                                if (sentakuAxisY == 1f || sentakuAxisY == 1f)
+                                {
+                                    //Debug.Log("Up Key");
+                                    flowChartContentRectTrs.anchoredPosition -= new Vector2(0,
+                                        1 * Time.unscaledDeltaTime);
+                                }
+                                if (sentakuAxisY == -1f || sentakuAxisY == -1f)
+                                {
+                                    //Debug.Log("Down Key");
+                                    flowChartContentRectTrs.anchoredPosition += new Vector2(0,
+                                        1 * Time.unscaledDeltaTime);
+                                }
+                            }
+
+
+                            #endregion
+                        }
+
+                        #endregion
+
                     }
+                }
+                //何も指してない（メニューウインドウ外だったら）
+                else
+                {
+                    #region PCマウスかつPCプレイならゲームカーソル消し
+                    if (isMouseStickControll == false)
+                    {
+                        if (XRSettings.enabled == false)
+                        {
+                            if (MouseCursorImage.enabled)
+                            {
+                                MouseCursorImage.enabled = false;
+                                Cursor.visible = true;//PCはつけ
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region フローチャート ・アウトライン消し
+                    //番号-1じゃなければ一回処理
+                    if (nowMouseOnKomaEventInt != -1)
+                    {
+                        //番号nullの代わりに-1
+                        nowMouseOnKomaEventInt = -1;
+
+                        //アウトライン消し コマオブジェ指定null
+                        if (nowMouseOnKomaObj != null)
+                        {
+                            nowMouseOnKomaObj.transform.Find("OutlineMouseOn").gameObject.SetActive(false);
+                            nowMouseOnKomaObj = null;
+                        }
+                    }
+                    #endregion
 
                 }
                 #region キーボード操作系 タブメニュー切り替えや身長
@@ -21780,22 +22284,68 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     }
                     else if (SousaWindowCanvasObj.activeSelf)
                     {
-                        #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え■
-                        MainMenuWindowCanvasObj.SetActive(false);
+                        if (ydloadMenu)//ゆろーどさんメニューを使用する場合
+                        {
+                            #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え□ 新着替え■
+                            //ウィンドウ自体のOnOff（タブボタンではない）
+                            MainMenuWindowCanvasObj.SetActive(false);
+                            GraphicWindowCanvasObj.SetActive(false);
+                            FlowChartWindowCanvasObj.SetActive(false);
+                            SousaWindowCanvasObj.SetActive(false);
+                            ClothsWindowCanvasObj.SetActive(false);
+                            Gobj_ydloadMenu.SetActive(true);
+
+                            //タブボタンのカラー
+                            tabButton_MainImg.color =
+                            tabButton_GraphicImg.color =
+                            tabButton_FlowChartImg.color =
+                            tabButton_SousaImg.color =
+                                //tabButton_ClothsImg.color =
+                                tabOffColor;
+                            tabButton_ClothsImg.color =
+                                tabOnColor;
+                            #endregion
+                        }
+                        else //使用しない旧状態
+                        {
+                            #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え■
+                            MainMenuWindowCanvasObj.SetActive(false);
+                            GraphicWindowCanvasObj.SetActive(false);
+                            FlowChartWindowCanvasObj.SetActive(false);
+                            SousaWindowCanvasObj.SetActive(false);
+                            ClothsWindowCanvasObj.SetActive(true);
+
+                            tabButton_MainImg.color =
+                            tabButton_GraphicImg.color =
+                            tabButton_FlowChartImg.color =
+                            tabButton_SousaImg.color =
+                                tabOffColor;
+                            tabButton_ClothsImg.color =
+                                tabOnColor;
+                            #endregion
+                        }
+
+                    }
+                    else if (Gobj_ydloadMenu.activeSelf)//ゆろーどさんメニュー時
+                    {
+                        #region メニュー■ グラフィック□ フローチャート□ 操作□ 着替え□
+                        //ウィンドウ自体のOnOff（タブボタンではない）
+                        MainMenuWindowCanvasObj.SetActive(true);
                         GraphicWindowCanvasObj.SetActive(false);
                         FlowChartWindowCanvasObj.SetActive(false);
                         SousaWindowCanvasObj.SetActive(false);
-                        ClothsWindowCanvasObj.SetActive(true);
+                        ClothsWindowCanvasObj.SetActive(false);
+                        Gobj_ydloadMenu.SetActive(false);
 
+                        //タブボタンのカラー
                         tabButton_MainImg.color =
+                            tabOnColor;
                         tabButton_GraphicImg.color =
                         tabButton_FlowChartImg.color =
                         tabButton_SousaImg.color =
-                            tabOffColor;
                         tabButton_ClothsImg.color =
-                            tabOnColor;
+                            tabOffColor;
                         #endregion
-
                     }
                     else if (ClothsWindowCanvasObj.activeSelf)
                     {
@@ -21822,21 +22372,47 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 {
                     if (MainMenuWindowCanvasObj.activeSelf)
                     {
-                        #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え■
-                        MainMenuWindowCanvasObj.SetActive(false);
-                        GraphicWindowCanvasObj.SetActive(false);
-                        FlowChartWindowCanvasObj.SetActive(false);
-                        SousaWindowCanvasObj.SetActive(false);
-                        ClothsWindowCanvasObj.SetActive(true);
+                        if (ydloadMenu)//ゆろーどさんメニューを使用する場合
+                        {
+                            #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え□ 新着替え■
+                            //ウィンドウ自体のOnOff（タブボタンではない）
+                            MainMenuWindowCanvasObj.SetActive(false);
+                            GraphicWindowCanvasObj.SetActive(false);
+                            FlowChartWindowCanvasObj.SetActive(false);
+                            SousaWindowCanvasObj.SetActive(false);
+                            ClothsWindowCanvasObj.SetActive(false);
+                            Gobj_ydloadMenu.SetActive(true);
 
-                        tabButton_MainImg.color =
-                        tabButton_GraphicImg.color =
-                        tabButton_FlowChartImg.color =
-                        tabButton_SousaImg.color =
-                            tabOffColor;
-                        tabButton_ClothsImg.color =
-                            tabOnColor;
-                        #endregion
+                            //タブボタンのカラー
+                            tabButton_MainImg.color =
+                            tabButton_GraphicImg.color =
+                            tabButton_FlowChartImg.color =
+                            tabButton_SousaImg.color =
+                                //tabButton_ClothsImg.color =
+                                tabOffColor;
+                            tabButton_ClothsImg.color =
+                                tabOnColor;
+                            #endregion
+                        }
+                        else //使用しない旧状態
+                        {
+                            #region メニュー□ グラフィック□ フローチャート□ 操作□ 着替え■
+                            MainMenuWindowCanvasObj.SetActive(false);
+                            GraphicWindowCanvasObj.SetActive(false);
+                            FlowChartWindowCanvasObj.SetActive(false);
+                            SousaWindowCanvasObj.SetActive(false);
+                            ClothsWindowCanvasObj.SetActive(true);
+
+                            tabButton_MainImg.color =
+                            tabButton_GraphicImg.color =
+                            tabButton_FlowChartImg.color =
+                            tabButton_SousaImg.color =
+                                tabOffColor;
+                            tabButton_ClothsImg.color =
+                                tabOnColor;
+                            #endregion
+                        }
+
                     }
                     else if (GraphicWindowCanvasObj.activeSelf)
                     {
@@ -21903,6 +22479,26 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                         FlowChartWindowCanvasObj.SetActive(false);
                         SousaWindowCanvasObj.SetActive(true);
                         ClothsWindowCanvasObj.SetActive(false);
+
+                        tabButton_MainImg.color =
+                        tabButton_GraphicImg.color =
+                        tabButton_FlowChartImg.color =
+                            tabOffColor;
+                        tabButton_SousaImg.color =
+                            tabOnColor;
+                        tabButton_ClothsImg.color =
+                            tabOffColor;
+                        #endregion
+                    }
+                    else if (Gobj_ydloadMenu.activeSelf) //ゆろーどさんメニュー時
+                    {
+                        #region メニュー□ グラフィック□ フローチャート□ 操作■ 着替え□
+                        MainMenuWindowCanvasObj.SetActive(false);
+                        GraphicWindowCanvasObj.SetActive(false);
+                        FlowChartWindowCanvasObj.SetActive(false);
+                        SousaWindowCanvasObj.SetActive(true);
+                        ClothsWindowCanvasObj.SetActive(false);
+                        Gobj_ydloadMenu.SetActive(false);
 
                         tabButton_MainImg.color =
                         tabButton_GraphicImg.color =
@@ -22311,86 +22907,82 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     //動いてること前提
                     if (isMouseCursorSystem)
                     {
-                        //メニュー範囲外コリダー内かつ
-                        if (MouseOutMenuCollider.Raycast(mouseRay, out tmpDummyMouseOutMenuColliderRayHit, Mathf.Infinity))
+                        //「マウス効く範囲コリダー」に当たってる場合のみ動作
+                        if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
                         {
-                            //「マウス効く範囲コリダー」に当たってる場合のみ動作
-                            if (MouseOnMenuCollider.Raycast(mouseRay, out tmpDummyMouseOnMenuColliderRayHit, Mathf.Infinity))
+                            #region カーソル消してたらつけ
+                            if (MouseCursorImage.enabled == false)
                             {
-                                #region カーソル消してたらつけ
-                                if (MouseCursorImage.enabled == false)
+                                MouseCursorImage.enabled = true;
+                                Cursor.visible = false;//PCは消し
+                            }
+                            #endregion
+                            //マウスRayがコリダーに当たっていること前提
+                            if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
+                            {
+                                //決定押したときに
+                                if (isKetteiDown == true)
                                 {
-                                    MouseCursorImage.enabled = true;
-                                    Cursor.visible = false;//PCは消し
-                                }
-                                #endregion
-                                //マウスRayがコリダーに当たっていること前提
-                                if (Physics.Raycast(mouseRay, out mouseOnMenuRayHit, Mathf.Infinity, mouseRayLayerMask))
-                                {
-                                    //決定押したときに
-                                    if (isKetteiDown == true)
+                                    //OKなら
+                                    if ("Button_MoveOK" == mouseOnMenuRayHit.collider.gameObject.name)
                                     {
-                                        //OKなら
-                                        if ("Button_MoveOK" == mouseOnMenuRayHit.collider.gameObject.name)
-                                        {
-                                            //メニュー終了してイベント移動
-                                            SEPlay(UISEObj, "ui_scifi_hightech_confirm");
-                                            SEPlay(UISEObj, "UI_fuwa-", 0.4f);
+                                        //メニュー終了してイベント移動
+                                        SEPlay(UISEObj, "ui_scifi_hightech_confirm");
+                                        SEPlay(UISEObj, "UI_fuwa-", 0.4f);
 
-                                            BGMPlay(false, null, 0, 3f, 3f);//BGMフェードアウト
-                                            isFlowChartEventMove = true;//閉じSEなし
-                                            isMenuSystem = false;//メニュー消し
-                                            isMenuLock = true;//メニューロック
-                                            EventMove(nowMouseOnKomaEventInt, true, true);
-                                            break;
-                                        }
-                                        //キャンセルなら
-                                        else if ("Button_MoveCancel" == mouseOnMenuRayHit.collider.gameObject.name)
-                                        {
-                                            //確認ウィンドウ消して抜け
-                                            SEPlay(UISEObj, "UI_pata");
-                                            FlowChartMoveWindowCanvasObj.SetActive(false);
-                                            break;
-                                        }
-                                        //ウィンドウ内のなにもないところなら
-                                        else if ("MoveWindowCollider" == mouseOnMenuRayHit.collider.gameObject.name)
-                                        { }//なにもしないけど、一応命令保持
-                                           //ウィンドウ外なら
-                                        else
-                                        {
-                                            //キャンセルと同じ扱い
-                                            SEPlay(UISEObj, "UI_pata");
-                                            FlowChartMoveWindowCanvasObj.SetActive(false);
-                                            break;
-                                        }
+                                        BGMPlay(false, null, 0, 3f, 3f);//BGMフェードアウト
+                                        isFlowChartEventMove = true;//閉じSEなし
+                                        isMenuSystem = false;//メニュー消し
+                                        isMenuLock = true;//メニューロック
+                                        EventMove(nowMouseOnKomaEventInt, true, true);
+                                        break;
                                     }
-                                    //Bボタンを押したら
-                                    else if (isBackDown == true)
+                                    //キャンセルなら
+                                    else if ("Button_MoveCancel" == mouseOnMenuRayHit.collider.gameObject.name)
                                     {
-                                        //キャンセル扱い
+                                        //確認ウィンドウ消して抜け
                                         SEPlay(UISEObj, "UI_pata");
                                         FlowChartMoveWindowCanvasObj.SetActive(false);
                                         break;
                                     }
-
-                                }
-                            }
-                            else //「マウス効く範囲コリダー」外
-                            {
-                                #region PCマウスかつPCプレイならゲームカーソル消し
-                                if (isMouseStickControll == false)
-                                {
-                                    if (XRSettings.enabled == false)
+                                    //ウィンドウ内のなにもないところなら
+                                    else if ("MoveWindowCollider" == mouseOnMenuRayHit.collider.gameObject.name)
+                                    { }//なにもしないけど、一応命令保持
+                                       //ウィンドウ外なら
+                                    else
                                     {
-                                        if (MouseCursorImage.enabled)
-                                        {
-                                            MouseCursorImage.enabled = false;
-                                            Cursor.visible = true;//PCはつけ
-                                        }
+                                        //キャンセルと同じ扱い
+                                        SEPlay(UISEObj, "UI_pata");
+                                        FlowChartMoveWindowCanvasObj.SetActive(false);
+                                        break;
                                     }
                                 }
-                                #endregion
+                                //Bボタンを押したら
+                                else if (isBackDown == true)
+                                {
+                                    //キャンセル扱い
+                                    SEPlay(UISEObj, "UI_pata");
+                                    FlowChartMoveWindowCanvasObj.SetActive(false);
+                                    break;
+                                }
+
                             }
+                        }
+                        else //「マウス効く範囲コリダー」外
+                        {
+                            #region PCマウスかつPCプレイならゲームカーソル消し
+                            if (isMouseStickControll == false)
+                            {
+                                if (XRSettings.enabled == false)
+                                {
+                                    if (MouseCursorImage.enabled)
+                                    {
+                                        MouseCursorImage.enabled = false;
+                                        Cursor.visible = true;//PCはつけ
+                                    }
+                                }
+                            }
+                            #endregion
                         }
                     }
                     #endregion
@@ -22398,6 +22990,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 }
             }
             #endregion
+
+
 
             yield return null;
         }
@@ -22509,6 +23103,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 = "Barefoot";
             ClothsWindowCanvasObj.transform.Find("Toggle_Tanktop/Text").GetComponent<Text>().text
                 = "Tanktop";
+            ClothsWindowCanvasObj.transform.Find("Toggle_Bikini/Text").GetComponent<Text>().text
+               = "Bikini";
             ClothsWindowCanvasObj.transform.Find("Toggle_FixityOutfit/Text").GetComponent<Text>().text
                 = "Preserve settings";
 
@@ -22578,6 +23174,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 = "素足";
             ClothsWindowCanvasObj.transform.Find("Toggle_Tanktop/Text").GetComponent<Text>().text
                 = "タンクトップ";
+            ClothsWindowCanvasObj.transform.Find("Toggle_Bikini/Text").GetComponent<Text>().text
+                = "ビキニ";
             ClothsWindowCanvasObj.transform.Find("Toggle_FixityOutfit/Text").GetComponent<Text>().text
                 = "設定を維持";
 
@@ -22594,140 +23192,141 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     }
 
-    //着替え処理
-    void ClothsApply()
+    //着替え処理 //210711廃止
+    public void ClothsApply()
     {
-        //素足 タンクトップ ビキニのDBboolを参照するが
-        //・ビキニとタンクトップON　はありえない
-        //・ビキニと素足オフ　はありえない
 
-        //ので、ビキニを最初に判定する
-        if (DB.isUserClothsBikini)
-        {
-            #region ビキニに切り替え処理
-            //制服OFF
-            GirlMeshTrs.Find("NeckTai").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Pants").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Sailor").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Skirt").gameObject.SetActive(false);
+        ////素足 タンクトップ ビキニのDBboolを参照するが
+        ////・ビキニとタンクトップON　はありえない
+        ////・ビキニと素足オフ　はありえない
 
-            //タンクトップOFF
-            GirlMeshTrs.Find("Spats").gameObject.SetActive(false);
-            GirlMeshTrs.Find("TankTop").gameObject.SetActive(false);
+        ////ので、ビキニを最初に判定する
+        //if (DB.isUserClothsBikini)
+        //{
+        //    #region ビキニに切り替え処理
+        //    //制服OFF
+        //    GirlMeshTrs.Find("NeckTai").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Pants").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Sailor").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Skirt").gameObject.SetActive(false);
 
-            //靴下OFF
-            SocksObj.SetActive(false);
+        //    //タンクトップOFF
+        //    GirlMeshTrs.Find("Spats").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("TankTop").gameObject.SetActive(false);
 
-            
-            //ビキニON
-            GirlMeshTrs.Find("Bikini").gameObject.SetActive(true);
-            
-            //マテリアル
-            BodyObj.GetComponent<Renderer>().material = mat_body_Bikini;
-            #endregion
-        }
+        //    //靴下OFF
+        //    SocksObj.SetActive(false);
 
-        //以降4つは　素足とタンクトップで判定
-        else if (
-            DB.isUserClothsBarefoot &&
-            DB.isUserClothsTankTop == false
-            )
-        {
-            #region 制服に切り替え処理
-            //制服ON
-            GirlMeshTrs.Find("NeckTai").gameObject.SetActive(true);
-            GirlMeshTrs.Find("Pants").gameObject.SetActive(true);
-            GirlMeshTrs.Find("Sailor").gameObject.SetActive(true);
-            GirlMeshTrs.Find("Skirt").gameObject.SetActive(true);
 
-            //タンクトップOFF
-            GirlMeshTrs.Find("Spats").gameObject.SetActive(false);
-            GirlMeshTrs.Find("TankTop").gameObject.SetActive(false);
+        //    //ビキニON
+        //    GirlMeshTrs.Find("Bikini").gameObject.SetActive(true);
 
-            //ビキニOFF
-            GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
+        //    //マテリアル
+        //    BodyObj.GetComponent<Renderer>().material = mat_body_Bikini;
+        //    #endregion
+        //}
 
-            #endregion
-            #region 素足に切り替え処理
-            BodyObj.GetComponent<Renderer>().material = mat_body_Barefoot;
-            SocksObj.SetActive(false);
-            #endregion
-        }
-        else if (
-            DB.isUserClothsBarefoot == false &&
-            DB.isUserClothsTankTop == false
-            )
-        {
-            #region 制服に切り替え処理
-            //制服ON
-            GirlMeshTrs.Find("NeckTai").gameObject.SetActive(true);
-            GirlMeshTrs.Find("Pants").gameObject.SetActive(true);
-            GirlMeshTrs.Find("Sailor").gameObject.SetActive(true);
-            GirlMeshTrs.Find("Skirt").gameObject.SetActive(true);
+        ////以降4つは　素足とタンクトップで判定
+        //else if (
+        //    DB.isUserClothsBarefoot &&
+        //    DB.isUserClothsTankTop == false
+        //    )
+        //{
+        //    #region 制服に切り替え処理
+        //    //制服ON
+        //    GirlMeshTrs.Find("NeckTai").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("Pants").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("Sailor").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("Skirt").gameObject.SetActive(true);
 
-            //タンクトップOFF
-            GirlMeshTrs.Find("Spats").gameObject.SetActive(false);
-            GirlMeshTrs.Find("TankTop").gameObject.SetActive(false);
+        //    //タンクトップOFF
+        //    GirlMeshTrs.Find("Spats").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("TankTop").gameObject.SetActive(false);
 
-            //ビキニOFF
-            GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
+        //    //ビキニOFF
+        //    GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
 
-            #endregion
-            #region 靴下に切り替え処理
-            BodyObj.GetComponent<Renderer>().material = mat_body;
-            SocksObj.SetActive(true);
-            #endregion
-        }
-        else if (
-            DB.isUserClothsBarefoot &&
-            DB.isUserClothsTankTop
-            )
-        {
-            #region タンクトップに切り替え処理
-            //制服OFF
-            GirlMeshTrs.Find("NeckTai").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Pants").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Sailor").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Skirt").gameObject.SetActive(false);
+        //    #endregion
+        //    #region 素足に切り替え処理
+        //    BodyObj.GetComponent<Renderer>().material = mat_body_Barefoot;
+        //    SocksObj.SetActive(false);
+        //    #endregion
+        //}
+        //else if (
+        //    DB.isUserClothsBarefoot == false &&
+        //    DB.isUserClothsTankTop == false
+        //    )
+        //{
+        //    #region 制服に切り替え処理
+        //    //制服ON
+        //    GirlMeshTrs.Find("NeckTai").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("Pants").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("Sailor").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("Skirt").gameObject.SetActive(true);
 
-            //タンクトップON
-            GirlMeshTrs.Find("Spats").gameObject.SetActive(true);
-            GirlMeshTrs.Find("TankTop").gameObject.SetActive(true);
+        //    //タンクトップOFF
+        //    GirlMeshTrs.Find("Spats").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("TankTop").gameObject.SetActive(false);
 
-            //ビキニOFF
-            GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
+        //    //ビキニOFF
+        //    GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
 
-            #endregion
-            #region 素足に切り替え処理
-            BodyObj.GetComponent<Renderer>().material = mat_body_TankTop_Barefoot;
-            SocksObj.SetActive(false);
-            #endregion
-        }
-        else if (
-            DB.isUserClothsBarefoot == false &&
-            DB.isUserClothsTankTop
-            )
-        {
-            #region タンクトップに切り替え処理
-            //制服OFF
-            GirlMeshTrs.Find("NeckTai").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Pants").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Sailor").gameObject.SetActive(false);
-            GirlMeshTrs.Find("Skirt").gameObject.SetActive(false);
+        //    #endregion
+        //    #region 靴下に切り替え処理
+        //    BodyObj.GetComponent<Renderer>().material = mat_body;
+        //    SocksObj.SetActive(true);
+        //    #endregion
+        //}
+        //else if (
+        //    DB.isUserClothsBarefoot &&
+        //    DB.isUserClothsTankTop
+        //    )
+        //{
+        //    #region タンクトップに切り替え処理
+        //    //制服OFF
+        //    GirlMeshTrs.Find("NeckTai").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Pants").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Sailor").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Skirt").gameObject.SetActive(false);
 
-            //タンクトップON
-            GirlMeshTrs.Find("Spats").gameObject.SetActive(true);
-            GirlMeshTrs.Find("TankTop").gameObject.SetActive(true);
+        //    //タンクトップON
+        //    GirlMeshTrs.Find("Spats").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("TankTop").gameObject.SetActive(true);
 
-            //ビキニOFF
-            GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
+        //    //ビキニOFF
+        //    GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
 
-            #endregion
-            #region 靴下に切り替え処理
-            BodyObj.GetComponent<Renderer>().material = mat_body_TankTop;
-            SocksObj.SetActive(true);
-            #endregion
-        }
+        //    #endregion
+        //    #region 素足に切り替え処理
+        //    BodyObj.GetComponent<Renderer>().material = mat_body_TankTop_Barefoot;
+        //    SocksObj.SetActive(false);
+        //    #endregion
+        //}
+        //else if (
+        //    DB.isUserClothsBarefoot == false &&
+        //    DB.isUserClothsTankTop
+        //    )
+        //{
+        //    #region タンクトップに切り替え処理
+        //    //制服OFF
+        //    GirlMeshTrs.Find("NeckTai").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Pants").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Sailor").gameObject.SetActive(false);
+        //    GirlMeshTrs.Find("Skirt").gameObject.SetActive(false);
+
+        //    //タンクトップON
+        //    GirlMeshTrs.Find("Spats").gameObject.SetActive(true);
+        //    GirlMeshTrs.Find("TankTop").gameObject.SetActive(true);
+
+        //    //ビキニOFF
+        //    GirlMeshTrs.Find("Bikini").gameObject.SetActive(false);
+
+        //    #endregion
+        //    #region 靴下に切り替え処理
+        //    BodyObj.GetComponent<Renderer>().material = mat_body_TankTop;
+        //    SocksObj.SetActive(true);
+        //    #endregion
+        //}
     }
 
     //トグルONOFF時の処理メソッド化
@@ -22752,6 +23351,13 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     bool
         isInfoMakotoHeightVis = false,
         isInfoFPSVis = false;//未実装
+
+    //マコトの身長表示を相対的に表示する場合用（内部的に小さくしすぎないように、胃を大きくして中に入れる時など）
+    public GameObject
+        MakotoSizeOffsetObj = null;
+    public bool
+        isMakotoSizeOffset = false;
+
     #endregion
 
     IEnumerator InfoVisSystemIEnum()
@@ -22789,7 +23395,34 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 //更新し続け
                 if (isInfoMakotoHeightVis)
                 {
-                    MakotoHeightText.text = nowPlayerSintyouFloat.ToString("f1") + " cm";
+                    bool isOffsetObj = true;
+                    var tmpSintyouFlt = nowPlayerSintyouFloat;
+
+                    //オフセット設定がオンなら、
+                    if (isMakotoSizeOffset)
+                    {
+                        //オフセットObjがnullなら
+                        if (MakotoSizeOffsetObj == null)
+                        {
+                            //表示を「？？？」にするためFalse
+                            isOffsetObj = false;
+                        }
+                        else
+                        {
+                            //オフセットObjのScale値を割り算(相対的に大きくしたものを指定してその分割り算)
+                            tmpSintyouFlt /= MakotoSizeOffsetObj.transform.localScale.y;
+                        }
+                    }
+
+                    //■■代入
+                    MakotoHeightText.text = tmpSintyouFlt.ToString("f1") + " cm";
+
+                    //オフセットObjがないなら「？？？」に
+                    if (isOffsetObj == false)
+                    {
+                        MakotoHeightText.text = "？？？";
+                    }
+
                 }
             }
             else//false
@@ -22834,9 +23467,13 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         AnimTriggerBoneObj;
 
     //任意で単発再生用
-    bool
+    public bool
         isAnimTriggerRForcePlay = false,
         isAnimTriggerLForcePlay = false;
+
+    //単発再生任意位置にする場合用
+    public GameObject
+        animTriggerForcePlayObj = null;
 
     //現在再生しているアニメトリガーイベントのOrderdDict（重複再生や、オールクリア用に）
     OrderedDictionary<int, Coroutine>
@@ -23113,6 +23750,23 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         #endregion
 
+        //プレイヤーの大きさ取得
+        float tmpNowPlayerLocalScaleZFlt = nowPlayerLocalScale.z;
+
+        #region 任意単発再生用Objが設定されているかどうかで値変更
+
+
+
+        //もし任意単発再生用Objがnullじゃなかったら　そこ で その大きさがプレイヤー大きさ　としてならす
+        if (animTriggerForcePlayObj != null)
+        {
+            tmpOnFootPos = animTriggerForcePlayObj.transform.position;
+            tmpNowPlayerLocalScaleZFlt = animTriggerForcePlayObj.transform.localScale.z;
+        }
+
+
+        #endregion
+
         #region ■智恵理とプレイヤーの距離 サイズなどから、揺れや音などの強さを計算
         //Jukesさんから色々教わり、その注釈をコメントに交えてある。
 
@@ -23136,14 +23790,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //■計算により、一定以上の小ささかつ近づきでしか揺れないので、これいらない
         ////プレイヤー 一定以上小さくなければ揺れゼロ
-        //if (nowPlayerLocalScale.z > DB.playerScale_JougiDeHakariZero.z)
+        //if (tmpNowPlayerLocalScaleZFlt > DB.playerScale_JougiDeHakariZero.z)
         //{ baseYurePow = 0; }
 
 
         //結果代入
         //Pow（累乗）を2にしてあるけども、3にすればもっとカーブがきつくなる（3以上は入れない）
         float yurePow = baseYurePow / Mathf.Pow(limitDistance, 3f)
-            / nowPlayerLocalScale.z;//大きさが考慮される
+            / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
         //演出調整用
         yurePow *= footYurePowMul;
@@ -23163,8 +23817,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //音速は
         //空気 1秒 340メートル
         //地面 1秒 4000～7000メートル
-        float soundVelocity = 340 * nowPlayerLocalScale.z;
-        float yureVelocity = 4000 * nowPlayerLocalScale.z;
+        float soundVelocity = 340 * tmpNowPlayerLocalScaleZFlt;
+        float yureVelocity = 4000 * tmpNowPlayerLocalScaleZFlt;
         //智恵理主観での伝わる早さ。　プレイヤー主観で見ると（0.015倍の時）66倍
 
         //プレイヤー0.015を1とした場合、智恵理は66倍の大きさ
@@ -23189,7 +23843,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //■高音 （反比例をきつくした）
         float highSoundVolume = baseYurePow / Mathf.Pow(limitDistance, 3)
-            / nowPlayerLocalScale.z;//大きさが考慮される
+            / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
 
         //■低音はbaseYurePowだと距離感足りないのでベースの数字を上げ
@@ -23197,7 +23851,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //反比例カーブ具合は2で 揺れと同じ
         float lowSoundVolume = lowSoundPow / Mathf.Pow(limitDistance, 0.5f)
-            / nowPlayerLocalScale.z;//大きさが考慮される
+            / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
         //音量が小さいと感じたら、適当に掛け算で調整
         highSoundVolume *= footHighVolMul;
@@ -23206,8 +23860,22 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //Debug.Log(girlToPlayerDistance);
 
 
+        #region 0.3090倍（F3090イベント用（家つまみ））
+        if (tmpNowPlayerLocalScaleZFlt == 0.3090f)
+        {
+            Debug.Log("F3090専用足音");
+            //SEPlay(tmpOnFootPos, AsiotoSEObj, FootStepSE(footStepSEStr_BetaAsiPicthMinus10List)
+            //    , highSoundVolume / 4);
+            SEPlay(tmpOnFootPos, Other3DSEObj, FootStepSE(woodFloorCreakingShortPicthMinus6SEStrList)
+                , 1);
+
+            SEPlay(tmpOnFootPos, AsiotoSEObj, FootStepSE(footStepSEStr_Low1List)
+                , 0.1f);
+
+        }
+        #endregion
         #region 0.3倍（定規で縮められて以降）
-        if (nowPlayerLocalScale == DB.playerScale_JougiDeHakariZero)
+        else if (tmpNowPlayerLocalScaleZFlt == DB.playerScale_JougiDeHakariZero.z)
         {
             SEPlay(tmpOnFootPos, AsiotoSEObj, FootStepSE(footStepSEStr_BetaAsiPicthMinus10List), highSoundVolume / 2);
             SEPlay(new Vector3(Bip001Trs.position.x, 0, Bip001Trs.position.z), Other3DSEObj, FootStepSE(woodFloorCreakingShortPicthMinus6SEStrList), highSoundVolume, 0.5f);
@@ -23216,7 +23884,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
         #endregion
         #region 0.15倍（ペットボトル入れられてから朝など）
-        else if (nowPlayerLocalScale == DB.playerScale_PetbottleIreZero)
+        else if (tmpNowPlayerLocalScaleZFlt == DB.playerScale_PetbottleIreZero.z)
         {
             #region 小さな家シーンの場合
             //イベント名で指定
@@ -23245,7 +23913,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         #endregion
 
         #region 0.1倍（都市前半）
-        else if (nowPlayerLocalScale.x <= DB.playerScale_City01.x && nowPlayerLocalScale.x >= 0.0091f)//0.0099～とかになることがあるので追加条件
+        else if (tmpNowPlayerLocalScaleZFlt <= DB.playerScale_City01.x && tmpNowPlayerLocalScaleZFlt >= 0.0091f)//0.0099～とかになることがあるので追加条件
         {
             Debug.Log("0.1倍都市前半");
             #region それぞれ場合わけ
@@ -23257,7 +23925,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
                 //反比例カーブ具合は2で 揺れと同じ
                 lowSoundVolume = lowSoundPow / Mathf.Pow(limitDistance, 0.1f)//距離による変化少なめで0.1
-                    / nowPlayerLocalScale.z;//大きさが考慮される
+                    / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
                 //音量が小さいと感じたら、適当に掛け算で調整
                 highSoundVolume *= footHighVolMul;
@@ -23276,7 +23944,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 #region ■転送都市用にyurePowを再計算
                 //Pow（累乗）を2にしてあるけども、3にすればもっとカーブがきつくなる（3以上は入れない）
                 yurePow = baseYurePow / Mathf.Pow(limitDistance, 2.3f)
-                    / nowPlayerLocalScale.z;//大きさが考慮される
+                    / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
                 //演出調整用
                 yurePow *= 0.5f;
@@ -23288,7 +23956,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
                 //反比例カーブ具合は2で 揺れと同じ
                 lowSoundVolume = lowSoundPow / Mathf.Pow(limitDistance, 0.1f)//距離による変化少なめで0.1
-                    / nowPlayerLocalScale.z;//大きさが考慮される
+                    / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
                 //音量が小さいと感じたら、適当に掛け算で調整
                 highSoundVolume *= footHighVolMul;
@@ -23302,7 +23970,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
         #endregion
         #region 0.1倍未満　※ためしに0.1倍未満は同じ
-        else if (nowPlayerLocalScale.x < 0.009)
+        else if (tmpNowPlayerLocalScaleZFlt < 0.009)
         {
             Debug.Log("0.1倍未満");
             #region それぞれ場合わけ（シーン名など）
@@ -23314,7 +23982,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
                 //反比例カーブ具合は2で 揺れと同じ
                 lowSoundVolume = lowSoundPow / Mathf.Pow(limitDistance, 0.1f)//距離による変化少なめで0.1
-                    / nowPlayerLocalScale.z;//大きさが考慮される //100分の1の設定
+                    / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される //100分の1の設定
 
 
                 //音量が小さいと感じたら、適当に掛け算で調整
@@ -23334,7 +24002,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 #region ■転送都市用にyurePowを再計算
                 //Pow（累乗）を2にしてあるけども、3にすればもっとカーブがきつくなる（3以上は入れない）
                 yurePow = baseYurePow / Mathf.Pow(limitDistance, 2.3f)
-                    /// nowPlayerLocalScale.z;//大きさが考慮される //100分の1の設定
+                    /// tmpNowPlayerLocalScaleZFlt;//大きさが考慮される //100分の1の設定
                     / 0.01f;//100分の1想定
 
                 //演出調整用
@@ -23347,7 +24015,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
                 //反比例カーブ具合は2で 揺れと同じ
                 lowSoundVolume = lowSoundPow / Mathf.Pow(limitDistance, 0.1f)//距離による変化少なめで0.1
-                    / nowPlayerLocalScale.z;//大きさが考慮される
+                    / tmpNowPlayerLocalScaleZFlt;//大きさが考慮される
 
                 //音量が小さいと感じたら、適当に掛け算で調整
                 highSoundVolume *= footHighVolMul;
@@ -23364,7 +24032,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         else
         {
             SEPlay(tmpOnFootPos, AsiotoSEObj, FootStepSE(footStepSEStr_BetaAsiList), highSoundVolume);
-            SEPlay(new Vector3(Bip001Trs.position.x, 0, Bip001Trs.position.z), AsiotoSEObj, FootStepSE(woodFloorCreakingShortSEStrList), highSoundVolume * 10);
+            SEPlay(new Vector3(Bip001Trs.position.x, 0, Bip001Trs.position.z), AsiotoSEObj, FootStepSE(woodFloorCreakingShortSEStrList), highSoundVolume * 0.5f);
 
             SEPlay(tmpOnFootPos, AsiotoSEObj, "testFootStep01", lowSoundVolume);
         }
@@ -23382,7 +24050,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
 
         //プレイヤー 一定以上小さくなければ音普通の
-        if (nowPlayerLocalScale.z > DB.playerScale_JougiDeHakariZero.z)
+        if (tmpNowPlayerLocalScaleZFlt > DB.playerScale_JougiDeHakariZero.z)
         {
             //SEPlay(AsiotoSEObj, FootStepSE(), GirlTrs.gameObject, 3);
             SEPlay(tmpOnFootPos, AsiotoSEObj, FootStepSE(), 3);
@@ -23448,7 +24116,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     { tmpRfootStepObj.transform.position = new Vector3(tmpRfootStepObj.transform.position.x, 0, tmpRfootStepObj.transform.position.z); }
 
                     //フォルダに設置(LateUpdateで)
-                    LateAction(() =>
+                    MoreLateAction(() =>
                     { tmpRfootStepObj.transform.SetParent(chieriFootStepObjFolder.transform, true); });
 
                     DB.evMoveDelObjList.Add(tmpRfootStepObj);
@@ -23478,7 +24146,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                     { tmpLfootStepObj.transform.position = new Vector3(tmpLfootStepObj.transform.position.x, 0, tmpLfootStepObj.transform.position.z); }
 
                     //フォルダに設置(LateUpdateで)
-                    LateAction(() =>
+                    MoreLateAction(() =>
                     { tmpLfootStepObj.transform.SetParent(chieriFootStepObjFolder.transform, true); });
 
                     DB.evMoveDelObjList.Add(tmpLfootStepObj);
@@ -23621,7 +24289,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         #region //低音足音
         ////プレイヤー 一定以上小さくなければ音普通の
-        //if (nowPlayerLocalScale.z > DB.playerScale_JougiDeHakariZero.z)
+        //if (tmpNowPlayerLocalScaleZFlt > DB.playerScale_JougiDeHakariZero.z)
         //{ SEPlay(AsiotoSEObj, FootStepSE(), GirlTrs.gameObject, 3); }
         //else //大きければズーン（暫定）
         //{ SEPlay(AsiotoSEObj, "testFootStep01", GirlTrs.gameObject, 2); }
@@ -23631,6 +24299,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         #region 揺らしTweener
 
         float yureTime = 0.5f;
+
+        yurePow *= RMEFootYurePowMul;
 
         //まず持ち上げ
         AT_footStepCameraShakeTweener
@@ -23661,7 +24331,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         #region //高音足音
         ////プレイヤー 一定以上小さくなければ音普通の
-        //if (nowPlayerLocalScale.z > DB.playerScale_JougiDeHakariZero.z)
+        //if (tmpNowPlayerLocalScaleZFlt > DB.playerScale_JougiDeHakariZero.z)
         //{ SEPlay(AsiotoSEObj, FootStepSE(), GirlTrs.gameObject, 3); }
         //else //大きければズーン（暫定）
         //{ SEPlay(AsiotoSEObj, "testFootStep01", GirlTrs.gameObject, 2); }
@@ -23698,10 +24368,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         yield break;
     }
-    float //↑演出調整用
+    public float //↑演出調整用
         footHighVolMul = 3,
         footLowVolMul = 1.5f,
-        footYurePowMul = 0.05f;
+        footYurePowMul = 0.05f,
+        RMEFootYurePowMul = 1;//(他を変更しないようにタイムライン用の調整値は独立させた)
+
 
     #endregion
 
@@ -24034,7 +24706,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #region 環境音変更メソッド
 
-    void KankyouBGMVolumer(float vol = 1, float fadeTime = 1, AudioSource audioSource = null)
+    public void KankyouBGMVolumer(float vol = 1, float fadeTime = 1, AudioSource audioSource = null)
     {
         //指定があればそれのみ
         if (audioSource != null)
@@ -24136,7 +24808,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #endregion
 
-    #region ■UnityTimeline拡張用メソッド
+    #region ■UnityTimeline(RME)拡張用メソッド
 
     #region 変数
 
@@ -24156,8 +24828,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #endregion
 
-
-    //UnityTimelineでのウェイト系処理
+    #region UnityTimelineでのウェイト系処理
     bool isUTLKeyOrWait = false;
     public IEnumerator UTLKeyOrWait(PlayableDirector PD, float time)
     {
@@ -24183,15 +24854,24 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         yield break;
     }
 
-    //選択肢は今は強制ウェイトで、フラグ書き込み兼ねている
+    //選択肢はフラグ書き込み兼ねている
     bool isUTLSentakushiWait = false;
-    public IEnumerator UTLSentakushiWait(PlayableDirector PD, TrackAsset track, bool[] a, bool[] b)
+    //選択肢強制解除用Bool
+    public bool isUTLSentakushiWaitLoop = false;
+    public IEnumerator UTLSentakushiWait(PlayableDirector PD, TrackAsset track, bool[] a, bool[] b, bool sentakushiWait, bool[] through)
     {
-        PD.Pause();
-        isUTLSentakushiWait = true;
+        //タイムラインウェイトするかどうか
+        if (sentakushiWait)
+        {
+            PD.Pause();
+            isUTLSentakushiWait = true;
+        }
 
-        //選択肢選ばれるまでループ
-        while (sentakuListNum == 99) { yield return null; }
+        isUTLSentakushiWaitLoop = true;
+        //選択肢選ばれるまで or 解除されるまでループ
+        while (sentakuListNum == 99 && isUTLSentakushiWaitLoop)
+        { yield return null; }
+
         switch (sentakuListNum)
         {
             case 0://選択肢a
@@ -24205,14 +24885,27 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 (track as RMEventTrack).flagBoolList = b.ToList();
 
                 break;
+
+            case 99:
+
+                (track as RMEventTrack).flagBoolList = through.ToList();
+
+                break;
         }
+        isUTLSentakushiWaitLoop = false;
         sentakuListNum = 99;
 
-
+        #region 念の為選択肢初期化（デバッグ移動の持ってきた）
+        sentakuListNum = 99;//選択肢ナンバーデフォルトへ
+                            //選択肢消し
+        DelAll_Sentakushi();
+        //一時保持選択肢Listクリア
+        sentakushiTempLogList.Clear();
+        #endregion
 
         isUTLSentakushiWait = false;
-
         UTLAllWaitCheckdResume(PD);
+
         yield break;
     }
 
@@ -24292,6 +24985,25 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
 
 
+    bool isUTLMethodWait = false;
+    public List<Coroutine> UTLNowRunMethodCoroutineList = new List<Coroutine>();//この中の全てのコルーチンが終了したらウェイト解除する
+    public IEnumerator UTLMethodWait(PlayableDirector PD)
+    {
+        PD.Pause();
+        isUTLMethodWait = true;
+
+        //上から順にyield return 
+        for (int i = 0; i < UTLNowRunMethodCoroutineList.Count; i++)
+        {
+            yield return UTLNowRunMethodCoroutineList[i];
+        }
+
+        isUTLMethodWait = false;
+
+        UTLAllWaitCheckdResume(PD);
+        yield break;
+    }
+
     //boolで全部のWait終わってるかチェックして、終わってたらリジューム
     void UTLAllWaitCheckdResume(PlayableDirector PD)
     {
@@ -24313,17 +25025,45 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         && isUTLKO_SimplePointObjWait == false
         && isUTLSentakushiWait == false
         && isUTLMotionWait == false
+        && isUTLMethodWait == false
         )
         {
             //消えてなければリジューム
             if (PD != null) { PD.Resume(); }
         }
     }
+    #endregion
 
-    //＝＝＝Wait系処理ここまで
+    #region 移動ポイント到着で自動移動システムオフ
+    public IEnumerator UTLKO_SimplePointObjAutoSystemOff()
+    {
+        //Enterされるまで　もしくは終了するまで待機
+        while (
+            isKO_SimplePointObj_Enter == false
+            && isKOSystem
+            )
+        { yield return null; }
+
+        //到着判定を1フレーム遅らせる（同時だとフラグ処理行う前に消去してしまうため）
+        yield return null;
+
+        //到着しているのなら
+        if (isKO_SimplePointObj_Enter)
+        {
+            //ただ終了（ポイント削除命令も自動で行われる）
+            isKOSystem = false;
+            //到着待ちフラグ残留を防ぐため、一応オフ（シークやスキップへの対応）
+            isUTLKO_SimplePointObjWait = false;
+            isKO_SimplePointObj_Enter = false;
+        }
 
 
-    //移動ポイント到着でフラグ書き込み
+
+        yield break;
+    }
+    #endregion
+
+    #region 移動ポイント到着でフラグ書き込み
     public IEnumerator UTLKO_SimplePointObjFlagWrite(TrackAsset track, bool[] writeFlagBools)
     {
         //Enterされるまで　もしくは終了するまで待機
@@ -24344,6 +25084,45 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         yield break;
     }
+    #endregion
+
+    #region プレイヤーPosを他ObjのPosと同期
+    public bool
+        isUTLPlayerObjDoukiSystem = false,
+        isUTLPlayerPosDouki = false,
+        isUTLPlayerRotDouki = false,
+        isUTLPlayerSclDouki = false;
+
+    public GameObject
+        UTLPlayerDoukiObj = null;
+
+    public IEnumerator UTLPlayerObjDouki()
+    {
+        //すでに起動してたらキャンセル
+        if (isUTLPlayerObjDoukiSystem) { yield break; }
+        isUTLPlayerObjDoukiSystem = true;
+
+        //同期ループ
+        while (isUTLPlayerObjDoukiSystem)
+        {
+            MoreLateAction(() =>
+            {
+                if (isUTLPlayerPosDouki)
+                { CameraObjectsTrs.position = UTLPlayerDoukiObj.transform.position; }
+                if (isUTLPlayerRotDouki)
+                { CameraObjectsTrs.eulerAngles = UTLPlayerDoukiObj.transform.eulerAngles; }
+                if (isUTLPlayerSclDouki)
+                { CameraObjectsTrs.localScale = UTLPlayerDoukiObj.transform.localScale; }
+            });
+            yield return null;
+        }
+
+        Debug.Log("RMEプレイヤーObj同期終了");
+
+        yield break;
+    }
+
+    #endregion
 
     //Frac爆発設定(ちえりコリダー設定前提)
     public void UTLFracImpactSetting(bool isSet = true, GameObject impactPosObj = null, float impactForce = 0, float impactRadius = 0, bool bAlsoImpactFreeChunks = false)
@@ -24372,20 +25151,66 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
 
     //モーション命令（Obj設置と同時にモーション指定する場合は1フレ遅らせる処理）
-    public IEnumerator UTLMotionIEnum(string motionObjName, string stateName, float crossFadeTime, int layer = 0, bool is1FrameWait = false)
+    public IEnumerator UTLMotionIEnum
+        (string motionObjName
+        , string stateName
+        , float crossFadeTime
+        , int layer = 0
+        , bool is1FrameWait = false
+        , RMEventClip.AnimatorOnOffEnum onOffEnum = RMEventClip.AnimatorOnOffEnum.__
+        )
     {
         //1フレ待ちなら待つ
         if (is1FrameWait) { yield return null; }
 
-        //オブジェ名からAnimator取得して実行
-        GameObject.Find(motionObjName).GetComponent<Animator>()
-            .CrossFadeInFixedTime
+        //オブジェ名からAnimator取得
+        var tmpAnim =
+            GameObject.Find(motionObjName).GetComponent<Animator>();
+
+        //AnimatorのONOFF設定があれば適用
+        if (onOffEnum != RMEventClip.AnimatorOnOffEnum.__)
+        {
+            if (onOffEnum == RMEventClip.AnimatorOnOffEnum.On)
+            {
+                tmpAnim.enabled = true;
+            }
+            else if (onOffEnum == RMEventClip.AnimatorOnOffEnum.Off)
+            {
+                tmpAnim.enabled = false;
+            }
+        }
+        //モーション名が指定されていたら
+        if (!string.IsNullOrWhiteSpace(stateName))
+        {
+            //アニメーション実行
+            tmpAnim.CrossFadeInFixedTime
             (stateName//stateName
             , crossFadeTime//transitionDuration
             , layer        //, 0//レイヤー
                            //, 0.0f//fixedTime
                            //, 0//normalizedTransitionTime
             );
+        }
+        yield break;
+    }
+
+    //モーションセッティング変更命令（Obj設置と同時に指定する場合は1フレ遅らせる処理）
+    public IEnumerator UTLMotionSettingIEnum
+        (string motionObjName
+        , float animSpeed
+        , bool is1FrameWait = false
+        )
+    {
+        //1フレ待ちなら待つ
+        if (is1FrameWait) { yield return null; }
+
+
+        //オブジェ名からAnimator取得
+        var tmpAnim =
+            GameObject.Find(motionObjName).GetComponent<Animator>();
+
+        //アニメーションスピード変更
+        tmpAnim.speed = animSpeed;
 
         yield break;
     }
@@ -24425,6 +25250,102 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             });
         yield break;
     }
+
+    #region IKLookAt
+
+    public IEnumerator RME_IKLookAt(RMEventClip.IKLookAtPlayerEnum IKLAenum, float onOffTime, bool head, bool body)
+    {
+        #region IKLookAt On(TargetObj見る)
+        if (IKLAenum == RMEventClip.IKLookAtPlayerEnum.通常On)
+        {
+            //if (posObj == null) { Debug.Log("■RME IKLookAtでPosObjが指定されていない？"); yield break; }
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+
+            //目
+            DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0f);
+            //Follow解除
+            FollowDOMoveFromTrsList.Remove(IKLookAtEyeTargetTrs);
+
+            //首
+            if (head)
+            {
+                DOTweenToLAIKSHead(LAIKHeadS, LAIKSHeadDefWeight, onOffTime);
+                //Follow解除
+                FollowDOMoveFromTrsList.Remove(IKLookAtHeadTargetTrs);
+            }
+            //体（現在使用しない）
+            if (body)
+            {
+                DOTweenToLAIKSBody(LAIKBodyS, LAIKSHeadDefWeight, onOffTime);
+                //体（現在使用しない）
+                FollowDOMoveFromTrsList.Remove(IKLookAtBodyTargetTrs);
+            }
+
+        }
+        #endregion
+        #region IKLookAtプレイヤー見続ける
+        if (IKLAenum == RMEventClip.IKLookAtPlayerEnum.プレイヤー見続ける機能On)
+        {
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+
+            //目
+            FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 0f);
+            DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0f);
+
+            //首
+            if (head)
+            {
+                FollowDOMove(IKLookAtHeadTargetTrs, PlayerHeadTargetTrs, new Vector3(0, -0.045f, 0));
+                DOTweenToLAIKSHead(LAIKHeadS, LAIKSHeadDefWeight, onOffTime);
+            }
+            //体（現在使用しない）
+            if (body)
+            {
+                FollowDOMove(IKLookAtBodyTargetTrs, PlayerHeadTargetTrs, new Vector3(0, -0.245f, 0));
+                DOTweenToLAIKSBody(LAIKHeadS, LAIKSHeadDefWeight, onOffTime);
+            }
+
+        }
+        #endregion
+        #region 解除
+        if (IKLAenum == RMEventClip.IKLookAtPlayerEnum.解除)
+        {
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+
+            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0, onOffTime, Ease.InOutSine);
+            //体（現在使用しない）
+            DOTweenToLAIKSBody(LAIKBodyS, 0, onOffTime, Ease.InOutSine);
+        }
+        #endregion
+        yield break;
+    }
+
+
+    #endregion
+
+
+    #region ペアレント
+
+    public IEnumerator RMEParentIEnum(GameObject childObj, GameObject parentObj)
+    {
+        var tmpV3 = new Vector3();
+
+        MoreLateAction(() =>
+        {
+            tmpV3 = childObj.transform.position;
+            childObj.transform.SetParent(parentObj.transform, true);
+        });
+        //yield return null;
+        //childObj.transform.position = tmpV3;
+
+
+        yield break;
+    }
+
+
+    #endregion
+
 
     #endregion
 
@@ -24594,23 +25515,29 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         DB.hukidashiCanvasObj = Resources.Load("EventSystem/Hukidashi/Prefab/HukidashiCanvas") as GameObject;
         DB.novelSystem = Resources.Load("EventSystem/Novel/NovelSystem") as GameObject;
 
+        //コントローラーシステム取得
+        controllerAutoInitializeSystem = GetComponent<ControllerAutoInitializeSystem>();
+
         #region データベース（関数名のリストなど）
 
-        //探索用メソッド名リスト作成（IENumeratorもメソッド扱いだった）
+        //メソッド名リスト作成（IENumeratorもメソッド扱いだった）
         DB.TansakuMethodNameList.Clear();
-        MemberInfo[] tmpDCMemberInfos = typeof(DataCounter).GetMembers
-            (BindingFlags.Public
-            | BindingFlags.NonPublic
-            | BindingFlags.Instance
-            | BindingFlags.Static
-            | BindingFlags.DeclaredOnly
-            );
-        foreach (var m in tmpDCMemberInfos)
+        DB.RMEMethodNameList.Clear();
+        MemberInfo[] tmpDCTansakuMemberInfos = typeof(DataCounter).GetMembers
+        (BindingFlags.Public
+        | BindingFlags.NonPublic
+        | BindingFlags.Instance
+        | BindingFlags.Static
+        | BindingFlags.DeclaredOnly
+        );
+        foreach (var m in tmpDCTansakuMemberInfos)
         {
+            //探索用メソッド
             if (m.Name.IndexOf("T_") == 0)
-            {
-                DB.TansakuMethodNameList.Add(m.Name);
-            }
+            { DB.TansakuMethodNameList.Add(m.Name); }
+            //RME用メソッド
+            if (m.Name.IndexOf("RME_") == 0)
+            { DB.RMEMethodNameList.Add(m.Name); }
         }
 
 
@@ -24883,6 +25810,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         KO_PlayerAsioto_DefList.Add("足音2_footsteps_shoe_grass_walk_04");
         KO_PlayerAsioto_DefList.Add("足音3_footsteps_shoe_grass_walk_05");
 
+        KO_PlayerAsioto_SwimList.Clear();
+        KO_PlayerAsioto_SwimList.Add("swimSE00");
+        KO_PlayerAsioto_SwimList.Add("swimSE01");
+        KO_PlayerAsioto_SwimList.Add("swimSE02");
+        KO_PlayerAsioto_SwimList.Add("swimSE03");
+
         #endregion
         #region 掴み音系
         //メタル系
@@ -24931,7 +25864,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         NullJudgeFind(ref PostProcessVolume00DirectDataObj, "PostProcessVolume00DirectDataObj");
 
         #region AudioMixer初期値取得
-        audioMixer = Resources.Load("Main/BGM/AudioMixer") as AudioMixer;
+        //audioMixer = Resources.Load("Main/BGM/AudioMixer") as AudioMixer;
+        audioMixer = ResourceFiles.audioMixer;
         audioMixer.GetFloat("AsiotoVol", out defAsiotoVol);
         #endregion
 
@@ -25091,6 +26025,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             //if (obj.name == "Bip002 R hitosashi02") { PlayerRhitosashi02Trs = obj.transform; }
             //if (obj.name == "Bip002 L hitosashi03") { PlayerLhitosashi03Trs = obj.transform; }
             if (obj.name == "Bip002 L Calf") { PlayerLCalfTrs = obj.transform; }
+            if (obj.name == "Bip002 R Foot") { PlayerRFootTrs = obj.transform; }
             if (obj.name == "Bip002 L Foot") { PlayerLFootTrs = obj.transform; }
 
             #region FinalIK用ボーンTrs取得
@@ -25337,6 +26272,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             if (obj.name == "Bip001 Pelvis") { Bip001PelvisTrs = obj.transform; }
             if (obj.name == "Bip001 Spine") { Bip001Spine = obj.transform; }
             if (obj.name == "Bip001 Spine1") { Bip001Spine1 = obj.transform; }
+            if (obj.name == "R Breast01") { R_Breast01 = obj.transform; }
+            if (obj.name == "L Breast01") { L_Breast01 = obj.transform; }
             if (obj.name == "joint_L_eye00") { joint_L_eye00Trs = obj.transform; }
             if (obj.name == "joint_R_eye00") { joint_R_eye00Trs = obj.transform; }
 
@@ -25346,10 +26283,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             if (obj.name == "Bip001 R Calf") { FBBIK.solver.rightLegChain.bendConstraint.bendGoal = obj.transform; }
             if (obj.name == "Bip001 L Calf") { FBBIK.solver.leftLegChain.bendConstraint.bendGoal = obj.transform; }
 
-            //CCDIK用（エイムだけど使わない気もする）
+            //CCDIK用（エイムだけど使わない気もする）(Clavicleはついで（手潰しの時使う）)
+            if (obj.name == "Bip001 R Clavicle") { Bip001_R_ClavicleTrs = obj.transform; }
             if (obj.name == "Bip001 R UpperArm") { Bip001_R_UpperArmTrs = obj.transform; }
             if (obj.name == "Bip001 R Forearm") { Bip001_R_ForearmTrs = obj.transform; }
             if (obj.name == "Bip001 R Hand") { Bip001_R_HandTrs = obj.transform; }
+            if (obj.name == "Bip001 L Clavicle") { Bip001_L_ClavicleTrs = obj.transform; }
             if (obj.name == "Bip001 L UpperArm") { Bip001_L_UpperArmTrs = obj.transform; }
             if (obj.name == "Bip001 L Forearm") { Bip001_L_ForearmTrs = obj.transform; }
             if (obj.name == "Bip001 L Hand") { Bip001_L_HandTrs = obj.transform; }
@@ -25519,7 +26458,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         #endregion
 
         #region AudioMixer導入
-        audioMixer = Resources.Load("Main/BGM/AudioMixer") as AudioMixer;
+        audioMixer = ResourceFiles.audioMixer;
 
         NullJudgeFind(ref SounderTrs, "Sounder");
 
@@ -25643,6 +26582,13 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //{ if (isDummyHandVis == false) { Dummy_Hand.SetActive(false); } }
         #endregion
 
+        //PSコンFix(ONだった場合は一度強制読み込みなおし)
+        if (DB.isUserPSControllerFix)
+        {
+            controllerAutoInitializeSystem.ControllerSetting(DB.playerController, true);
+        }
+
+
         #region 着替え系
         //デフォルトのマテリアル読み込み
         #region シーン別マテリアル読み込み
@@ -25714,20 +26660,26 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             //朝と深夜を一旦タンクトップ素足強制に
             if (SceneManager.GetActiveScene().name == "TH_Asa" || SceneManager.GetActiveScene().name == "TH_Shinya")
             {
-                DB.isUserClothsBarefoot = DB.isUserClothsTankTop = true;
-                DB.isUserClothsBikini = false;
+                //DB.isUserClothsBarefoot = DB.isUserClothsTankTop = true;
+                DB.intCurrentShoes = DB.intCurrentCloth = 1;
+
+                //DB.isUserClothsBikini = false;
+                DB.intCurrentALL = 0;
             }
             else//朝と深夜以外はデフォルト靴下強制に
             {
-                DB.isUserClothsBarefoot = DB.isUserClothsTankTop = false;
-                DB.isUserClothsBikini = false;
+                //DB.isUserClothsBarefoot = DB.isUserClothsTankTop = false;
+                DB.intCurrentShoes = DB.intCurrentCloth = 0;
+
+                //DB.isUserClothsBikini = false;
+                DB.intCurrentALL = 0;
             }
         }
 
         #endregion
         //メソッドで処理
-        ClothsApply();
-
+        //ClothsApply();
+        ClothsApply_ydload();
         #endregion
 
         #region マテリアル系（ポニー発光など）（ひとまず着替えとは別regionに）
@@ -25772,7 +26724,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         //かくれおに歩きスピードと足音スピードデフォルトに（走り）
         playerMoveSpeed = 4f;
         KO_AsiotoTimeCountMaxFloat = 0.35f;
-
+        nowKO_PlayerAsiotoListEnum = KO_PlayerAsiotoListEnum.歩く_KO_PlayerAsioto_DefList;
 
         #region XR状況判定で処理変更（Fadeカメラのパースペクティブなど）
 
@@ -26136,6 +27088,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //ポーズ時スカートのスプリングもポーズする用にスプリングマネージャー取得
         skirtSpringManager = sk_rootTrs.GetComponent<UTJ.SpringManager>();
+        spine1SpringManager = GirlSpine1Trs.GetComponent<UTJ.SpringManager>();
+        rBreastSpringBone = R_Breast01.GetComponent<UTJ.SpringBone>();
+        lBreastSpringBone = L_Breast01.GetComponent<UTJ.SpringBone>();
 
         //プレイヤーモーション
         StartCoroutine(PlayerMotionSystemIEnum());
@@ -26361,6 +27316,15 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             SubTitleVis(true, "デバッグ用情報出力しました");
 
             #endregion
+        }
+
+
+        #endregion
+
+        #region テキストログをテキストファイルで出力（Shift+L）
+        if (Input.GetKeyDown(KeyCode.L) && (Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)))
+        {
+            ScenarioLogOutput();
         }
 
 
@@ -26639,6 +27603,16 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
         #endregion
 
+        #region 風圧音制御
+
+        if (DB.nowRun_WindNoiseList.Count != 0)
+        {
+            ////0.03より下の場合は0
+            //if (aSource.pitch < 0.03) { aSource.pitch = 0; }
+        }
+
+        #endregion
+
         #region 表情・口パク 呼吸速度
         //智恵理ONが前提
         if (GirlTrs.gameObject.activeSelf)
@@ -26651,8 +27625,10 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         #endregion 表情・口パク
 
         #region サイズ・ステータス系(元orig_sizechange)
+        ////身長出し
+        //nowPlayerSintyouFloat = nowPlayerLocalScale.y * DB.sintyouFloat;
         //身長出し
-        nowPlayerSintyouFloat = nowPlayerLocalScale.y * DB.sintyouFloat;
+        nowPlayerSintyouFloat = (CameraObjectsTrs.lossyScale.y / 100) * DB.sintyouFloat;
 
         // メソッドでtemp～に数値を出した後に数値を書き込む命令が必要
         // デバッグで変更させたいのでUpdateに持ってきた（＝関数でtempに書き込んだ次のフレームで実数を書き換えるので1フレーム遅くなる？）
@@ -26848,6 +27824,28 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         isLateAction = true;
     }
 
+    //■LateUpdateよりも更にLateにするため
+    //[DefaultExecutionOrder(+9999)]　にしたスクリプトをサーバーに搭載したのでそれを取得する用
+    MoreLateAction moreLateAction;
+    public void MoreLateAction(Action action)
+    {
+        MoreLateAction moreLateAction = GetComponent<MoreLateAction>();
+        //ListにAddしたのを実行して消す。 （以前はただ実行するだけだったが、同時に2つ以上来たら駄目なのでList化）
+        moreLateAction.lateActionList.Add(action);
+        moreLateAction.isLateAction = true;
+    }
+
+    //■MoreLateActionよりも更にLateにするため
+    //ScriptExecutionOrderでFinalIKより後（以前のOriBreathControllerがあった箇所）に設定したもの（breathControllerをFinalIKより前後で更新できるように作成）（OriBreathController自体はFinalIKより前にして、LateUpdate内でifで切り替えするようにした）
+    MoreMoreLateAction moreMoreLateAction;
+    public bool isBreathControllerMoreMoreLate = true;//OriBreath用なのでここに設置（以前はFinalIKより後に実行していたので、DCでもこっちがデフォになっている。）
+    public void MoreMoreLateAction(Action action)
+    {
+        MoreMoreLateAction moreMoreLateAction = GetComponent<MoreMoreLateAction>();
+        //ListにAddしたのを実行して消す。 （以前はただ実行するだけだったが、同時に2つ以上来たら駄目なのでList化）
+        moreMoreLateAction.lateActionList.Add(action);
+        moreMoreLateAction.isLateAction = true;
+    }
 
     #region 登りシステムLateUpdateでAction処理するシステム
     public bool isAN_LateAction = false;
@@ -26970,7 +27968,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     #region ■FixedUpdateでAction処理するシステム
     public bool isFixedAction = false;
     List<Action> fixedActionList = new List<Action>();
-    void FixedAction(Action action)
+    public void FixedAction(Action action)
     {
         //fixedAction = action;
 
@@ -27553,6 +28551,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
                 if (isHomeworkSystem) { HwDataSave(); }
 
 
+                //シナリオテキストログ保存
+                if (DB.isScenarioLogOutput) { ScenarioLogOutput(); }
+
                 ////UI消し
                 //DB.evMoveDelObjList.Clear();
 
@@ -27611,12 +28612,14 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         = VRUICameraTrs.localEulerAngles
         = VRFadeCameraTrs.localEulerAngles
         = Vector3.zero;
-        //倒れ演出時などはユーザーカメラリセットしない用の引数Bool設定（デフォルトがtrue）
+        //倒れ演出時などはユーザーカメラリセットしない用の引数Bool設定（デフォルトがtrue）(←だったけど、ユーザーカメラリセット用の値を設けたので形骸化かも)
         if (userControlCameraReset)
         {
             userCameraControlEul
                 = CameraUserControlTrs.localEulerAngles
-                = Vector3.zero;
+                //= Vector3.zero; //ゼロが基本だったけど、↓専用の値を設けたのでリセット時の回転も決められるように。
+                = DB.cameraUserResetLocalEul;
+
 
             //マウスでのカメラ縦回転制限値リセット
             nowMouseDragAngleXLimitFloat = 0;
@@ -27791,17 +28794,17 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
 
     //カラー(エミッション変更方法がわかったので追加した)
-    private void FadeColor(Color color, float endDepth)
+    public void FadeColor(Color color, float endDepth)
     { FadeColor(color, endDepth, defFadeTime, false, defFadeEase, false); }
-    private void FadeColor(Color color, float endDepth, float time)
+    public void FadeColor(Color color, float endDepth, float time)
     { FadeColor(color, endDepth, time, false, defFadeEase, false); }
-    private void FadeColor(Color color, float endDepth, float time, bool sortingLayerFront)
+    public void FadeColor(Color color, float endDepth, float time, bool sortingLayerFront)
     { { FadeColor(color, endDepth, time, sortingLayerFront, defFadeEase, false); } }
-    private void FadeColor(Color color, float endDepth, float time, Ease ease)
+    public void FadeColor(Color color, float endDepth, float time, Ease ease)
     { { FadeColor(color, endDepth, time, false, ease, false); } }
-    private void FadeColor(Color color, float endDepth, float time, bool sortingLayerFront, bool setUpdate)
+    public void FadeColor(Color color, float endDepth, float time, bool sortingLayerFront, bool setUpdate)
     { { FadeColor(color, endDepth, time, sortingLayerFront, defFadeEase, false); } }
-    private void FadeColor(Color color, float endDepth, float time, bool sortingLayerFront, Ease ease, bool setUpdate)
+    public void FadeColor(Color color, float endDepth, float time, bool sortingLayerFront, Ease ease, bool setUpdate)
     {
         nowFadeEndDepthFloat = endDepth;
 
@@ -27828,6 +28831,50 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #endregion
 
+    #region シナリオログListをテキストに書き出し
+
+    //イベント移動前にイベント名取得用（EventMove()にて使用）
+    string preEventName = "";
+
+    void ScenarioLogOutput()
+    {
+        #region ファイル名用に時間取得
+        var tmpTimeStr = System.DateTime.Now.Year.ToString("D4");
+        tmpTimeStr += System.DateTime.Now.Month.ToString("D2");
+        tmpTimeStr += System.DateTime.Now.Day.ToString("D2");
+        tmpTimeStr += System.DateTime.Now.Hour.ToString("D2");
+        tmpTimeStr += System.DateTime.Now.Minute.ToString("D2");
+        tmpTimeStr += System.DateTime.Now.Second.ToString("D2");
+        #endregion
+
+        #region ログのListをstring化して、<color>タグなどを削除する
+        string tmpLogTxt = string.Join("\n", novelLogList);
+
+        //正規表現で「<>」に囲まれた部分削除（""で置き換え）
+        tmpLogTxt = new Regex(@"\<(.+?)\>").Replace(tmpLogTxt, "");
+        #endregion
+
+        #region ファイルに書き出し
+        using (StreamWriter
+            writer = new StreamWriter(Application.streamingAssetsPath + "/textLog" + preEventName + tmpTimeStr + ".txt"
+            , false
+            , Encoding.GetEncoding("utf-8")))
+        {
+            writer.WriteLine(tmpLogTxt);
+        }
+
+        #endregion
+
+        preEventName = "";//ファイル名用イベント名テキスト削除
+
+
+        Debug.Log("テキストのログを出力しました。" + Application.streamingAssetsPath + "/textLog" + tmpTimeStr + ".txt");
+        SubTitleVis(true, "テキストのログを出力しました");
+
+
+    }
+
+    #endregion
 
 
     #region PlayerTargetのコリダートリガー
@@ -28102,8 +29149,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         else if (clipName != null)
         {
             //同じのなら抜け
-            if (playClip == Resources.Load("Main/BGM/" + clipName) as AudioClip) { goto AudioClip設定抜け; }
-            playClip = Resources.Load("Main/BGM/" + clipName) as AudioClip;
+            if (playClip == ResourceFiles.BGM[clipName]) { goto AudioClip設定抜け; }
+            playClip = ResourceFiles.BGM[clipName];
+
+            ////同じのなら抜け
+            //if (playClip == Resources.Load("Main/BGM/" + clipName) as AudioClip) { goto AudioClip設定抜け; }
+            //playClip = Resources.Load("Main/BGM/" + clipName) as AudioClip;
         }
 
         //指定がなければ、フローチャートから
@@ -28226,6 +29277,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     public void ChieriMotion(string stateName, float transitionDuration, int layer = -1, float fixedTime = 0.0f, float normalizedTransitionTime = 0)
     {
         girlAnim.CrossFadeInFixedTime(stateName, transitionDuration, layer, fixedTime, normalizedTransitionTime);//実行
+
 
         //もしこのレイヤーにディレイ予約が入っていたらキャンセル
         if (chieriMotionDelayCorList[layer] != null)
@@ -28481,13 +29533,13 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
     #region ■照れ頬
     Tweener terehohoTweener;
-    void TereHoho()
+    public void TereHoho()
     {
         TereHoho(true, 3f);
     }
-    void TereHoho(float heniTime = 3f, bool tereOn = true)
+    public void TereHoho(float heniTime = 3f, bool tereOn = true)
     { TereHoho(tereOn, heniTime); }
-    void TereHoho(bool tereOn = true, float heniTime = 3f)
+    public void TereHoho(bool tereOn = true, float heniTime = 3f)
     {
         //前回のが生きてたら更新
         if (terehohoTweener != null)
@@ -28530,47 +29582,71 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         }
     }
 
-    //照れ頬透明度変更(デュレーションいらない（Terehohoでやる）
-    void TereHohoAlphaChange(float alphaFloat, float durationTime = 0)
+    //照れ頬透明度変更(デュレーションいらない（Terehohoでやる）（←と書いてるけど、どう考えても必要なのでifで追加）
+    public void TereHohoAlphaChange(float alphaFloat, float durationTime = 0)
     {
-        tereOnColor =
-            new Color(tereDefOnColor.r, tereDefOnColor.g, tereDefOnColor.b,
-            alphaFloat);
 
-        //DOTween.To(() => tereOnColor, (x) => tereOnColor = x
-        //, new Color(tereDefOnColor.r, tereDefOnColor.g, tereDefOnColor.b,
-        //    alphaFloat)
-        //    , durationTime);
+        if (durationTime > 0)
+        {
+            DOTween.To(() => tereOnColor, (x) => tereOnColor = x
+            , new Color(tereDefOnColor.r, tereDefOnColor.g, tereDefOnColor.b,
+                alphaFloat)
+                , durationTime);
+        }
+        else
+        {
+            tereOnColor =
+                new Color(tereDefOnColor.r, tereDefOnColor.g, tereDefOnColor.b,
+                alphaFloat);
+        }
 
 
     }
     #endregion
 
     #region ループモーション群
+    public bool isChieriKuchipaku = true;
     public float kutipakuTimerFloat;
     public string kutipakuString = "口パク";
     void Kutipaku()
     {
-        //口パクタイマー
-        if (kutipakuTimerFloat > 0) { kutipakuTimerFloat -= 1 * Time.deltaTime; }
-
-        //タイマー0以上でハッシュが口パク以外だったら 口パクする
-        if (kutipakuTimerFloat > 0 && girlAnim.GetCurrentAnimatorStateInfo(3).IsName(kutipakuString) == false)
-        { ChieriMotion(kutipakuString, 0, 3); }
-
-        //タイマー0以下でハッシュが_noData以外だったら 口パク止める
-        else if (kutipakuTimerFloat <= 0 && girlAnim.GetCurrentAnimatorStateInfo(3).IsName("_noData") == false)
+        if (isChieriKuchipaku)
         {
-            //Durationをかけるとハッシュが口パク以外のまま連続で命令送り続けてしまうので
-            //0フレで
-            ChieriMotion("_noData", 0f, 3);
+            //口パクタイマーをカウントダウン
+            if (kutipakuTimerFloat > 0)
+            { kutipakuTimerFloat -= 1 * Time.deltaTime; }
+
+            //タイマーが0以上でハッシュが口パク以外だったら 口パクする
+            if (kutipakuTimerFloat > 0 && girlAnim.GetCurrentAnimatorStateInfo(3).IsName(kutipakuString) == false)
+            { ChieriMotion(kutipakuString, 0, 3); }
+
+            //タイマー0以下でハッシュが_noData以外だったら 口パク止める
+            else if (kutipakuTimerFloat <= 0 && girlAnim.GetCurrentAnimatorStateInfo(3).IsName("_noData") == false)
+            {
+                //Durationをかけるとハッシュが口パク以外のまま連続で命令送り続けてしまうので
+                //0フレで
+                ChieriMotion("_noData", 0f, 3);
+            }
+
+            ////今まで閉じっぱなしだったので、閉じておきたい場合はm_defに（口とじ）
+            //else if (kutipakuTimerFloat <= 0 && girlAnim.GetCurrentAnimatorStateInfo(3).IsName("m_def") == false)
+            //{
+            //    ChieriMotion("m_def", 0f, 3);
+            //}
+        }
+        else
+        {
+            //口パク中だったら（タイマーが0以上）
+            if (kutipakuTimerFloat > 0)
+            {
+                //タイマー0に
+                kutipakuTimerFloat = 0;
+
+                //口パク止める (ひとまず0フレで。ゆっくりにしても口閉じ状態へゆっくりいってからマスクがパッと切り替わるので、それもそれで変なので)
+                ChieriMotion("_noData", 0f, 3);
+            }
         }
 
-        ////今まで閉じっぱなしだったので、閉じておきたい場合はm_defに（口とじ）
-        //else if (kutipakuTimerFloat <= 0 && girlAnim.GetCurrentAnimatorStateInfo(3).IsName("m_def") == false)
-        //{
-        //    ChieriMotion("m_def", 0f, 3);
-        //}
     }
 
     IEnumerator EyeBlinkIEnum;
@@ -28871,6 +29947,28 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             isGirlPosToIKTargetPosRotLoading = false;
         });
     }
+
+    //プレイヤーの手足位置取得してターゲットに
+    bool isPlayerPosToIKTargetPosRotLoading = false;
+    public void PlayerPosToIKTargetPosRot()
+    {
+        isPlayerPosToIKTargetPosRotLoading = true;
+        FixedAction(() =>
+        {
+            PlayerIKRHandTargetTrs.position = PlayerRHandTrs.position;
+            PlayerIKRHandTargetTrs.rotation = PlayerRHandTrs.rotation;
+            PlayerIKLHandTargetTrs.position = PlayerLHandTrs.position;
+            PlayerIKLHandTargetTrs.rotation = PlayerLHandTrs.rotation;
+
+            PlayerIKRFootTargetTrs.position = PlayerRFootTrs.position;
+            PlayerIKRFootTargetTrs.rotation = PlayerRFootTrs.rotation;
+            PlayerIKLFootTargetTrs.position = PlayerLFootTrs.position;
+            PlayerIKLFootTargetTrs.rotation = PlayerLFootTrs.rotation;
+
+            isPlayerPosToIKTargetPosRotLoading = false;
+        });
+    }
+
     #endregion
 
     #region TimeLine
@@ -28889,6 +29987,16 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     bool isEventMove = false;//重複阻止用
     IEnumerator EventMove(int evMoveNumInt, string setEventKey, bool isDebug, bool isForceSceneLoad = false)//イベント移動（引数でデバッグや移動するステージ指定）
     {
+
+        #region デバッグのシナリオテキスト保存ファイル名用に、イベントナンバーとイベント名を取得
+
+        //最初にイベント名が重複してしまうのを防ぐ用if
+        if (preEventName != DB.nowEventNum + evs[DB.nowEventNum].Key + "_")
+        {
+            preEventName += DB.nowEventNum + evs[DB.nowEventNum].Key + "_";
+        }
+        #endregion
+
         if (isEventMove) { yield break; }
         isEventMove = true;
 
@@ -29063,14 +30171,20 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             IKLookAtEyeTargetTrs.SetParent(GirlIKTargetsTrs);
             IKLookAtHeadTargetTrs.SetParent(GirlIKTargetsTrs);
 
-            //ペン置く
-            SharpenObj.transform.SetParent(RoomTrs);
-            SharpenObj.transform.localPosition = Sharpen_table_Room_ParameterTrs.localPosition;
-            SharpenObj.transform.localEulerAngles = Sharpen_table_Room_ParameterTrs.localEulerAngles;
-            //消しゴム置く
-            KeshigomuObj.transform.SetParent(RoomTrs);
-            KeshigomuObj.transform.localPosition = Keshigomu_table_Room_ParameterTrs.localPosition;
-            KeshigomuObj.transform.localEulerAngles = Keshigomu_table_Room_ParameterTrs.localEulerAngles;
+            //ペンあれば置く
+            if (SharpenObj != null)
+            {
+                SharpenObj.transform.SetParent(RoomTrs);
+                SharpenObj.transform.localPosition = Sharpen_table_Room_ParameterTrs.localPosition;
+                SharpenObj.transform.localEulerAngles = Sharpen_table_Room_ParameterTrs.localEulerAngles;
+            }
+            //消しゴムあれば置く
+            if (KeshigomuObj != null)
+            {
+                KeshigomuObj.transform.SetParent(RoomTrs);
+                KeshigomuObj.transform.localPosition = Keshigomu_table_Room_ParameterTrs.localPosition;
+                KeshigomuObj.transform.localEulerAngles = Keshigomu_table_Room_ParameterTrs.localEulerAngles;
+            }
 
             //フキダシ消し
             DelAll_Hukidashi();
@@ -29149,6 +30263,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         //AN起動時のプレイヤーモーション（回転や手IKなども）をONに
         isPlayerANRotate = true;
+
+        //ユーザーカメラのリセット時の値をゼロに。（基本はイベント中に手動で戻すものだけど念の為）
+        DB.cameraUserResetLocalEul = Vector3.zero;
 
         #endregion
 
@@ -29255,6 +30372,9 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
         #endregion
 
+
+
+
         //プレイヤー風切り音ミュートしてたらOFF
         //if (playerWindAudioSource.mute) { playerWindAudioSource.mute = false; }
 
@@ -29315,7 +30435,8 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         isEvRun = true;
 
         //オートセーブ(ユーザーデータロードや、セーブしないシーンじゃなければ)
-        if (evs[DB.nowEventNum].Key != "ユーザーデータチェックとロード")
+        if (evs[DB.nowEventNum].Key != "ユーザーデータチェックとロード"
+            && evs[DB.nowEventNum].Key != "ToBeContinued")
         { Save(); }
 
         //フローチャート移動フラグ解除
@@ -29495,7 +30616,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
     }
 
     //■ボタン操作の時のウェイト　フキダシ待ち
-    IEnumerator KeyOrWait(float waitTime)
+    public IEnumerator KeyOrWait(float waitTime)
     {
         //■ボタン送りモードなら
         if (DB.isButtonWaitMode)
@@ -29737,7 +30858,7 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             FollowDOMoveFromTrsList.Remove(fromTrs);
             yield return null;
         }
-        //入れる
+        //↑で消したので改めて入れる
         FollowDOMoveFromTrsList.Add(fromTrs);
         FollowDOMoveToTrsList.Add(toTrs);//総数確認用
 
@@ -30211,11 +31332,12 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
             DB.isUserVRSmoothRotate = DB.saveDataDict[nameof(DB.isUserVRSmoothRotate)] == "True" ? true : false;
 
             DB.isUserFixityOutfit = DB.saveDataDict[nameof(DB.isUserFixityOutfit)] == "True" ? true : false;
-            DB.isUserClothsBarefoot = DB.saveDataDict[nameof(DB.isUserClothsBarefoot)] == "True" ? true : false;
-            DB.isUserClothsTankTop = DB.saveDataDict[nameof(DB.isUserClothsTankTop)] == "True" ? true : false;
+            //DB.isUserClothsBarefoot = DB.saveDataDict[nameof(DB.isUserClothsBarefoot)] == "True" ? true : false;
+            //DB.isUserClothsTankTop = DB.saveDataDict[nameof(DB.isUserClothsTankTop)] == "True" ? true : false;
 
             //アンロック系
             DB.isUserInfoVisMakotoHeightUnlock = DB.saveDataDict[nameof(DB.isUserInfoVisMakotoHeightUnlock)] == "True" ? true : false;
+
 
             #region 反映
             //音
@@ -30258,14 +31380,66 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
 
             #region ■■新規ロード処理（互換性を持たせるため、そのデータが無ければデフォルトを入れていくタイプ）
 
-            #region メニュー ビキニ
-            //セーブデータにフラグ存在していなかったら（旧セーブデータと思われる）
-            if (DB.saveDataDict.ContainsKey(nameof(DB.isUserClothsBikini)) == false)
+            #region メニュー PSコンFix ゆろーどさん着替え
+
+            //旧ビキニ設定 210711廃止
+            ////セーブデータにフラグ存在していなかったら（旧セーブデータと思われる）
+            //if (DB.saveDataDict.ContainsKey(nameof(DB.isUserClothsBikini)) == false)
+            //{
+            //    //フラグデータ追加(セーブと同じ)
+            //    DB.saveDataDict.Add(nameof(DB.isUserClothsBikini), DB.isUserClothsBikini.ToString());
+            //    Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(ビキニ)");
+            //}
+            //DB.isUserClothsBikini = DB.saveDataDict[nameof(DB.isUserClothsBikini)] == "True" ? true : false;
+
+            //PSコン
+            if (DB.saveDataDict.ContainsKey(nameof(DB.isUserPSControllerFix)) == false)
             {
                 //フラグデータ追加(セーブと同じ)
-                DB.saveDataDict.Add(nameof(DB.isUserClothsBikini), DB.isUserClothsBikini.ToString());
-                Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(ビキニ)");
+                DB.saveDataDict.Add(nameof(DB.isUserPSControllerFix), DB.isUserPSControllerFix.ToString());
+                Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(PSControllerFix)");
             }
+            DB.isUserPSControllerFix = DB.saveDataDict[nameof(DB.isUserPSControllerFix)] == "True" ? true : false;
+
+            #region ゆろーどさん着替え
+            //セーブデータにフラグ存在していなかったら（旧セーブデータと思われる）
+            if (DB.saveDataDict.ContainsKey(nameof(DB.intCurrentCloth)) == false)
+            {
+                //フラグデータ追加(セーブと同じ)
+                DB.saveDataDict.Add(nameof(DB.intCurrentCloth), DB.intCurrentCloth.ToString());
+                Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(ゆろーどさんCloth)");
+            }
+            DB.intCurrentCloth = int.Parse(DB.saveDataDict[nameof(DB.intCurrentCloth)]);
+
+            //セーブデータにフラグ存在していなかったら（旧セーブデータと思われる）
+            if (DB.saveDataDict.ContainsKey(nameof(DB.intCurrentShoes)) == false)
+            {
+                //フラグデータ追加(セーブと同じ)
+                DB.saveDataDict.Add(nameof(DB.intCurrentShoes), DB.intCurrentShoes.ToString());
+                Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(ゆろーどさんCloth)");
+            }
+            DB.intCurrentShoes = int.Parse(DB.saveDataDict[nameof(DB.intCurrentShoes)]);
+
+            //セーブデータにフラグ存在していなかったら（旧セーブデータと思われる）
+            if (DB.saveDataDict.ContainsKey(nameof(DB.intCurrentALL)) == false)
+            {
+                //フラグデータ追加(セーブと同じ)
+                DB.saveDataDict.Add(nameof(DB.intCurrentALL), DB.intCurrentALL.ToString());
+                Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(ゆろーどさんCloth)");
+            }
+            DB.intCurrentALL = int.Parse(DB.saveDataDict[nameof(DB.intCurrentALL)]);
+
+            //セーブデータにフラグ存在していなかったら（旧セーブデータと思われる）
+            if (DB.saveDataDict.ContainsKey(nameof(DB.intCurrentHead)) == false)
+            {
+                //フラグデータ追加(セーブと同じ)
+                DB.saveDataDict.Add(nameof(DB.intCurrentHead), DB.intCurrentHead.ToString());
+                Debug.Log("フラグ旧データ状態だったので新フラグデータをセーブに追加した(ゆろーどさんCloth)");
+            }
+            DB.intCurrentHead = int.Parse(DB.saveDataDict[nameof(DB.intCurrentHead)]);
+
+            #endregion
+
             #endregion
 
             #region フローチャートコマデータ読み込み
@@ -30456,14 +31630,24 @@ Actionはdelgateというメソッドをカプセル化（変数として扱え�
         DB.saveDataDict.Add(nameof(DB.userFieldOfViewFloat), DB.userFieldOfViewFloat.ToString());
         DB.saveDataDict.Add(nameof(DB.isUserVRUpDownRotate), DB.isUserVRUpDownRotate.ToString());
         DB.saveDataDict.Add(nameof(DB.isUserVRSmoothRotate), DB.isUserVRSmoothRotate.ToString());
-        //着替え
+        //操作
+        DB.saveDataDict.Add(nameof(DB.isUserPSControllerFix), DB.isUserPSControllerFix.ToString());
+        //着替えユーザー設定固定
         DB.saveDataDict.Add(nameof(DB.isUserFixityOutfit), DB.isUserFixityOutfit.ToString());
-        DB.saveDataDict.Add(nameof(DB.isUserClothsBarefoot), DB.isUserClothsBarefoot.ToString());
-        DB.saveDataDict.Add(nameof(DB.isUserClothsTankTop), DB.isUserClothsTankTop.ToString());
-        DB.saveDataDict.Add(nameof(DB.isUserClothsBikini), DB.isUserClothsBikini.ToString());
+        ////着替え 210711廃止
+        //DB.saveDataDict.Add(nameof(DB.isUserClothsBarefoot), DB.isUserClothsBarefoot.ToString());
+        //DB.saveDataDict.Add(nameof(DB.isUserClothsTankTop), DB.isUserClothsTankTop.ToString());
+        //DB.saveDataDict.Add(nameof(DB.isUserClothsBikini), DB.isUserClothsBikini.ToString());
+        //着替えゆろーどさん版
+        DB.saveDataDict.Add(nameof(DB.intCurrentShoes), DB.intCurrentShoes.ToString());
+        DB.saveDataDict.Add(nameof(DB.intCurrentCloth), DB.intCurrentCloth.ToString());
+        DB.saveDataDict.Add(nameof(DB.intCurrentALL), DB.intCurrentALL.ToString());
+        DB.saveDataDict.Add(nameof(DB.intCurrentHead), DB.intCurrentHead.ToString());
+
 
         //アンロック系
         DB.saveDataDict.Add(nameof(DB.isUserInfoVisMakotoHeightUnlock), DB.isUserInfoVisMakotoHeightUnlock.ToString());
+
 
         #region フローチャートコマデータ保存
         for (int i = 0; i < flowChartKomaDataObjList.Count; i++)

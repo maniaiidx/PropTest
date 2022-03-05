@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+﻿#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -30,6 +30,8 @@ namespace VeryAnimation
         public UTimelineWindowTimeControl uTimelineWindowTimeControl { get; protected set; }
         public UTimelineState uTimelineState { get; protected set; }
         public UTrackAsset uTrackAsset { get; protected set; }
+        public UAnimationTrack uAnimationTrack { get; protected set; }
+        public UAnimationPlayableAsset uAnimationPlayableAsset { get; protected set; }
         public UTimelineTreeViewGUI uTimelineTreeViewGUI { get; protected set; }
         public UTimelineAnimationUtilities uTimelineAnimationUtilities { get; protected set; }
 
@@ -44,6 +46,8 @@ namespace VeryAnimation
             uTimelineWindowTimeControl = new UTimelineWindowTimeControl(asmTimelineEditor, asmTimelineEngine);
             uTimelineState = new UTimelineState();
             uTrackAsset = new UTrackAsset();
+            uAnimationTrack = new UAnimationTrack();
+            uAnimationPlayableAsset = new UAnimationPlayableAsset();
             uTimelineTreeViewGUI = new UTimelineTreeViewGUI();
             uTimelineAnimationUtilities = new UTimelineAnimationUtilities(asmTimelineEditor, asmTimelineEngine);
         }
@@ -82,7 +86,13 @@ namespace VeryAnimation
                 if (instance == null) return;
                 if (dg_set_recording == null || dg_set_recording.Target != instance)
                     dg_set_recording = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), instance, instance.GetType().GetProperty("recording").GetSetMethod());
-                dg_set_recording(enable);
+                try
+                {
+                    dg_set_recording(enable);
+                }
+                catch
+                {
+                }
             }
 
             public bool GetPreviewMode(object instance)
@@ -254,6 +264,27 @@ namespace VeryAnimation
                 return dg_get_locked();
             }
         }
+        public class UAnimationTrack
+        {
+
+        }
+        public class UAnimationPlayableAsset
+        {
+            private Func<bool> dg_get_hasRootTransforms;
+
+            private UAnimationUtility uAnimationUtility;
+
+            public UAnimationPlayableAsset()
+            {
+                uAnimationUtility = new UAnimationUtility();
+            }
+
+            public virtual bool GetHasRootTransforms(AnimationPlayableAsset instance)
+            {
+                if (instance == null) return false;
+                return uAnimationUtility.HasRootCurves(instance.clip);
+            }
+        }
         public class UTimelineTreeViewGUI
         {
             public Func<List<TrackAsset>> dg_get_selection;
@@ -331,6 +362,12 @@ namespace VeryAnimation
         public void SetPreviewMode(bool enable)
         {
             uTimelineState.SetPreviewMode(state, enable);
+        }
+
+        public void Close()
+        {
+            if (instance != null)
+                instance.Close();
         }
 
         public TrackAsset GetSelectionTrack()

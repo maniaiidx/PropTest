@@ -1,12 +1,14 @@
 ﻿//#define Enable_Profiler
 
-#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditorInternal;
@@ -20,6 +22,10 @@ using System.Collections;
 using System.Collections.Generic;
 #if UNITY_2018_3_OR_NEWER
 using UnityEditor.Experimental.SceneManagement;
+#endif
+#if VERYANIMATION_ANIMATIONRIGGING
+using UnityEngine.Animations.Rigging;
+using UnityEditor.Animations.Rigging;
 #endif
 
 namespace VeryAnimation
@@ -46,8 +52,17 @@ namespace VeryAnimation
         public UAvatarPreview uAvatarPreview { get; private set; }
         public UAnimationClipEditor uAnimationClipEditor { get; private set; }
 
-#if UNITY_2017_1_OR_NEWER
-        public UAnimationWindow_2017_1 uAw_2017_1 { get; private set; }
+#if UNITY_2018_1_OR_NEWER
+        public UAnimationWindow_2018_1 uAw_2018_1 { get; private set; }
+#endif
+#if UNITY_2019_1_OR_NEWER
+        public UAnimationWindow_2019_1 uAw_2019_1 { get; private set; }
+#endif
+#if UNITY_2019_2_OR_NEWER
+        public UAnimationWindow_2019_2 uAw_2019_2 { get; private set; }
+#endif
+#if UNITY_2020_1_OR_NEWER
+        public UAnimationWindow_2020_1 uAw_2020_1 { get; private set; }
 #endif
 #if UNITY_2018_1_OR_NEWER
         public UAnimationUtility_2018_1 uAnimationUtility_2018_1 { get; private set; }
@@ -56,15 +71,16 @@ namespace VeryAnimation
 
         #region Core
         public MusclePropertyName musclePropertyName { get; private set; }
+#if VERYANIMATION_ANIMATIONRIGGING
+        public AnimationRigging animationRigging { get; private set; }
+#endif
         public AnimatorIKCore animatorIK;
         public OriginalIKCore originalIK;
         private SynchronizeAnimation synchronizeAnimation;
         #endregion
 
         public bool edit;
-#if VERYANIMATION_TIMELINE
-        private bool linkedWithTimeline;
-#endif
+
         #region Selection
         public List<GameObject> selectionGameObjects { get; private set; }
         public List<int> selectionBones { get; private set; }
@@ -113,7 +129,7 @@ namespace VeryAnimation
         public bool humanoidHasRightHand { get; private set; }
         public bool humanoidHasTDoF { get; private set; }
         public Quaternion humanoidPreHipRotationInverse { get; private set; }
-        public Quaternion humanoidPoseHipRotation { get; private set; }
+        public Quaternion humanoidPostHipRotation { get; private set; }
         public float humanoidLeftLowerLegLengthSq { get; private set; }
         public bool[] humanoidMuscleContains { get; private set; }
         public HumanPoseHandler humanPoseHandler { get; private set; }
@@ -125,17 +141,52 @@ namespace VeryAnimation
         public Quaternion animatorWorldRootRotationCache { get; set; }
         public Bounds gameObjectBounds { get; set; }
         public bool prefabMode { get; set; }
+        public bool hasDummyObject { get { return true; } } //Allways
         public DummyObject calcObject { get; private set; }
+        public OnionSkin onionSkin { get; private set; }
         #endregion
 
         #region DummyObject
-        public DummyObject dummyObject { get; private set; }
-        public GameObject editGameObject { get { return dummyObject != null ? dummyObject.gameObject : vaw.gameObject; } }
-        public Animator editAnimator { get { return dummyObject != null ? dummyObject.animator : vaw.animator; } }
-        public GameObject[] editBones { get { return dummyObject != null ? dummyObject.bones : bones; } }
-        public Dictionary<GameObject, int> editBoneDic { get { return dummyObject != null ? dummyObject.boneDic : boneDic; } }
-        public GameObject[] editHumanoidBones { get { return dummyObject != null ? dummyObject.humanoidBones : humanoidBones; } }
-        public HumanPoseHandler editHumanPoseHandler { get { return dummyObject != null ? dummyObject.humanPoseHandler : humanPoseHandler; } }
+        public GameObject editGameObject { get { return hasDummyObject ? calcObject.gameObject : vaw.gameObject; } }
+        public Animator editAnimator { get { return hasDummyObject ? calcObject.animator : vaw.animator; } }
+        public GameObject[] editBones { get { return hasDummyObject ? calcObject.bones : bones; } }
+        public Dictionary<GameObject, int> editBoneDic { get { return hasDummyObject ? calcObject.boneDic : boneDic; } }
+        public GameObject[] editHumanoidBones { get { return hasDummyObject ? calcObject.humanoidBones : humanoidBones; } }
+
+        [Flags]
+        public enum EditObjectFlag
+        {
+            Base = (1 << 0),
+            Dummy = (1 << 1),
+            Edit = (1 << 2),
+            All = Base | Dummy,
+        }
+
+        public void GetEditGameObjectHumanPose(ref HumanPose humanPose, EditObjectFlag editFlags = EditObjectFlag.Edit)
+        {
+            if (!isHuman) return;
+
+            HumanPoseHandler handler = null;
+            Transform t = null;
+            if (hasDummyObject && (editFlags & (EditObjectFlag.Edit | EditObjectFlag.Dummy)) != 0)
+            {
+                handler = calcObject.humanPoseHandler;
+                t = calcObject.gameObjectTransform;
+            }
+            else
+            {
+                handler = humanPoseHandler;
+                t = vaw.gameObject.transform;
+            }
+
+            TransformPoseSave.SaveData save = new TransformPoseSave.SaveData(t);
+            t.localPosition = Vector3.zero;
+            t.localRotation = Quaternion.identity;
+            t.localScale = Vector3.one;
+            handler.GetHumanPose(ref humanPose);
+            save.LoadLocal(t);
+        }
+
         public int EditBonesIndexOf(GameObject go)
         {
             var tmpBoneDic = editBoneDic;
@@ -151,14 +202,10 @@ namespace VeryAnimation
         }
         #endregion
 
-        #region OnionSkin
-        public OnionSkin onionSkin { get; private set; }
-        #endregion
-
         #region Current
-        public GameObject currentGameObject { get; private set; }
         public AnimationClip currentClip { get; private set; }
         public float currentTime { get; private set; }
+        public bool currentLinkedWithTimeline { get; private set; }
         #endregion
         #region Before
         private bool beforePlaying;
@@ -170,6 +217,14 @@ namespace VeryAnimation
         private EditorWindow beforeMouseOverWindow;
         private EditorWindow beforeFocusedWindow;
         private bool beforeAnimationWindowRefreshDone;
+        private bool beforeEnableHumanoidFootIK;
+        private bool beforeEnableAnimationRiggingIK;
+#pragma warning disable 0414
+        private bool beforeRemoveStartOffset;
+        private Vector3 beforeOffsetPosition;
+        private Quaternion beforeOffsetRotation;
+        private AnimationClipSettings beforeAnimationClipSettings;
+#pragma warning restore 0414
         #endregion
 
         #region Refresh
@@ -185,8 +240,10 @@ namespace VeryAnimation
             if (type > animationWindowRefresh)
                 animationWindowRefresh = type;
         }
-        private bool updateResampleAnimation;
+        private bool updateSampleAnimation;
         private bool updatePoseFixAnimation;
+        private bool updateStartTransform;
+        private bool updateSaveForce;
         #endregion
 
         #region AnimationWindow
@@ -245,15 +302,6 @@ namespace VeryAnimation
             Total
         }
         public RootCorrectionMode rootCorrectionMode;
-
-        [Serializable]
-        public class BlendShapeSet
-        {
-            public PoseTemplate poseTemplate;
-            public Texture2D icon;
-        }
-        [SerializeField]
-        public List<BlendShapeSet> blendShapeSetList;
         #endregion
 
         #region ControlWindow
@@ -272,15 +320,18 @@ namespace VeryAnimation
             instance = this;
 
             edit = false;
-#if UNITY_2019_2_OR_NEWER
-            uAw = uAw_2017_1 = new UAnimationWindow_2019_2();
+#if UNITY_2020_1_OR_NEWER
+            uAw = uAw_2018_1 = uAw_2019_1 = uAw_2019_2 = uAw_2020_1 = new UAnimationWindow_2020_1();
+            uAnimationUtility = uAnimationUtility_2018_1 = new UAnimationUtility_2018_1();
+#elif UNITY_2019_2_OR_NEWER
+            uAw = uAw_2018_1 = uAw_2019_1 = uAw_2019_2 = new UAnimationWindow_2019_2();
+            uAnimationUtility = uAnimationUtility_2018_1 = new UAnimationUtility_2018_1();
+#elif UNITY_2019_1_OR_NEWER
+            uAw = uAw_2018_1 = uAw_2019_1 = new UAnimationWindow_2019_1();
             uAnimationUtility = uAnimationUtility_2018_1 = new UAnimationUtility_2018_1();
 #elif UNITY_2018_1_OR_NEWER
-            uAw = uAw_2017_1 = new UAnimationWindow_2018_1();
+            uAw = uAw_2018_1 = new UAnimationWindow_2018_1();
             uAnimationUtility = uAnimationUtility_2018_1 = new UAnimationUtility_2018_1();
-#elif UNITY_2017_1_OR_NEWER
-            uAw = uAw_2017_1 = new UAnimationWindow_2017_1();
-            uAnimationUtility = new UAnimationUtility();
 #else
             uAw = new UAnimationWindow();
             uAnimationUtility = new UAnimationUtility();
@@ -295,8 +346,13 @@ namespace VeryAnimation
             uSceneView = new USceneView();
 
             musclePropertyName = new MusclePropertyName();
+#if VERYANIMATION_ANIMATIONRIGGING
+            animationRigging = new AnimationRigging();
+#endif
             animatorIK = new AnimatorIKCore();
             originalIK = new OriginalIKCore();
+
+            lastTool = Tools.current;
 
             CreateEditorCurveBindingPropertyNames();
 
@@ -319,23 +375,15 @@ namespace VeryAnimation
 
         public void Initialize()
         {
-            Assert.IsFalse(edit);
+            Release();
 
             UpdateCurrentInfo();
 
-#if VERYANIMATION_TIMELINE
-            if (uAw_2017_1.GetLinkedWithTimeline())
-            {
-                var director = uAw_2017_1.GetTimelineCurrentDirector();
-                currentTime = (float)director.time;
-            }
-#endif
+            StopRecording();
 
-            uAw.RecordingDisable();
 #if VERYANIMATION_TIMELINE
-            uAw_2017_1.SetTimelineRecording(false);
-            uAw_2017_1.SetTimelinePreviewMode(false);
-            linkedWithTimeline = uAw_2017_1.GetLinkedWithTimeline();
+            uAw.SetTimelineRecording(false);
+            uAw.SetTimelinePreviewMode(false);
 #endif
 
             edit = true;
@@ -343,9 +391,7 @@ namespace VeryAnimation
             #region AutoLock
             {
                 autoLockedAnimationWindow = null;
-#if VERYANIMATION_TIMELINE
-                if (!uAw_2017_1.GetLinkedWithTimeline())
-#endif
+                if (!uAw.GetLinkedWithTimeline())
                 {
                     if (!uAw.GetLock(uAw.instance))
                     {
@@ -361,21 +407,44 @@ namespace VeryAnimation
             beforeMouseOverWindow = null;
             beforeFocusedWindow = null;
             beforeAnimationWindowRefreshDone = false;
+            beforeEnableHumanoidFootIK = false;
+            beforeEnableAnimationRiggingIK = false;
+            beforeRemoveStartOffset = uAw.GetRemoveStartOffset();
+            beforeOffsetPosition = Vector3.zero;
+            beforeOffsetRotation = Quaternion.identity;
+            beforeAnimationClipSettings = null;
 
             #region Animator
+            UnityEditor.Animations.AnimatorController ac = null;
             if (vaw.animator != null)
             {
                 if (!vaw.animator.isInitialized)
                     vaw.animator.Rebind();
-                var ac = EditorCommon.GetAnimatorController(vaw.animator);
+                ac = EditorCommon.GetAnimatorController(vaw.animator);
+                uAnimatorControllerTool.SetAnimatorController(ac);
+                uParameterControllerEditor.SetAnimatorController(ac);
+            }
+            #endregion
 
+            #region AnimationWindow
+            animationWindowFilterBindings = null;
+            animationWindowSynchroSelectionBindings = new List<EditorCurveBinding>();
+            #endregion
+
+            UpdateBones(true);
+
+            #region PreviewDefaultSettings
+            {
                 #region AvatarpreviewShowIK
+                if (uAw.GetLinkedWithTimeline())
+                {
 #if VERYANIMATION_TIMELINE
-                if (uAw_2017_1.GetLinkedWithTimeline())
-                    EditorPrefs.SetBool("AvatarpreviewShowIK", true);
-                else
+                    EditorPrefs.SetBool("AvatarpreviewShowIK", uAw.GetTimelineAnimationApplyFootIK());
+#else
+                    Assert.IsTrue(false);
 #endif
-                if (ac != null && ac.layers.Length > 0)
+                }
+                else if (vaw.animator != null && ac != null && ac.layers.Length > 0)
                 {
                     bool enable = false;
                     if (EditorApplication.isPlaying)
@@ -430,98 +499,15 @@ namespace VeryAnimation
                     EditorPrefs.SetBool("AvatarpreviewShowIK", false);
                 }
                 #endregion
-#if VERYANIMATION_TIMELINE
-                EditorPrefs.SetBool(UAvatarPreview.EditorPrefsApplyRootMotion, uAw_2017_1.GetLinkedWithTimeline() || vaw.animator.applyRootMotion);
-#else
-                EditorPrefs.SetBool(UAvatarPreview.EditorPrefsApplyRootMotion, vaw.animator.applyRootMotion);
-#endif
-                uAnimatorControllerTool.SetAnimatorController(ac);
-                uParameterControllerEditor.SetAnimatorController(ac);
-            }
-            #endregion
-
-            #region OnionSkin
-            onionSkin = new OnionSkin();
-            #endregion
-            #region AnimationWindow
-            animationWindowFilterBindings = null;
-            animationWindowSynchroSelectionBindings = new List<EditorCurveBinding>();
-            #endregion
-
-            UpdateBones(true);
-
-            #region RecordingChange
-            if (!uAw.GetRecording())
-            {
-                if (uAw.GetCanRecord())
-                {
-                    uAw.RecordingChange();
-                }
-#if UNITY_2017_1_OR_NEWER
-                else if (uAw_2017_1.GetCanPreview())
-                {
-                    uAw_2017_1.PreviewingChange();
-                }
-#endif
-            }
-            #endregion
-
-            if (EditorApplication.isPlaying && vaw.playingAnimationClip != null)
-            {
-                #region SetCurrentClipAndTime
-                uAw.SetSelectionAnimationClip(vaw.playingAnimationClip);
-                if (vaw.playingAnimationLength > 0f)
-                    uAw.SetCurrentTime((vaw.playingAnimationTime / vaw.playingAnimationLength) * vaw.playingAnimationClip.length);
-                UpdateCurrentInfo();
                 if (vaw.animator != null)
                 {
-                    ResampleAnimation();
-                    int boneIndex = -1;
-                    if (isHuman)
-                        boneIndex = humanoidIndex2boneIndex[(int)HumanBodyBones.Hips];
-                    else if (rootMotionBoneIndex >= 0)
-                        boneIndex = rootMotionBoneIndex;
-                    if (boneIndex >= 0)
-                    {
-                        var t = vaw.gameObject.transform;
-                        var originalTransform = transformPoseSave.GetOriginalTransform(bones[boneIndex].transform);
-                        {
-                            var rot = originalTransform.rotation * Quaternion.Inverse(bones[boneIndex].transform.rotation);
-                            t.rotation = rot * t.rotation;
-                            var pos = originalTransform.position - bones[boneIndex].transform.position;
-                            t.position += pos;
-                        }
-                        boneSaveTransforms[0].Save(t);
-                        boneSaveOriginalTransforms[0].Save(t);
-                        transformPoseSave.startPosition = t.position;
-                        transformPoseSave.startRotation = t.rotation;
-                        transformPoseSave.startScale = t.lossyScale;
-                    }
-                }
-                ResampleAnimation();
-                #endregion
-            }
-            else
-            {
-                #region ResetCurrentTime
-                SetCurrentTime(currentTime);
-#if VERYANIMATION_TIMELINE
-                if (uAw_2017_1.GetLinkedWithTimeline())
-                {
-                    PlayableDirectorEvaluate(currentTime);
-                }
-                else
+                    EditorPrefs.SetBool(UAvatarPreview.EditorPrefsApplyRootMotion, uAw.GetLinkedWithTimeline() || vaw.animator.applyRootMotion);
+#if VERYANIMATION_ANIMATIONRIGGING
+                    EditorPrefs.SetBool(UAvatarPreview.EditorPrefsARConstraint, animationRigging != null && animationRigging.isValid);
 #endif
-                {
-                    ResampleAnimation(currentTime);
                 }
-                #endregion
             }
-
-            humanWorldRootPositionCache = GetHumanWorldRootPosition();
-            humanWorldRootRotationCache = GetHumanWorldRootRotation();
-            animatorWorldRootPositionCache = GetAnimatorWorldMotionPosition();
-            animatorWorldRootRotationCache = GetAnimatorWorldMotionRotation();
+            #endregion
 
             SelectGameObjectEvent();
 
@@ -552,15 +538,62 @@ namespace VeryAnimation
 #else
             prefabMode = false;
 #endif
-
             InitializeAnimatorRootCorrection();
             InitializeHumanoidFootIK();
-
-            blendShapeSetList = new List<BlendShapeSet>();
+            InitializeAnimationPlayable();
+            InitializeBlendShapeSetList();
 
             ResetOnCurveWasModifiedStop();
 
             SetSynchronizeAnimation(vaw.editorSettings.settingExtraSynchronizeAnimation);
+
+            if (EditorApplication.isPlaying && vaw.playingAnimationClip != null)
+            {
+                #region SetCurrentClipAndTime
+                uAw.SetSelectionAnimationClip(vaw.playingAnimationClip);
+                if (vaw.playingAnimationLength > 0f)
+                    uAw.SetCurrentTime((vaw.playingAnimationTime / vaw.playingAnimationLength) * vaw.playingAnimationClip.length);
+                UpdateCurrentInfo();
+                if (vaw.animator != null)
+                {
+#if UNITY_2019_1_OR_NEWER
+                    var t = vaw.gameObject.transform;
+                    SampleAnimation(currentTime);
+                    var offsetRotation = transformPoseSave.originalRotation * Quaternion.Inverse(t.rotation);
+                    var offsetMatrix = transformPoseSave.originalMatrix * t.worldToLocalMatrix;
+                    SampleAnimation(0f);
+                    t.rotation = offsetRotation * transformPoseSave.originalRotation;
+                    t.position = offsetMatrix.MultiplyPoint3x4(transformPoseSave.originalPosition);
+                    transformPoseSave = null;
+                    UpdateBones(false);
+                    SampleAnimation(currentTime);
+#else
+                    int boneIndex = -1;
+                    if (isHuman)
+                        boneIndex = humanoidIndex2boneIndex[(int)HumanBodyBones.Hips];
+                    else if (rootMotionBoneIndex >= 0)
+                        boneIndex = rootMotionBoneIndex;
+                    if (boneIndex >= 0)
+                    {
+                        var t = vaw.gameObject.transform;
+                        SampleAnimation(currentTime);
+                        var originalTransform = transformPoseSave.GetOriginalTransform(bones[boneIndex].transform);
+                        var offsetRotation = originalTransform.rotation * Quaternion.Inverse(bones[boneIndex].transform.rotation);
+                        var offsetMatrix = originalTransform.matrix * bones[boneIndex].transform.worldToLocalMatrix;
+                        SampleAnimation(0f);
+                        t.rotation = offsetRotation * transformPoseSave.originalRotation;
+                        t.position = offsetMatrix.MultiplyPoint3x4(transformPoseSave.originalPosition);
+                        transformPoseSave = null;
+                        UpdateBones(false);
+                        SampleAnimation(currentTime);
+                    }
+#endif
+                }
+                #endregion
+            }
+
+            SetUpdateSampleAnimation();
+            updateStartTransform = uAw.GetLinkedWithTimeline();
 
             Undo.undoRedoPerformed += UndoRedoPerformed;
             AnimationUtility.onCurveWasModified += OnCurveWasModified;
@@ -572,6 +605,8 @@ namespace VeryAnimation
         }
         public void Release()
         {
+            UpdateSyncEditorCurveClip();
+
             Undo.undoRedoPerformed -= UndoRedoPerformed;
             AnimationUtility.onCurveWasModified -= OnCurveWasModified;
 #if UNITY_2018_1_OR_NEWER
@@ -580,24 +615,9 @@ namespace VeryAnimation
             EditorApplication.hierarchyWindowChanged -= OnHierarchyWindowChanged;
 #endif
 
-#if VERYANIMATION_TIMELINE
-            if (uAw_2017_1 != null && uAw_2017_1.GetLinkedWithTimeline())
-            {
-                uAw_2017_1.SetTimelineRecording(false);
-                uAw_2017_1.SetTimelinePreviewMode(false);
-            }
-            else
-#endif
-            {
-                if (uAw != null)
-                    uAw.RecordingDisable();
-            }
-            uAw.ForceRefresh();
+            StopRecording();
 
             edit = false;
-#if VERYANIMATION_TIMELINE
-            linkedWithTimeline = false;
-#endif
             selectionGameObjects = null;
             selectionBones = null;
             selectionHumanVirtualBones = null;
@@ -636,9 +656,10 @@ namespace VeryAnimation
             beforeLength = 0f;
 
             animationWindowRefresh = AnimationWindowStateRefreshType.None;
-            updateResampleAnimation = false;
+            updateSampleAnimation = false;
             updatePoseFixAnimation = false;
-            UpdateSyncEditorCurveClip();
+            updateStartTransform = false;
+            updateSaveForce = false;
             animationWindowFilterBindings = null;
             animationWindowSynchroSelection = false;
             animationWindowSynchroSelectionBindings = null;
@@ -647,8 +668,6 @@ namespace VeryAnimation
             copyPaste = null;
             copyAnimatorIKTargetData = null;
             copyOriginalIKTargetData = null;
-
-            blendShapeSetList = null;
 
             boneShowFlags = null;
 
@@ -672,6 +691,10 @@ namespace VeryAnimation
                 animatorIK.Release();   //Not to be null
             if (originalIK != null)
                 originalIK.Release();   //Not to be null
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (animationRigging != null)
+                animationRigging.Release();   //Not to be null
+#endif
             if (synchronizeAnimation != null)
             {
                 synchronizeAnimation.Release();
@@ -682,11 +705,6 @@ namespace VeryAnimation
             {
                 calcObject.Release();
                 calcObject = null;
-            }
-            if (dummyObject != null)
-            {
-                dummyObject.Release();
-                dummyObject = null;
             }
             if (onionSkin != null)
             {
@@ -701,6 +719,8 @@ namespace VeryAnimation
             ReleaseAnimatorRootCorrection();
             ReleaseHumanoidFootIK();
             ReleaseCollision();
+            ReleaseAnimationPlayable();
+            ReleaseBlendShapeSetList();
 
             #region OriginalSave
             if (transformPoseSave != null)
@@ -718,20 +738,71 @@ namespace VeryAnimation
 
             DisableCustomTools();
 
-#if VERYANIMATION_TIMELINE
-            if (uAw_2017_1 != null && uAw_2017_1.GetLinkedWithTimeline())
+            if (uAw != null && uAw.GetLinkedWithTimeline())
             {
-                uAw_2017_1.PreviewingChange();
+                uAw.StartPreviewing();
             }
-#endif
 
             #region AutoLock
-            if (autoLockedAnimationWindow != null)
+            if (uAw != null && autoLockedAnimationWindow != null)
             {
                 uAw.SetLock(autoLockedAnimationWindow, false);
                 autoLockedAnimationWindow = null;
             }
             #endregion
+        }
+
+        private bool StartRecording()
+        {
+            bool result = true;
+            if (!uAw.GetRecording())
+            {
+                if (!uAw.GetCanRecord() && uAw.GetPreviewing())
+                {
+                }
+                else
+                {
+#if VERYANIMATION_TIMELINE
+                    if (uAw.GetLinkedWithTimeline() && !uAw.IsTimelineArmedForRecord())
+                    {
+                        uAw.SetTimelineRecording(false);
+                        result = uAw.StartRecording();
+                    }
+                    else
+#endif
+                    {
+                        result = uAw.StartRecording();
+                    }
+                }
+            }
+
+            #region Unusual error
+            if (!result)
+            {
+#if VERYANIMATION_TIMELINE
+                if (uAw.GetLinkedWithTimeline())
+                    uAw.uTimelineWindow.Close();
+#endif
+                uAw.Close();
+                Debug.LogError(Language.GetText(Language.Help.LogAnimationWindowRecordingStartError));
+            }
+            #endregion
+
+            return result;
+        }
+        public void StopRecording()
+        {
+#if VERYANIMATION_TIMELINE
+            if (uAw != null && uAw.GetLinkedWithTimeline())
+            {
+                uAw.SetTimelineRecording(false);
+                uAw.SetTimelinePreviewMode(false);
+            }
+            else
+#endif
+            {
+                uAw.StopRecording();
+            }
         }
 
         public void SetCurrentTime(float time)
@@ -741,9 +812,9 @@ namespace VeryAnimation
         }
         public void UpdateCurrentInfo()
         {
-            currentGameObject = uAw.GetActiveRootGameObject();
             currentClip = uAw.GetSelectionAnimationClip();
             currentTime = uAw.GetCurrentTime();
+            currentLinkedWithTimeline = uAw.GetLinkedWithTimeline();
         }
 
         public bool isEditError
@@ -770,11 +841,11 @@ namespace VeryAnimation
                     return -2;
                 if (vaw.animator != null && !vaw.animator.hasTransformHierarchy)
                     return -3;
-                if (vaw.animation != null && vaw.animation.GetClipCount() == 0)
+                if (Application.isPlaying && vaw.animator != null && vaw.animator.runtimeAnimatorController == null)
                     return -4;
-                if (vaw.animation != null && Application.isPlaying)
+                if (Application.isPlaying && vaw.animation != null)
                     return -5;
-                if (edit && (vaw.gameObject != currentGameObject || currentGameObject != bones[0]))
+                if (edit && vaw.gameObject != uAw.GetActiveRootGameObject())
                     return -6;
                 if (edit && vaw.animator != null && animatorApplyRootMotion != vaw.animator.applyRootMotion)
                     return -7;
@@ -782,16 +853,12 @@ namespace VeryAnimation
                     return -8;
                 if (edit && vaw.animator != null && isHuman && !isHumanAvatarReady)
                     return -9;
-                if (edit && currentClip == null)
-                    return -100;
-#if VERYANIMATION_TIMELINE
-                if (!uAw_2017_1.GetLinkedWithTimeline())
-#endif
+                if (edit && currentLinkedWithTimeline != uAw.GetLinkedWithTimeline())
+                    return -10;
+                if (!uAw.GetLinkedWithTimeline())
                 {
                     if (!vaw.gameObject.activeInHierarchy)
                         return -110;
-                    if (vaw.animator != null && vaw.animator.runtimeAnimatorController == null)
-                        return -111;
                     if (!edit && vaw.animator != null && vaw.animator.runtimeAnimatorController != null && (vaw.animator.runtimeAnimatorController.hideFlags & (HideFlags.DontSave | HideFlags.NotEditable)) != 0)
                         return -112;
                 }
@@ -800,11 +867,11 @@ namespace VeryAnimation
                 {
                     if (!edit && !vaw.gameObject.activeInHierarchy)
                         return -120;
-                    if (!uAw_2017_1.GetLinkedWithTimelineEditable())
+                    if (!uAw.GetTimelineTrackAssetEditable())
                         return -121;
                     if (Application.isPlaying)
                         return -122;
-                    var currentDirector = uAw_2017_1.GetTimelineCurrentDirector();
+                    var currentDirector = uAw.GetTimelineCurrentDirector();
                     if (currentDirector != null)
                     {
                         if (!currentDirector.gameObject.activeInHierarchy)
@@ -813,8 +880,6 @@ namespace VeryAnimation
                             return -124;
                     }
                 }
-                if (edit && linkedWithTimeline != uAw_2017_1.GetLinkedWithTimeline())
-                    return -130;
 #endif
 #if UNITY_2018_3_OR_NEWER
                 if (edit && prefabMode != (PrefabStageUtility.GetCurrentPrefabStage() != null))
@@ -850,14 +915,69 @@ namespace VeryAnimation
             #endregion
 
             #region AnimationWindowFilter
-            if (!animationWindowSynchroSelection && 
+            if (!animationWindowSynchroSelection &&
                 animationWindowFilterBindings != null)
             {
-                if (!uAw.IsSelectedItemCurvesEqual(animationWindowFilterBindings))
+                if (uAw.IsChangeMyPropertySortOrFilterByBindings())
                 {
                     uAw.PropertySortOrFilterByBindings(animationWindowFilterBindings, vaw.editorSettings.settingPropertyStyle == EditorSettings.PropertyStyle.Filter);
-                    animationWindowFilterBindings = uAw.GetSelectedItemCurves();
                 }
+            }
+            #endregion
+
+            #region SettingChange
+            {
+                var footIK = IsEnableUpdateHumanoidFootIK();
+                var arIK = false;
+#if VERYANIMATION_ANIMATIONRIGGING
+                arIK = animationRigging.isValid;
+#endif
+                if (beforeEnableHumanoidFootIK != footIK ||
+                    beforeEnableAnimationRiggingIK != arIK)
+                {
+                    beforeEnableHumanoidFootIK = footIK;
+                    beforeEnableAnimationRiggingIK = arIK;
+                    UpdateSkeletonShowBoneList();
+                }
+            }
+            if (uAw.GetLinkedWithTimeline())
+            {
+#if VERYANIMATION_TIMELINE
+                {
+                    var removeStartOffset = uAw.GetRemoveStartOffset();
+                    if (beforeRemoveStartOffset != removeStartOffset)
+                    {
+                        beforeRemoveStartOffset = removeStartOffset;
+                        updateStartTransform = true;
+                    }
+                }
+                {
+                    Vector3 offsetPosition;
+                    Quaternion offsetRotation;
+                    uAw.GetTimelineRootMotionOffsets(out offsetPosition, out offsetRotation);
+                    if (beforeOffsetPosition != offsetPosition || beforeOffsetRotation != offsetRotation)
+                    {
+                        beforeOffsetPosition = offsetPosition;
+                        beforeOffsetRotation = offsetRotation;
+                        updateStartTransform = true;
+                    }
+                }
+                {
+                    var animationClipSettings = AnimationUtility.GetAnimationClipSettings(currentClip);
+                    if (beforeAnimationClipSettings == null ||
+                        beforeAnimationClipSettings.keepOriginalPositionXZ != animationClipSettings.keepOriginalPositionXZ ||
+                        beforeAnimationClipSettings.keepOriginalPositionY != animationClipSettings.keepOriginalPositionY ||
+                        beforeAnimationClipSettings.keepOriginalOrientation != animationClipSettings.keepOriginalOrientation ||
+                        beforeAnimationClipSettings.orientationOffsetY != animationClipSettings.orientationOffsetY ||
+                        beforeAnimationClipSettings.level != animationClipSettings.level)
+                    {
+                        beforeAnimationClipSettings = animationClipSettings;
+                        updateStartTransform = true;
+                    }
+                }
+#else
+                Assert.IsTrue(false);
+#endif
             }
             #endregion
         }
@@ -875,35 +995,25 @@ namespace VeryAnimation
 
             UpdateSyncEditorCurveClip();
 
+            #region SnapToFrame
+            if (!uAw.GetPlaying())
+            {
+                var snapTime = currentClip != null ? uAw.SnapToFrame(currentTime, currentClip.frameRate) : currentTime;
+                if (currentTime != snapTime)
+                {
+                    SetCurrentTime(snapTime);
+                }
+            }
+            #endregion
+
             #region RecordingChange
 #if Enable_Profiler
             Profiler.BeginSample("RecordingChange");
 #endif
-            if (!uAw.GetRecording())
             {
-                if (uAw.GetCanRecord())
-                {
-                    uAw.RecordingChange();
-                }
-#if UNITY_2017_1_OR_NEWER
-                else if (uAw_2017_1.GetCanPreview())
-                {
-                    if (!uAw_2017_1.GetPreviewing())
-                    {
-                        uAw_2017_1.PreviewingChange();
-                    }
-                }
-#endif
+                if (!StartRecording())
+                    return;
             }
-
-#if VERYANIMATION_TIMELINE
-            if (uAw_2017_1.GetLinkedWithTimeline() && !uAw_2017_1.IsTimelineArmedForRecord())
-            {
-                uAw_2017_1.SetTimelineRecording(false);
-                if (!uAw.GetRecording())
-                    uAw.RecordingChange();
-            }
-#endif
 #if Enable_Profiler
             Profiler.EndSample();
 #endif
@@ -912,7 +1022,7 @@ namespace VeryAnimation
             #region PlayingChange
             if (beforePlaying != uAw.GetPlaying())
             {
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
 
                 beforePlaying = uAw.GetPlaying();
             }
@@ -955,7 +1065,7 @@ namespace VeryAnimation
                         uAnimationClipEditor = new UAnimationClipEditor(currentClip, uAvatarPreview);
                     }
                     ClearEditorCurveCache();
-                    SetUpdateResampleAnimation();
+                    SetUpdateSampleAnimation();
                     SetSynchroIKtargetAll();
                     SetAnimationWindowSynchroSelection();
                     beforeClip = currentClip;
@@ -978,7 +1088,7 @@ namespace VeryAnimation
                 {
                     if (!uAw.GetPlaying())
                     {
-                        SetUpdateResampleAnimation();
+                        SetUpdateSampleAnimation();
                         SetSynchroIKtargetAll();
                         if (!uAvatarPreview.playing)
                         {
@@ -1022,20 +1132,11 @@ namespace VeryAnimation
             #region GizmoChange
             if (beforeShowSceneGizmo != vaw.IsShowSceneGizmo())
             {
-                #region DummyObject
-                if (dummyObject != null)
+                if (!vaw.IsShowSceneGizmo())
                 {
-                    if (vaw.IsShowSceneGizmo())
-                    {
-                        dummyObject.UpdateState();
-                    }
-                    else
-                    {
-                        dummyObject.SetOutside();
-                    }
+                    onionSkin.Release();
                 }
-                #endregion
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
                 SetSynchroIKtargetAll();
                 beforeShowSceneGizmo = vaw.IsShowSceneGizmo();
             }
@@ -1387,14 +1488,13 @@ namespace VeryAnimation
                                     }
                                 }
                                 #endregion
-                                uAw.PropertySortOrFilterByBindings(filterBindings.ToList(), vaw.editorSettings.settingPropertyStyle == EditorSettings.PropertyStyle.Filter);
-                                animationWindowFilterBindings = uAw.GetSelectedItemCurves();
+                                animationWindowFilterBindings = filterBindings.ToList();
                             }
                             else
                             {
                                 animationWindowFilterBindings = null;
-                                uAw.ForceRefresh();
                             }
+                            uAw.PropertySortOrFilterByBindings(animationWindowFilterBindings, vaw.editorSettings.settingPropertyStyle == EditorSettings.PropertyStyle.Filter);
                         }
                         else
                         {
@@ -1420,10 +1520,9 @@ namespace VeryAnimation
 
                 if (beforeAnimationWindowRefreshDone != animationWindowRefreshDone)
                 {
-                    if (!uAw.IsSelectedItemCurvesEqual(animationWindowFilterBindings))
+                    if (uAw.IsChangeMyPropertySortOrFilterByBindings())
                     {
                         uAw.PropertySortOrFilterByBindings(animationWindowFilterBindings, vaw.editorSettings.settingPropertyStyle == EditorSettings.PropertyStyle.Filter);
-                        animationWindowFilterBindings = uAw.GetSelectedItemCurves();
                     }
                 }
 
@@ -1499,38 +1598,51 @@ namespace VeryAnimation
                         int muscleIndex;
                         if (IsAnimatorRootCurveBinding(pair.Value.binding))
                         {
-                            rootUpdated = true;
-                            ActionAllInfluencedTime(pair.Value, (beforeTime, afterTime) =>
+                            ActionCurrentChangedKeyframes(pair.Value, (curve, keyIndex) =>
                             {
-                                if (currentTime >= beforeTime && currentTime <= afterTime)
+                                if (Mathf.Approximately(currentTime, curve[keyIndex].time))
+                                {
                                     SetUpdateIKtargetAll();
+                                    if (!rootUpdated && pair.Value.beforeCurve != null)
+                                    {
+                                        var valueNow = curve.Evaluate(currentTime);
+                                        var valueBefore = pair.Value.beforeCurve.Evaluate(currentTime);
+                                        rootUpdated = !Mathf.Approximately(valueNow, valueBefore);
+                                    }
+                                }
                             });
                         }
                         else if ((tdofIndex = GetTDOFIndexFromCurveBinding(pair.Value.binding)) >= 0)
                         {
-                            ActionAllInfluencedTime(pair.Value, (beforeTime, afterTime) =>
+                            ActionCurrentChangedKeyframes(pair.Value, (curve, keyIndex) =>
                             {
-                                if (currentTime >= beforeTime && currentTime <= afterTime)
+                                if (Mathf.Approximately(currentTime, curve[keyIndex].time))
+                                {
                                     SetUpdateIKtargetTdofIndex(tdofIndex);
+                                }
                             });
                         }
                         else if ((muscleIndex = GetMuscleIndexFromCurveBinding(pair.Value.binding)) >= 0)
                         {
-                            ActionAllInfluencedTime(pair.Value, (beforeTime, afterTime) =>
+                            ActionCurrentChangedKeyframes(pair.Value, (curve, keyIndex) =>
                             {
-                                if (currentTime >= beforeTime && currentTime <= afterTime)
+                                if (Mathf.Approximately(currentTime, curve[keyIndex].time))
+                                {
                                     SetUpdateIKtargetMuscle(muscleIndex);
+                                }
                             });
                         }
                         else if (IsTransformPositionCurveBinding(pair.Value.binding) ||
                                 IsTransformRotationCurveBinding(pair.Value.binding) ||
                                 IsTransformScaleCurveBinding(pair.Value.binding))
                         {
-                            var boneIndex = GetBoneIndexFromCurveBinding(pair.Value.binding);
-                            ActionAllInfluencedTime(pair.Value, (beforeTime, afterTime) =>
+                            ActionCurrentChangedKeyframes(pair.Value, (curve, keyIndex) =>
                             {
-                                if (currentTime >= beforeTime && currentTime <= afterTime)
+                                if (Mathf.Approximately(currentTime, curve[keyIndex].time))
+                                {
+                                    var boneIndex = GetBoneIndexFromCurveBinding(pair.Value.binding);
                                     SetUpdateIKtargetBone(boneIndex);
+                                }
                             });
                         }
                     }
@@ -1561,11 +1673,11 @@ namespace VeryAnimation
                     #endregion
                 }
                 originalIK.UpdateIK();
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
             }
             else if (GetSynchroIKtargetAll())
             {
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
             }
 #if Enable_Profiler
             Profiler.EndSample();
@@ -2011,7 +2123,7 @@ namespace VeryAnimation
                     #endregion
                 }
 
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
             }
 #if Enable_Profiler
             Profiler.EndSample();
@@ -2025,7 +2137,39 @@ namespace VeryAnimation
             bool updateAnimation = false;
             if (!uAw.GetPlaying())
             {
-                if (updateResampleAnimation)
+                #region updateStartTransform
+                if (updateStartTransform)
+                {
+                    if (uAw.GetLinkedWithTimeline())
+                    {
+#if VERYANIMATION_TIMELINE
+                        var saveTime = currentTime;
+                        SetCurrentTime(0f);
+                        {
+                            PlayableDirectorEvaluateImmediate();
+                            {
+                                Vector3 offsetPosition;
+                                Quaternion offsetRotation;
+                                if (uAw.GetTimelineRootMotionOffsets(out offsetPosition, out offsetRotation))
+                                {
+                                    vaw.gameObject.transform.localPosition = offsetPosition;
+                                    vaw.gameObject.transform.localRotation = offsetRotation;
+                                }
+                            }
+                            transformPoseSave.ChangeStartTransform();
+                        }
+                        SetCurrentTime(saveTime);
+                        updateAnimation = true;
+                        SetSynchroIKtargetAll();
+#else
+                        Assert.IsTrue(false);
+#endif
+                    }
+                    updateStartTransform = false;
+                }
+                #endregion
+                #region updateSampleAnimation
+                if (updateSampleAnimation)
                 {
                     transformPoseSave.ResetOriginalTransform();
                     blendShapeWeightSave.ResetOriginalWeight();
@@ -2037,9 +2181,9 @@ namespace VeryAnimation
 #if Enable_Profiler
                     Profiler.EndSample();
 #endif
-                    ResampleAnimation(currentTime);
                     updateAnimation = true;
                 }
+                #endregion
                 #region FootIK
                 if (UpdateHumanoidFootIK())
                 {
@@ -2049,46 +2193,50 @@ namespace VeryAnimation
 
                 if (updateAnimation)
                 {
-                    bool nextUpdateResampleAnimation = false;
-
-#if VERYANIMATION_TIMELINE
-                    if (uAw_2017_1.GetLinkedWithTimeline())
+                    if (uAw.GetLinkedWithTimeline())
                     {
-                        if (collisionEnable)
+                        if (collisionEnable || GetSynchroIKtargetAll())
                         {
                             PlayableDirectorEvaluateImmediate();    //For SaveCollision
                         }
                         PlayableDirectorEvaluate();
                     }
-#endif
+
+                    #region Save
+                    {
+                        updateSaveForce |= curvesWasModified.Count > 0;
+                        SaveAnimatorRootCorrection(updateSaveForce);
+                        SaveCollision(updateSaveForce);
+                        updateSaveForce = false;
+                    }
+                    #endregion
+
+                    SampleAnimation(currentTime);
 
                     UpdateSynchroIKSet();
+                    onionSkin.Update();
 
                     if (uAvatarPreview != null)
                     {
                         uAvatarPreview.Reset();
-                    }
-                    if (onionSkin != null)
-                    {
-                        onionSkin.Update();
                     }
                     if (synchronizeAnimation != null)
                     {
                         synchronizeAnimation.UpdateSameClip(currentClip);
                     }
 
-                    humanWorldRootPositionCache = GetHumanWorldRootPosition();
-                    humanWorldRootRotationCache = GetHumanWorldRootRotation();
-                    animatorWorldRootPositionCache = GetAnimatorWorldMotionPosition();
-                    animatorWorldRootRotationCache = GetAnimatorWorldMotionRotation();
 #if UNITY_2018_3_OR_NEWER
                     if (isHuman)
                         animationWindowSampleAnimationOverrideCheckPosition = humanoidBones[(int)HumanBodyBones.LeftFoot].transform.position;
 #endif
-                    SaveAnimatorRootCorrection();
-                    SaveCollision();
-                    updateResampleAnimation = nextUpdateResampleAnimation;
+                    #region Cache
+                    humanWorldRootPositionCache = GetHumanWorldRootPosition();
+                    humanWorldRootRotationCache = GetHumanWorldRootRotation();
+                    animatorWorldRootPositionCache = GetAnimatorWorldMotionPosition();
+                    animatorWorldRootRotationCache = GetAnimatorWorldMotionRotation();
+                    #endregion
                 }
+                updateSampleAnimation = false;
 
                 EndChangeAnimationCurve();
             }
@@ -2104,9 +2252,9 @@ namespace VeryAnimation
 #endif
             if (editorCurveCacheDirty)
             {
-                foreach (var binding in AnimationUtility.GetCurveBindings(currentClip))
+                var bindings = AnimationUtility.GetCurveBindings(currentClip);
+                foreach (var binding in bindings)
                 {
-                    if (!IsVeryAnimationEditableCurveBinding(binding)) continue;
                     GetEditorCurveCache(binding);
                     if (binding.type == typeof(Transform) &&
                         binding.propertyName == EditorCurveBindingTransformRotationPropertyNames[(int)URotationCurveInterpolation.Mode.RawQuaternions][0])
@@ -2167,6 +2315,8 @@ namespace VeryAnimation
 #endif
             #endregion
 
+            UpdateSyncEditorCurveClip();
+
 #if Enable_Profiler
             Profiler.EndSample();
 #endif
@@ -2174,27 +2324,26 @@ namespace VeryAnimation
 
         private void UpdateBones(bool initialize)
         {
+#if UNITY_2019_1_OR_NEWER
+            if (!uAw.GetLinkedWithTimeline())
+                uAw_2019_1.DestroyPlayableGraph();
+            if (animationPlayable != null)
+                animationPlayable.Release();
+#endif
+
             #region Reload
             List<GameObject> reloadShowBones = null;
             Dictionary<GameObject, GameObject> reloadMirrorBonePaths = null;
+            VeryAnimationSaveSettings.AnimatorIKData[] reloadAnimatorIKData = null;
+            VeryAnimationSaveSettings.OriginalIKData[] reloadOriginalIKData = null;
             if (!initialize)
             {
                 reloadShowBones = GetReloadBoneShowFlags();
                 reloadMirrorBonePaths = GetReloadBonesMirror();
-                #region AddedBoneTransformReset
-                if (bones != null)
-                {
-                    foreach (var bone in EditorCommon.GetHierarchyGameObject(vaw.gameObject))
-                    {
-                        if (BonesIndexOf(bone) >= 0)
-                            continue;
-                        var t = bone.transform;
-                        t.localPosition = Vector3.zero;
-                        t.localRotation = Quaternion.identity;
-                        t.localScale = Vector3.one;
-                    }
-                }
-                #endregion
+                if (animatorIK != null)
+                    reloadAnimatorIKData = animatorIK.SaveIKSaveSettings();
+                if (originalIK != null)
+                    reloadOriginalIKData = originalIK.SaveIKSaveSettings();
             }
             #endregion
 
@@ -2242,8 +2391,8 @@ namespace VeryAnimation
                 humanoidHasLeftHand = uAvatar.GetHasLeftHand(animatorAvatar);
                 humanoidHasRightHand = uAvatar.GetHasRightHand(animatorAvatar);
                 humanoidHasTDoF = uAvatar.GetHasTDoF(animatorAvatar);
-                humanoidPreHipRotationInverse = Quaternion.Inverse(uAvatar.GetPreRotation(animatorAvatar, (int)HumanBodyBones.Hips));
-                humanoidPoseHipRotation = uAvatar.GetPostRotation(animatorAvatar, (int)HumanBodyBones.Hips);
+                humanoidPreHipRotationInverse = Quaternion.Inverse(GetAvatarPreRotation(HumanBodyBones.Hips));
+                humanoidPostHipRotation = GetAvatarPostRotation(HumanBodyBones.Hips);
                 humanoidLeftLowerLegLengthSq = Mathf.Pow(uAvatar.GetAxisLength(animatorAvatar, (int)HumanBodyBones.LeftLowerLeg), 2f);
                 for (int mi = 0; mi < HumanTrait.MuscleCount; mi++)
                 {
@@ -2310,7 +2459,7 @@ namespace VeryAnimation
                 humanoidHasRightHand = false;
                 humanoidHasTDoF = false;
                 humanoidPreHipRotationInverse = Quaternion.identity;
-                humanoidPoseHipRotation = Quaternion.identity;
+                humanoidPostHipRotation = Quaternion.identity;
                 humanoidLeftLowerLegLengthSq = 0f;
                 humanoidMuscleContains = null;
                 humanPoseHandler = null;
@@ -2384,7 +2533,7 @@ namespace VeryAnimation
             if (isHuman)
             {
                 HumanPose humanPose = new HumanPose();
-                GetHumanPose(ref humanPose);
+                GetEditGameObjectHumanPose(ref humanPose, EditObjectFlag.Base);
                 saveHumanPose = humanPose;
             }
             #endregion
@@ -2498,6 +2647,31 @@ namespace VeryAnimation
             }
             #endregion
 
+            #region AnimationRigging
+#if VERYANIMATION_ANIMATIONRIGGING
+            {
+                if (animationRigging == null)
+                    animationRigging = new AnimationRigging();
+                animationRigging.Initialize();
+            }
+#endif
+            #endregion
+
+            #region calcObject
+            {
+                if (calcObject != null)
+                {
+                    calcObject.Release();
+                    calcObject = null;
+                }
+                calcObject = new DummyObject();
+                calcObject.Initialize(vaw.gameObject);
+                calcObject.AddEditComponent();
+                calcObject.SetRendererEnabled(false);
+                calcObject.SetTransformStart();
+            }
+            #endregion
+
             #region AnimatorIK
             {
                 if (animatorIK == null)
@@ -2514,29 +2688,15 @@ namespace VeryAnimation
             }
             #endregion
 
-            #region calcObject
+            #region OnionSkin
             {
-                if (calcObject == null)
-                    calcObject = new DummyObject();
-                calcObject.Initialize(vaw.gameObject);
-                calcObject.SetOrigin();
-                calcObject.SetRendererEnabled(false);
-                calcObject.SetOutside();
-                calcObject.AddEditComponent();
+                if (onionSkin != null)
+                {
+                    onionSkin.Release();
+                    onionSkin = null;
+                }
+                onionSkin = new OnionSkin();
             }
-            #endregion
-
-            #region DummyObject
-#if VERYANIMATION_TIMELINE
-            if (uAw_2017_1.GetLinkedWithTimeline())
-            {
-                if (dummyObject == null)
-                    dummyObject = new DummyObject();
-                dummyObject.Initialize(vaw.gameObject);
-                transformPoseSave.SetSyncTransforms(dummyObject.gameObject);
-                vaw.editorSettings.SetDummyObjectRenderingMode();
-            }
-#endif
             #endregion
 
             #region Preview
@@ -2559,6 +2719,8 @@ namespace VeryAnimation
             {
                 SetReloadBoneShowFlags(reloadShowBones);
                 SetReloadBonesMirror(reloadMirrorBonePaths);
+                animatorIK.LoadIKSaveSettings(reloadAnimatorIKData);
+                originalIK.LoadIKSaveSettings(reloadOriginalIKData);
             }
             UpdateSkeletonShowBoneList();
         }
@@ -2952,176 +3114,7 @@ namespace VeryAnimation
             }
         }
 
-        public void SetUpdateResampleAnimation()
-        {
-            updateResampleAnimation = true;
-        }
-        [Flags]
-        public enum ResampleAnimationFlag
-        {
-            Base = (1<<0),
-            Dummy = (1<<1),
-            All = Base | Dummy,
-        }
-        public void ResampleAnimation(float time = -1, ResampleAnimationFlag flags = ResampleAnimationFlag.All)
-        {
-            UpdateSyncEditorCurveClip();
-
-            if (time < 0f)
-                time = currentTime;
-
-            if ((flags & ResampleAnimationFlag.Base) != 0)
-            {
-                transformPoseSave.ResetRootStartTransform();
-
-#if UNITY_2018_3_OR_NEWER
-                if (vaw.animator != null && animatorApplyRootMotion)
-                {
-                    vaw.animator.applyRootMotion = false;
-                }
-#endif
-
-                if (vaw.animator != null)
-                {
-                    if (!vaw.animator.isInitialized)
-                        vaw.animator.Rebind();
-                }
-
-                WrapMode? beforeWrapMode = null;
-                try
-                {
-                    if (vaw.animation != null)
-                    {
-                        if (currentClip.wrapMode != WrapMode.Default)
-                        {
-                            beforeWrapMode = currentClip.wrapMode;
-                            currentClip.wrapMode = WrapMode.Default;
-                        }
-                    }
-
-                    currentClip.SampleAnimation(vaw.gameObject, time);
-                }
-                finally
-                {
-                    if (beforeWrapMode.HasValue)
-                    {
-                        currentClip.wrapMode = beforeWrapMode.Value;
-                    }
-                }
-
-#if UNITY_2018_3_OR_NEWER
-                if (vaw.animator != null && animatorApplyRootMotion)
-                {
-                    vaw.animator.applyRootMotion = animatorApplyRootMotion;
-                }
-#endif
-            }
-
-            #region DummyObject
-            if ((flags & ResampleAnimationFlag.Dummy) != 0)
-            {
-                if (dummyObject != null)
-                {
-                    dummyObject.SampleAnimation(currentClip, time);
-                    UpdateDummyObjectPosition();
-                }
-            }
-            #endregion
-        }
-        public void PlayableDirectorEvaluate(float time = -1)
-        {
-#if VERYANIMATION_TIMELINE
-            UpdateSyncEditorCurveClip();
-
-            if (time < 0f)
-                time = currentTime;
-
-            SetCurrentTime(time);
-            uAw_2017_1.uTimelineWindow.OnCurveModified(currentClip, new EditorCurveBinding(), AnimationUtility.CurveModifiedType.CurveModified);
-
-            #region DummyObject
-            if (dummyObject != null)
-            {
-                dummyObject.SampleAnimation(currentClip, time);
-                UpdateDummyObjectPosition();
-            }
-            #endregion
-#endif
-        }
-        public void PlayableDirectorEvaluateImmediate(float time = -1)
-        {
-#if VERYANIMATION_TIMELINE
-            UpdateSyncEditorCurveClip();
-
-            if (time < 0f)
-                time = currentTime;
-
-            SetCurrentTime(time);
-            uAw_2017_1.uTimelineWindow.GetCurrentDirector().Evaluate();
-#endif
-        }
-
-        public void AnimationWindowSampleAnimationOverride()
-        {
-#if UNITY_2018_3_OR_NEWER
-#if VERYANIMATION_TIMELINE
-            if (!uAw_2017_1.GetLinkedWithTimeline())
-#endif
-            {
-                bool update = !transformPoseSave.IsRootStartTransform();
-                if (isHuman)
-                {
-                    if (!update)
-                    {
-                        var lengthSq = (animationWindowSampleAnimationOverrideCheckPosition - humanoidBones[(int)HumanBodyBones.LeftFoot].transform.position).sqrMagnitude;
-                        if (lengthSq > 0.0001f)
-                            update = true;
-                    }
-                    if (!update)
-                    {
-                        var langthSq = (humanoidBones[(int)HumanBodyBones.LeftLowerLeg].transform.position - humanoidBones[(int)HumanBodyBones.LeftFoot].transform.position).sqrMagnitude;
-                        if (langthSq - humanoidLeftLowerLegLengthSq > 0.0001f)
-                            update = true;
-                    }
-                }
-                if (update)
-                {
-                    ResampleAnimation();
-                }
-            }
-#endif
-        }
-
-        private void UpdateDummyObjectPosition()
-        {
-#if VERYANIMATION_TIMELINE
-            if (dummyObject != null)
-            {
-                if (vaw.IsShowSceneGizmo())
-                {
-                    var dt = dummyObject.gameObject.transform;
-                    if (vaw.editorSettings.settingDummyPositionType == EditorSettings.DummyPositionType.ScenePosition)
-                    {
-                        dt.position = transformPoseSave.startPosition + transformPoseSave.startRotation * vaw.editorSettings.settingDummyObjectPosition;
-                    }
-                    else if (vaw.editorSettings.settingDummyPositionType == EditorSettings.DummyPositionType.TimelinePosition)
-                    {
-                        Vector3 position;
-                        Quaternion rotation;
-                        uAw_2017_1.GetRootMotionOffsets(transformPoseSave.startPosition, transformPoseSave.startRotation, out position, out rotation);
-                        dt.SetPositionAndRotation(position + rotation * vaw.editorSettings.settingDummyObjectPosition, rotation);
-                    }
-                    dt.localScale = vaw.gameObject.transform.localScale;
-                }
-                else
-                {
-                    dummyObject.SetOutside();
-                }
-            }
-#endif
-        }
-
-        private void OnHierarchyWindowChanged()
+        public void OnHierarchyWindowChanged()
         {
             if (isEditError) return;
 
@@ -3146,13 +3139,365 @@ namespace VeryAnimation
 
             if (changed)
             {
+                StopRecording();
+
+                Selection.activeObject = null;
+                SelectGameObjectEvent();
+
                 UpdateBones(false);
 
                 if (OnHierarchyUpdated != null)
                 {
                     OnHierarchyUpdated.Invoke();
                 }
+
+                SetUpdateSampleAnimation();
+                SetSynchroIKtargetAll();
+                EditorApplication.delayCall += () =>
+                {
+                    SetUpdateSampleAnimation();
+                    SetSynchroIKtargetAll();
+                };
             }
+        }
+        #endregion
+
+        #region SampleAnimation
+        public void SetUpdateSampleAnimation(bool full = false)
+        {
+            updateSampleAnimation = true;
+
+            if (full)
+            {
+                updateSaveForce = true;
+            }
+        }
+        public void SampleAnimation(float time = -1, EditObjectFlag flags = EditObjectFlag.All)
+        {
+#if UNITY_2019_1_OR_NEWER
+            UpdateSyncEditorCurveClip();
+
+            if (time < 0f)
+                time = currentTime;
+
+            if ((flags & EditObjectFlag.Base) != 0 ||
+                ((flags & EditObjectFlag.Edit) != 0 && !hasDummyObject))
+            {
+                if (!uAw.GetLinkedWithTimeline())
+                {
+                    transformPoseSave.ResetRootStartTransform();
+
+                    if (vaw.animator != null)
+                    {
+                        #region AnimationWindowPlayable
+                        var playableGraph = uAw_2019_1.GetPlayableGraph();
+                        if (!playableGraph.IsValid())
+                        {
+                            uAw_2019_1.ResampleAnimation();
+                            playableGraph = uAw_2019_1.GetPlayableGraph();
+                        }
+                        if (playableGraph.IsValid())
+                        {
+                            var output = playableGraph.GetOutput(0);
+                            if (output.IsOutputValid())
+                            {
+                                var sourcePlayable = output.GetSourcePlayable();
+
+                                #region DisconnectCandidateClipPlayable
+                                {
+                                    var candidateClipPlayable = uAw_2019_1.GetCandidateClipPlayable();
+                                    if (candidateClipPlayable.IsValid())
+                                    {
+                                        for (int i = 0; i < candidateClipPlayable.GetOutputCount(); i++)
+                                        {
+                                            var mixerPlayable = candidateClipPlayable.GetOutput(i);
+                                            if (mixerPlayable.IsValid())
+                                            {
+                                                for (int j = 0; j < mixerPlayable.GetInputCount(); j++)
+                                                {
+                                                    var playable = mixerPlayable.GetInput(j);
+                                                    if (playable.Equals(candidateClipPlayable))
+                                                    {
+                                                        playableGraph.Disconnect(mixerPlayable, j);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                #endregion
+
+                                #region InsertAnimationOffsetPlayable
+                                if (rootMotionBoneIndex >= 0 &&
+                                    sourcePlayable.GetPlayableType() == animationPlayable.uAnimationMotionXToDeltaPlayable.type &&
+                                    sourcePlayable.GetInputCount() > 0 && sourcePlayable.GetInput(0).GetPlayableType() != animationPlayable.uAnimationOffsetPlayable.type)
+                                {
+                                    animationPlayable.animationOffsetPlayable = animationPlayable.uAnimationOffsetPlayable.Create(playableGraph, transformPoseSave.startLocalPosition, transformPoseSave.startLocalRotation, 1);
+                                    animationPlayable.animationOffsetPlayable.SetInputWeight(0, 1);
+                                    for (int i = 0; i < sourcePlayable.GetInputCount(); i++)
+                                    {
+                                        var playable = sourcePlayable.GetInput(i);
+                                        playableGraph.Disconnect(sourcePlayable, i);
+                                        playableGraph.Connect(playable, 0, animationPlayable.animationOffsetPlayable, i);
+                                    }
+                                    playableGraph.Connect(animationPlayable.animationOffsetPlayable, 0, sourcePlayable, 0);
+                                }
+                                #endregion
+
+                                if (isHuman)
+                                {
+#if UNITY_2019_2_OR_NEWER
+                                    #region DisableDefaultPosePlayableFootIK
+                                    {
+                                        var defaultPosePlayable = uAw_2019_2.GetDefaultPosePlayable();
+                                        if (defaultPosePlayable.IsValid())
+                                        {
+                                            if (defaultPosePlayable.GetApplyFootIK())
+                                                defaultPosePlayable.SetApplyFootIK(false);
+                                        }
+                                    }
+                                    #endregion
+#endif
+                                    #region FootIK
+                                    {
+                                        var clipPlayable = uAw_2019_1.GetClipPlayable();
+                                        clipPlayable.SetApplyFootIK(autoFootIK);
+                                    }
+                                    #endregion
+                                }
+
+                                if (time != currentTime)
+                                    uAw_2019_1.SetCurrentTimeOnly(time);
+                                uAw_2019_1.ResampleAnimation();
+                                if (time != currentTime)
+                                    uAw_2019_1.SetCurrentTimeOnly(currentTime);
+                            }
+                        }
+                        else
+                        {
+                            Assert.IsTrue(false);
+                        }
+                        #endregion
+                    }
+                    else if (vaw.animation != null)
+                    {
+                        WrapMode? beforeWrapMode = null;
+                        try
+                        {
+                            if (currentClip.wrapMode != WrapMode.Default)
+                            {
+                                beforeWrapMode = currentClip.wrapMode;
+                                currentClip.wrapMode = WrapMode.Default;
+                            }
+                            currentClip.SampleAnimation(vaw.gameObject, time);
+                        }
+                        finally
+                        {
+                            if (beforeWrapMode.HasValue)
+                            {
+                                currentClip.wrapMode = beforeWrapMode.Value;
+                            }
+                        }
+                    }
+                }
+            }
+
+            #region DummyObject
+            if ((flags & EditObjectFlag.Dummy) != 0 ||
+                ((flags & EditObjectFlag.Edit) != 0 && hasDummyObject))
+            {
+                calcObject.SetApplyIK(false);
+                calcObject.SetTransformStart();
+                calcObject.SampleAnimation(currentClip, time);
+            }
+            #endregion
+#else
+            SampleAnimationLegacy(time, flags);
+#endif
+        }
+        public void SampleAnimationLegacy(float time = -1, EditObjectFlag flags = EditObjectFlag.All)
+        {
+            UpdateSyncEditorCurveClip();
+
+            if (time < 0f)
+                time = currentTime;
+
+            if ((flags & EditObjectFlag.Base) != 0 ||
+                ((flags & EditObjectFlag.Edit) != 0 && !hasDummyObject))
+            {
+                if (!uAw.GetLinkedWithTimeline())
+                {
+                    transformPoseSave.ResetRootStartTransform();
+
+                    if (vaw.animator != null)
+                    {
+#if UNITY_2018_3_OR_NEWER
+                        var changedRootMotion = vaw.animator.applyRootMotion;
+                        if (changedRootMotion)
+                        {
+                            vaw.animator.applyRootMotion = false;
+                        }
+#endif
+
+                        if (!vaw.animator.isInitialized)
+                            vaw.animator.Rebind();
+                        currentClip.SampleAnimation(vaw.gameObject, time);
+
+#if UNITY_2018_3_OR_NEWER
+                        if (changedRootMotion)
+                        {
+                            vaw.animator.applyRootMotion = true;
+                        }
+#endif
+                    }
+                    else if (vaw.animation != null)
+                    {
+                        WrapMode? beforeWrapMode = null;
+                        try
+                        {
+                            if (currentClip.wrapMode != WrapMode.Default)
+                            {
+                                beforeWrapMode = currentClip.wrapMode;
+                                currentClip.wrapMode = WrapMode.Default;
+                            }
+                            currentClip.SampleAnimation(vaw.gameObject, time);
+                        }
+                        finally
+                        {
+                            if (beforeWrapMode.HasValue)
+                            {
+                                currentClip.wrapMode = beforeWrapMode.Value;
+                            }
+                        }
+                    }
+                }
+            }
+
+            #region DummyObject
+            if ((flags & EditObjectFlag.Dummy) != 0 ||
+                ((flags & EditObjectFlag.Edit) != 0 && hasDummyObject))
+            {
+                calcObject.SetApplyIK(false);
+                calcObject.SetTransformStart();
+                calcObject.SampleAnimationLegacy(currentClip, time);
+            }
+            #endregion
+        }
+        public void PlayableDirectorEvaluate()
+        {
+            if (!uAw.GetLinkedWithTimeline())
+                return;
+
+#if VERYANIMATION_TIMELINE
+            UpdateSyncEditorCurveClip();
+
+            uAw.uTimelineWindow.OnCurveModified(currentClip, new EditorCurveBinding(), AnimationUtility.CurveModifiedType.CurveModified);
+#endif
+        }
+        public void PlayableDirectorEvaluateImmediate()
+        {
+            if (!uAw.GetLinkedWithTimeline())
+                return;
+
+#if VERYANIMATION_TIMELINE
+            UpdateSyncEditorCurveClip();
+
+            uAw.uTimelineWindow.GetCurrentDirector().Evaluate();
+#endif
+        }
+
+        public void AnimationWindowSampleAnimationOverride()
+        {
+            if (uAw.GetLinkedWithTimeline())
+                return;
+
+#if UNITY_2019_1_OR_NEWER
+            var playableGraph = uAw_2019_1.GetPlayableGraph();
+            if (playableGraph.IsValid())
+            {
+                var output = playableGraph.GetOutput(0);
+                if (output.IsOutputValid())
+                {
+                    var sourcePlayable = output.GetSourcePlayable();
+
+                    bool update = false;
+
+#if UNITY_2019_2_OR_NEWER
+                    #region CheckDisconnectCandidateClipPlayable
+                    if (!update)
+                    {
+                        var candidateClipPlayable = uAw_2019_1.GetCandidateClipPlayable();
+                        if (candidateClipPlayable.IsValid())
+                        {
+                            for (int i = 0; i < candidateClipPlayable.GetOutputCount(); i++)
+                            {
+                                var mixerPlayable = candidateClipPlayable.GetOutput(i);
+                                if (mixerPlayable.IsValid())
+                                {
+                                    update = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region CheckDisableDefaultPosePlayableFootIK
+                    if (!update)
+                    {
+                        var defaultPosePlayable = uAw_2019_2.GetDefaultPosePlayable();
+                        if (defaultPosePlayable.IsValid())
+                        {
+                            if (defaultPosePlayable.GetApplyFootIK())
+                                update = true;
+                        }
+                    }
+                    #endregion
+#endif
+
+                    #region CheckAnimationOffsetPlayable
+                    if (!update)
+                    {
+                        if (sourcePlayable.GetPlayableType() == animationPlayable.uAnimationMotionXToDeltaPlayable.type &&
+                             sourcePlayable.GetInputCount() > 0 && sourcePlayable.GetInput(0).GetPlayableType() != animationPlayable.uAnimationOffsetPlayable.type)
+                        {
+                            update = true;
+                        }
+                    }
+                    #endregion
+
+                    if (update)
+                    {
+                        SampleAnimation();
+                    }
+                }
+            }
+
+#elif UNITY_2018_3_OR_NEWER
+            {
+                bool update = !transformPoseSave.IsRootStartTransform();
+                if (isHuman)
+                {
+                    if (!update)
+                    {
+                        var lengthSq = (animationWindowSampleAnimationOverrideCheckPosition - humanoidBones[(int)HumanBodyBones.LeftFoot].transform.position).sqrMagnitude;
+                        if (lengthSq > 0.0001f)
+                            update = true;
+                    }
+                    if (!update)
+                    {
+                        var langthSq = (humanoidBones[(int)HumanBodyBones.LeftLowerLeg].transform.position - humanoidBones[(int)HumanBodyBones.LeftFoot].transform.position).sqrMagnitude;
+                        if (langthSq - humanoidLeftLowerLegLengthSq > 0.0001f)
+                            update = true;
+                    }
+                }
+                if (update)
+                {
+                    SampleAnimation();
+                }
+            }
+#endif
         }
         #endregion
 
@@ -3193,6 +3538,8 @@ namespace VeryAnimation
             {
                 Undo.RecordObject(vaw, "Change Foot IK");
                 autoFootIK = !autoFootIK;
+                SetUpdateSampleAnimation();
+                SetSynchroIKtargetAll();
                 SetAnimationWindowSynchroSelection();
                 KeyCommmon();
             }
@@ -3234,9 +3581,7 @@ namespace VeryAnimation
             #region Next animation clip
             else if (Shortcuts.IsNextAnimationClip(e))
             {
-#if VERYANIMATION_TIMELINE
-                if (!uAw_2017_1.GetLinkedWithTimeline())
-#endif
+                if (!uAw.GetLinkedWithTimeline())
                 {
                     vaw.MoveChangeSelectionAnimationClip(1);
                     KeyCommmon();
@@ -3246,9 +3591,7 @@ namespace VeryAnimation
             #region Previous animation clip
             else if (Shortcuts.IsPreviousAnimationClip(e))
             {
-#if VERYANIMATION_TIMELINE
-                if (!uAw_2017_1.GetLinkedWithTimeline())
-#endif
+                if (!uAw.GetLinkedWithTimeline())
                 {
                     vaw.MoveChangeSelectionAnimationClip(-1);
                     KeyCommmon();
@@ -3258,7 +3601,8 @@ namespace VeryAnimation
             #region Force refresh
             else if (Shortcuts.IsForceRefresh(e))
             {
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation(true);
+                SetSynchroIKtargetAll();
                 uAw.ForceRefresh();
                 SetAnimationWindowSynchroSelection();
                 KeyCommmon();
@@ -3604,7 +3948,8 @@ namespace VeryAnimation
                             data.rotation = copyData.rotation;
                             data.swivelRotation = copyData.swivelRotation;
                         }
-                        animatorIK.UpdateOptionData(copyData.ikTarget);
+                        animatorIK.UpdateOptionPosition(copyData.ikTarget);
+                        animatorIK.UpdateSwivelPosition(copyData.ikTarget);
                         SetUpdateIKtargetAnimatorIK(copyData.ikTarget);
                     }
                 }
@@ -3790,7 +4135,7 @@ namespace VeryAnimation
             selectionHumanVirtualBones = null;
             selectionMotionTool = false;
             ClearIkTargetSelect();
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation();
             SetAnimationWindowSynchroSelection();
             vaw.SetRepaintGUI(VeryAnimationWindow.RepaintGUI.All);
         }
@@ -3801,7 +4146,7 @@ namespace VeryAnimation
             selectionHumanVirtualBones = virtualBones != null ? new List<HumanBodyBones>(virtualBones) : null;
             selectionMotionTool = false;
             ClearIkTargetSelect();
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation();
             SetAnimationWindowSynchroSelection();
             vaw.SetRepaintGUI(VeryAnimationWindow.RepaintGUI.All);
         }
@@ -3926,7 +4271,7 @@ namespace VeryAnimation
             selectionHumanVirtualBones = virtualList;
             selectionMotionTool = false;
             ClearIkTargetSelect();
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation();
             SetAnimationWindowSynchroSelection();
             vaw.SetRepaintGUI(VeryAnimationWindow.RepaintGUI.All);
         }
@@ -3976,7 +4321,7 @@ namespace VeryAnimation
             animatorIK.OnSelectionChange();
             originalIK.ikTargetSelect = originalIKTargets;
             originalIK.OnSelectionChange();
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation();
             SetAnimationWindowSynchroSelection();
             vaw.SetRepaintGUI(VeryAnimationWindow.RepaintGUI.All);
         }
@@ -3987,7 +4332,7 @@ namespace VeryAnimation
             selectionHumanVirtualBones = null;
             selectionMotionTool = true;
             ClearIkTargetSelect();
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation();
             SetAnimationWindowSynchroSelection();
             vaw.SetRepaintGUI(VeryAnimationWindow.RepaintGUI.All);
         }
@@ -4006,6 +4351,31 @@ namespace VeryAnimation
         public List<EditorCurveBinding> GetSelectionEditorCurveBindings()
         {
             var bindings = new List<EditorCurveBinding>();
+
+            Action<Tool, int> AddGeneric = (currentTool, boneIndex) =>
+            {
+                switch (currentTool)
+                {
+                case Tool.Move:
+                    for (int dof = 0; dof < 3; dof++)
+                        bindings.Add(AnimationCurveBindingTransformPosition(boneIndex, dof));
+                    break;
+                case Tool.Rotate:
+                    for (int dof = 0; dof < 3; dof++)
+                        bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.Baked));
+                    for (int dof = 0; dof < 3; dof++)
+                        bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.NonBaked));
+                    for (int dof = 0; dof < 4; dof++)
+                        bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.RawQuaternions));
+                    for (int dof = 0; dof < 3; dof++)
+                        bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.RawEuler));
+                    break;
+                case Tool.Scale:
+                    for (int dof = 0; dof < 3; dof++)
+                        bindings.Add(AnimationCurveBindingTransformScale(boneIndex, dof));
+                    break;
+                }
+            };
 
             Tool tool = CurrentTool();
 
@@ -4069,16 +4439,17 @@ namespace VeryAnimation
                 {
                     foreach (var ikTarget in animatorIK.ikTargetSelect)
                     {
-                        if (!animatorIK.ikData[(int)ikTarget].enable) continue;
+                        var data = animatorIK.ikData[(int)ikTarget];
+                        if (!data.enable) continue;
                         switch (ikTarget)
                         {
                         case AnimatorIKCore.IKTarget.Head:
-                            if (animatorIK.ikData[(int)ikTarget].headWeight > 0f)
+                            if (data.headWeight > 0f)
                             {
                                 AddMuscle(HumanBodyBones.Head);
                                 AddMuscle(HumanBodyBones.Neck);
                             }
-                            if (animatorIK.ikData[(int)ikTarget].eyesWeight > 0f)
+                            if (data.eyesWeight > 0f)
                             {
                                 AddMuscle(HumanBodyBones.LeftEye);
                                 AddMuscle(HumanBodyBones.RightEye);
@@ -4107,6 +4478,55 @@ namespace VeryAnimation
                             AddMuscle(HumanBodyBones.RightToes);
                             break;
                         }
+#if VERYANIMATION_ANIMATIONRIGGING
+                        #region AnimationRigging
+                        switch (ikTarget)
+                        {
+                        case AnimatorIKCore.IKTarget.Head:
+                            {
+                                var constraint = data.rigConstraint as MultiAimConstraint;
+                                if (constraint != null)
+                                {
+                                    foreach (var item in constraint.data.sourceObjects)
+                                    {
+                                        var boneIndex = BonesIndexOf(item.transform.gameObject);
+                                        if (boneIndex >= 0)
+                                            AddGeneric(Tool.Move, boneIndex);
+                                    }
+                                    bindings.Add(data.rigConstraintWeight);
+                                }
+                            }
+                            break;
+                        case AnimatorIKCore.IKTarget.LeftHand:
+                        case AnimatorIKCore.IKTarget.RightHand:
+                        case AnimatorIKCore.IKTarget.LeftFoot:
+                        case AnimatorIKCore.IKTarget.RightFoot:
+                            {
+                                var constraint = data.rigConstraint as TwoBoneIKConstraint;
+                                if (constraint != null)
+                                {
+                                    if (constraint.data.target != null)
+                                    {
+                                        var boneIndex = BonesIndexOf(constraint.data.target.gameObject);
+                                        if (boneIndex >= 0)
+                                        {
+                                            AddGeneric(Tool.Move, boneIndex);
+                                            AddGeneric(Tool.Rotate, boneIndex);
+                                        }
+                                    }
+                                    if (constraint.data.hint != null)
+                                    {
+                                        var boneIndex = BonesIndexOf(constraint.data.hint.gameObject);
+                                        if (boneIndex >= 0)
+                                            AddGeneric(Tool.Move, boneIndex);
+                                    }
+                                    bindings.Add(data.rigConstraintWeight);
+                                }
+                            }
+                            break;
+                        }
+                        #endregion
+#endif
                     }
                 }
                 #endregion
@@ -4114,35 +4534,11 @@ namespace VeryAnimation
             #endregion
             #region Generic
             {
-                Action<int> AddGeneric = (boneIndex) =>
-                {
-                    switch (tool)
-                    {
-                    case Tool.Move:
-                        for (int dof = 0; dof < 3; dof++)
-                            bindings.Add(AnimationCurveBindingTransformPosition(boneIndex, dof));
-                        break;
-                    case Tool.Rotate:
-                        for (int dof = 0; dof < 3; dof++)
-                            bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.Baked));
-                        for (int dof = 0; dof < 3; dof++)
-                            bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.NonBaked));
-                        for (int dof = 0; dof < 4; dof++)
-                            bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.RawQuaternions));
-                        for (int dof = 0; dof < 3; dof++)
-                            bindings.Add(AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.RawEuler));
-                        break;
-                    case Tool.Scale:
-                        for (int dof = 0; dof < 3; dof++)
-                            bindings.Add(AnimationCurveBindingTransformScale(boneIndex, dof));
-                        break;
-                    }
-                };
                 if (selectionBones != null)
                 {
                     foreach (var boneIndex in selectionBones)
                     {
-                        AddGeneric(boneIndex);
+                        AddGeneric(tool, boneIndex);
                     }
                 }
                 #region OriginalIK
@@ -4155,8 +4551,8 @@ namespace VeryAnimation
                         for (int i = 0; i < originalIK.ikData[ikTarget].joints.Count; i++)
                         {
                             var boneIndex = BonesIndexOf(originalIK.ikData[ikTarget].joints[i].bone);
-                            if (boneIndex < 0) continue;
-                            AddGeneric(boneIndex);
+                            if (boneIndex >= 0)
+                                AddGeneric(tool, boneIndex);
                         }
                     }
                 }
@@ -4321,7 +4717,7 @@ namespace VeryAnimation
             }
             return list;
         }
-        public int GetSelectionGameObjectsMaxLevel()
+        public float GetSelectionSuppressPowerRate()
         {
             int maxLevel = 1;
             if (selectionBones != null)
@@ -4356,7 +4752,15 @@ namespace VeryAnimation
                     maxLevel = Math.Max(maxLevel, level);
                 }
             }
-            return maxLevel;
+
+            if (maxLevel > 1)
+            {
+                return 1f / maxLevel;
+            }
+            else
+            {
+                return 1f;
+            }
         }
 
         public int BonesIndexOf(GameObject go)
@@ -4538,7 +4942,7 @@ namespace VeryAnimation
                             rotation = Quaternion.LookRotation(vecActive);
                             normal = rotation * Vector3.up;
                         }
-                        var angle = EditorCommon.Vector3SignedAngle(rotation * Vector3.right, vecActive, normal);
+                        var angle = Vector3.SignedAngle(rotation * Vector3.right, vecActive, normal);
                         var rightRotation = Quaternion.AngleAxis(angle, normal);
                         rotation = rightRotation * rotation;
                     }
@@ -4549,8 +4953,10 @@ namespace VeryAnimation
         #endregion
 
         #region ShowBone
-        public List<int> skeletonShowBoneList { get; private set; }
         public bool[] boneShowFlags;
+        public List<int> skeletonFKShowBoneList { get; private set; }
+        public List<Vector2Int> skeletonIKShowBoneList { get; private set; }
+        public int boneShowCount { get; private set; }
 
         private void InitializeBoneShowFlags()
         {
@@ -4823,15 +5229,51 @@ namespace VeryAnimation
                 if (flags[i])
                     SetParentFlags(i, true);
             }
-            if (skeletonShowBoneList == null)
-                skeletonShowBoneList = new List<int>(flags.Length);
-            else
-                skeletonShowBoneList.Clear();
-            for (int i = 0; i < flags.Length; i++)
             {
-                if (flags[i])
-                    skeletonShowBoneList.Add(i);
+                if (skeletonFKShowBoneList == null)
+                    skeletonFKShowBoneList = new List<int>(flags.Length);
+                else
+                    skeletonFKShowBoneList.Clear();
+                for (int i = 0; i < flags.Length; i++)
+                {
+                    if (flags[i])
+                        skeletonFKShowBoneList.Add(i);
+                }
             }
+            {
+                if (skeletonIKShowBoneList == null)
+                    skeletonIKShowBoneList = new List<Vector2Int>(flags.Length);
+                else
+                    skeletonIKShowBoneList.Clear();
+                {
+                    Action<int> AddBone = (boneIndex) =>
+                    {
+                        if (!skeletonFKShowBoneList.Contains(boneIndex))
+                            return;
+                        skeletonIKShowBoneList.Add(new Vector2Int(boneIndex, -1));
+                    };
+#if UNITY_2019_1_OR_NEWER
+                    if (IsEnableUpdateHumanoidFootIK())
+#else
+                    if (IsEnableUpdateHumanoidFootIK() && uAw.GetLinkedWithTimeline())
+#endif
+                    {
+                        AddBone(humanoidIndex2boneIndex[(int)HumanBodyBones.LeftLowerLeg]);
+                        AddBone(humanoidIndex2boneIndex[(int)HumanBodyBones.LeftFoot]);
+                        AddBone(humanoidIndex2boneIndex[(int)HumanBodyBones.RightLowerLeg]);
+                        AddBone(humanoidIndex2boneIndex[(int)HumanBodyBones.RightFoot]);
+                    }
+#if VERYANIMATION_ANIMATIONRIGGING
+                    if (animationRigging.isValid &&
+                        animationRigging.rigBuilder.isActiveAndEnabled &&
+                        animationRigging.rigBuilder.enabled)
+                    {
+                        animatorIK.AddAnimationRiggingConstraintSkeletonIKShowBoneList();
+                    }
+#endif
+                }
+            }
+            boneShowCount = boneShowFlags.Count(n => n);
         }
         #endregion
 
@@ -4848,8 +5290,11 @@ namespace VeryAnimation
         }
         public void DisableCustomTools()
         {
-            Tools.current = beforeCurrentTool;
-            lastTool = Tool.None;
+            if (lastTool != Tool.None)
+            {
+                Tools.current = lastTool;
+                lastTool = Tool.None;
+            }
         }
         public Tool CurrentTool()
         {
@@ -4884,7 +5329,7 @@ namespace VeryAnimation
                     break;
                 }
             }
-            else if(selectionMotionTool)
+            else if (selectionMotionTool)
             {
                 if (lastTool == Tool.Move) tool = Tool.Move;
                 else tool = Tool.Rotate;
@@ -4943,23 +5388,18 @@ namespace VeryAnimation
         {
             if (EditorApplication.isPlaying)
                 return;
-#if VERYANIMATION_TIMELINE
-            if (uAw_2017_1.GetLinkedWithTimeline())
+            if (uAw.GetLinkedWithTimeline())
                 return;
-#endif
 
-            if (enable)
+            if (enable && synchronizeAnimation == null)
             {
-                if (synchronizeAnimation == null)
-                    synchronizeAnimation = new SynchronizeAnimation();
-                else
-                    synchronizeAnimation.SetEnable(true);
+                synchronizeAnimation = new SynchronizeAnimation();
                 synchronizeAnimation.SetTime(currentTime);
             }
             else if (!enable && synchronizeAnimation != null)
             {
-                //Release needs to be delayed at the end of editing
-                synchronizeAnimation.SetEnable(false);
+                synchronizeAnimation.Release();
+                synchronizeAnimation = null;
             }
         }
         #endregion
@@ -4967,7 +5407,7 @@ namespace VeryAnimation
         #region SaveSettings
         public void LoadSaveSettings()
         {
-            var saveSettings = vaw.gameObject.GetComponent<VeryAnimationSaveSettings>();
+            var saveSettings = vaw.gameObject != null ? vaw.gameObject.GetComponent<VeryAnimationSaveSettings>() : null;
             if (saveSettings == null)
                 return;
 
@@ -5041,8 +5481,8 @@ namespace VeryAnimation
             }
             #endregion
 
-            animatorIK.LoadIKSaveSettings(saveSettings);
-            originalIK.LoadIKSaveSettings(saveSettings);
+            animatorIK.LoadIKSaveSettings(saveSettings.animatorIkData);
+            originalIK.LoadIKSaveSettings(saveSettings.originalIkData);
 
             #region SelectionSet
             selectionSetList = new List<VeryAnimationSaveSettings.SelectionData>();
@@ -5084,11 +5524,7 @@ namespace VeryAnimation
             #endregion
 
             #region Animation
-#if VERYANIMATION_TIMELINE
-            if (!EditorApplication.isPlaying && !uAw_2017_1.GetLinkedWithTimeline())
-#else
-            if (!EditorApplication.isPlaying)
-#endif
+            if (!EditorApplication.isPlaying && !uAw.GetLinkedWithTimeline())
             {
                 if (saveSettings.lastSelectAnimationClip != null)
                 {
@@ -5128,7 +5564,7 @@ namespace VeryAnimation
         }
         public void SaveSaveSettings()
         {
-            var saveSettings = vaw.gameObject.GetComponent<VeryAnimationSaveSettings>();
+            var saveSettings = vaw.gameObject != null ? vaw.gameObject.GetComponent<VeryAnimationSaveSettings>() : null;
             if (saveSettings == null)
                 return;
 
@@ -5194,8 +5630,8 @@ namespace VeryAnimation
             }
             #endregion
 
-            animatorIK.SaveIKSaveSettings(saveSettings);
-            originalIK.SaveIKSaveSettings(saveSettings);
+            saveSettings.animatorIkData = animatorIK.SaveIKSaveSettings();
+            saveSettings.originalIkData = originalIK.SaveIKSaveSettings();
 
             #region SelectionSet
             if (selectionSetList != null)
@@ -5209,26 +5645,29 @@ namespace VeryAnimation
             #endregion
 
             #region BlendShapeSet
-            saveSettings.blendShapeList = new VeryAnimationSaveSettings.BlendShapeSet[blendShapeSetList.Count];
-            for (int i = 0; i < blendShapeSetList.Count; i++)
+            saveSettings.blendShapeList = new VeryAnimationSaveSettings.BlendShapeSet[blendShapeSetList != null ? blendShapeSetList.Count : 0];
+            if (blendShapeSetList != null)
             {
-                if (blendShapeSetList[i].poseTemplate == null)
-                    continue;
-                var set = new VeryAnimationSaveSettings.BlendShapeSet()
+                for (int i = 0; i < blendShapeSetList.Count; i++)
                 {
-                    name = blendShapeSetList[i].poseTemplate.name,
-                    blendShapePaths = blendShapeSetList[i].poseTemplate.blendShapePaths.ToArray(),
-                };
-                set.blendShapeValues = new VeryAnimationSaveSettings.BlendShapeSet.BlendShapeData[blendShapeSetList[i].poseTemplate.blendShapeValues.Length];
-                for (int j = 0; j < blendShapeSetList[i].poseTemplate.blendShapeValues.Length; j++)
-                {
-                    set.blendShapeValues[j] = new VeryAnimationSaveSettings.BlendShapeSet.BlendShapeData()
+                    if (blendShapeSetList[i].poseTemplate == null)
+                        continue;
+                    var set = new VeryAnimationSaveSettings.BlendShapeSet()
                     {
-                        names = blendShapeSetList[i].poseTemplate.blendShapeValues[j].names.ToArray(),
-                        weights = blendShapeSetList[i].poseTemplate.blendShapeValues[j].weights.ToArray(),
+                        name = blendShapeSetList[i].poseTemplate.name,
+                        blendShapePaths = blendShapeSetList[i].poseTemplate.blendShapePaths.ToArray(),
                     };
+                    set.blendShapeValues = new VeryAnimationSaveSettings.BlendShapeSet.BlendShapeData[blendShapeSetList[i].poseTemplate.blendShapeValues.Length];
+                    for (int j = 0; j < blendShapeSetList[i].poseTemplate.blendShapeValues.Length; j++)
+                    {
+                        set.blendShapeValues[j] = new VeryAnimationSaveSettings.BlendShapeSet.BlendShapeData()
+                        {
+                            names = blendShapeSetList[i].poseTemplate.blendShapeValues[j].names.ToArray(),
+                            weights = blendShapeSetList[i].poseTemplate.blendShapeValues[j].weights.ToArray(),
+                        };
+                    }
+                    saveSettings.blendShapeList[i] = set;
                 }
-                saveSettings.blendShapeList[i] = set;
             }
             #endregion
         }
@@ -5335,11 +5774,11 @@ namespace VeryAnimation
             UpdateSkeletonShowBoneList();
             ToolsParameterRelatedCurveReset();
 
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation(true);
             SetSynchroIKtargetAll();
             EditorApplication.delayCall += () =>
             {
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
                 SetSynchroIKtargetAll();
             };
 

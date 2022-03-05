@@ -1075,14 +1075,14 @@ public partial class DataCounter
         }
         );
         #endregion
-        #region 追われる続き1
-        evs.Add("追われる続き1", () =>
+        #region 追われる2
+        evs.Add("追われる2", () =>
         {
             //初期化
             if (eventMoveFlag == true)
             {
                 //IEnumerator変数に入れて実行すると中断・再開できる。
-                nowRunEvIEnumerator = E4050UT();
+                nowRunEvIEnumerator = E4045UT();
                 nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
             }
         }
@@ -1168,6 +1168,45 @@ public partial class DataCounter
         }
         );
         #endregion
+        #region 就寝
+        evs.Add("就寝", () =>
+        {
+            //初期化
+            if (eventMoveFlag == true)
+            {
+                //IEnumerator変数に入れて実行すると中断・再開できる。
+                nowRunEvIEnumerator = F3060();
+                nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
+            }
+        }
+        );
+        #endregion
+        #region 寝床探し
+        evs.Add("寝床探し", () =>
+        {
+            //初期化
+            if (eventMoveFlag == true)
+            {
+                //IEnumerator変数に入れて実行すると中断・再開できる。
+                nowRunEvIEnumerator = F3070();
+                nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
+            }
+        }
+        );
+        #endregion
+        #region 床上起床
+        evs.Add("床上起床", () =>
+        {
+            //初期化
+            if (eventMoveFlag == true)
+            {
+                //IEnumerator変数に入れて実行すると中断・再開できる。
+                nowRunEvIEnumerator = F3080();
+                nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
+            }
+        }
+        );
+        #endregion
 
         #region Ver0.以降
 
@@ -1240,18 +1279,18 @@ public partial class DataCounter
         }
         );
         #endregion
-        #region 会話4_就寝
-        evs.Add("会話4_就寝", () =>
-        {
-            //初期化
-            if (eventMoveFlag == true)
-            {
-                //IEnumerator変数に入れて実行すると中断・再開できる。
-                nowRunEvIEnumerator = D3600();
-                nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
-            }
-        }
-        );
+        #region //会話4_就寝
+        //evs.Add("会話4_就寝", () =>
+        //{
+        //    //初期化
+        //    if (eventMoveFlag == true)
+        //    {
+        //        //IEnumerator変数に入れて実行すると中断・再開できる。
+        //        nowRunEvIEnumerator = D3600();
+        //        nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
+        //    }
+        //}
+        //);
         #endregion
         #region 探索2_ベッドのスマホ
         evs.Add("探索2_ベッドのスマホ", () =>
@@ -1261,19 +1300,6 @@ public partial class DataCounter
             {
                 //IEnumerator変数に入れて実行すると中断・再開できる。
                 nowRunEvIEnumerator = E3700();
-                nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
-            }
-        }
-        );
-        #endregion
-        #region 探索3_寝床探し
-        evs.Add("探索3_寝床探し", () =>
-        {
-            //初期化
-            if (eventMoveFlag == true)
-            {
-                //IEnumerator変数に入れて実行すると中断・再開できる。
-                nowRunEvIEnumerator = E3800();
                 nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
             }
         }
@@ -1292,19 +1318,6 @@ public partial class DataCounter
         //    }
         //}
         //);
-        #endregion
-        #region 監禁1_床上起床
-        evs.Add("監禁1_床上起床", () =>
-        {
-            //初期化
-            if (eventMoveFlag == true)
-            {
-                //IEnumerator変数に入れて実行すると中断・再開できる。
-                nowRunEvIEnumerator = E4000();
-                nowRunEvCoroutine = StartCoroutine(nowRunEvIEnumerator);
-            }
-        }
-        );
         #endregion
         #region 監禁2_ペットボトル
         evs.Add("監禁2_ペットボトル", () =>
@@ -1944,7 +1957,7 @@ public partial class DataCounter
         //nowPlayerLocalScale = new Vector3(0.03f, 0.03f, 0.03f);
         //nowPlayerLocalScale = new Vector3(0.015f, 0.015f, 0.015f);
 
-        #region //智恵理スキンメッシュコリダー生成テスト
+        #region 智恵理スキンメッシュコリダー生成テスト
 
         //システム化
         StartCoroutine(ReloadSkinMeshColliderSystemIEnum());
@@ -3391,113 +3404,113 @@ public partial class DataCounter
             //}
 
             #endregion
-            #region Unityタイムラインのコード書き出しテスト
+            #region //Unityタイムラインのコード書き出しテスト（書き出したコードをペーストして動き確認）
             if (Input.GetKeyDown(KeyCode.G))
             {
-                #region ChieriTimelineTest02Kakutyou1
-                ChieriTimelineTest02Kakutyou1:
-                #region フラグ処理用初期設定
-                //トラックのフラグ読み込んで生成
-                codeFlagBoolList = new List<bool>();
-                for (int i = 0; i < 0; i++)
-                { codeFlagBoolList.Add(false); }
+                //#region ChieriTimelineTest02Kakutyou1
+                //ChieriTimelineTest02Kakutyou1:
+                //#region フラグ処理用初期設定
+                ////トラックのフラグ読み込んで生成
+                //codeFlagBoolList = new List<bool>();
+                //for (int i = 0; i < 0; i++)
+                //{ codeFlagBoolList.Add(false); }
 
-                //クリップのフラグを取得する用Arrayを生成
-                clipFlagBoolArray = new bool[0];
+                ////クリップのフラグを取得する用Arrayを生成
+                //clipFlagBoolArray = new bool[0];
 
-                //結果判定用のフラグ初期化
-                isThisCodeFlagJudge = false;
-                #endregion
+                ////結果判定用のフラグ初期化
+                //isThisCodeFlagJudge = false;
+                //#endregion
 
-                //■ClipStart0
-                //clipStartTime 0.9
-                //clipDurationTime 0.433333333333333
-                //clipEndTime 1.33333333333333
-                yield return new WaitForSeconds(0.9f);//clipStartTime
+                ////■ClipStart0
+                ////clipStartTime 0.9
+                ////clipDurationTime 0.433333333333333
+                ////clipEndTime 1.33333333333333
+                //yield return new WaitForSeconds(0.9f);//clipStartTime
 
-                #region Frac爆発設定コルーチン始動
-                //Frac爆発設定PosObj取得
-                GameObject ChieriDoorOpenPosObj0
-                    = Resources.Load("_PosObj/ChieriDoorOpenPosObj") as GameObject;
+                //#region Frac爆発設定コルーチン始動
+                ////Frac爆発設定PosObj取得
+                //GameObject ChieriDoorOpenPosObj0
+                //    = Resources.Load("_PosObj/ChieriDoorOpenPosObj") as GameObject;
 
-                //Frac爆発設定コルーチン始動
-                UTLFracImpactSetting(true
-                //impactPosObj //コード読み込み用コメント
-                , ChieriDoorOpenPosObj0
-                //impactForce //コード読み込み用コメント
-                , 1f
-                //impactRadius //コード読み込み用コメント
-                , 2f
-                //bAlsoImpactFreeChunks //コード読み込み用コメント
-                , true);
-                #endregion
-
-
-                #region 指定オブジェの子オブジェ全削除
-                //Nullチェック
-                if (GameObject.Find("dddddd") != null)
-                {
-                    var tmpObj = GameObject.Find("dddddd");
-                    //子オブジェ全削除
-                    foreach (Transform trs in tmpObj.transform)
-                    { Destroy(trs.gameObject); }
-                }
-                else
-                { Debug.Log("■ddddddがヒエラルキーにない？"); }
-                #endregion
+                ////Frac爆発設定コルーチン始動
+                //UTLFracImpactSetting(true
+                ////impactPosObj //コード読み込み用コメント
+                //, ChieriDoorOpenPosObj0
+                ////impactForce //コード読み込み用コメント
+                //, 1f
+                ////impactRadius //コード読み込み用コメント
+                //, 2f
+                ////bAlsoImpactFreeChunks //コード読み込み用コメント
+                //, true);
+                //#endregion
 
 
-                #region カメラ揺れコルーチンスタート
-                StartCoroutine(UTLDOShakePosition
-                //durationDOShake //コード読み込み用コメント
-                (1f
-                //strengthDOShake //コード読み込み用コメント
-                , 0.05f
-                //vibratoDOShake //コード読み込み用コメント
-                , 20
-                , 90 //Randomness
-                , false //Snaping
-                        //fadeOutDOShake //コード読み込み用コメント
-                , true)
-                );
-                #endregion
+                //#region 指定オブジェの子オブジェ全削除
+                ////Nullチェック
+                //if (GameObject.Find("dddddd") != null)
+                //{
+                //    var tmpObj = GameObject.Find("dddddd");
+                //    //子オブジェ全削除
+                //    foreach (Transform trs in tmpObj.transform)
+                //    { Destroy(trs.gameObject); }
+                //}
+                //else
+                //{ Debug.Log("■ddddddがヒエラルキーにない？"); }
+                //#endregion
 
 
-                #region Obj移動 回転 拡縮
-                //Nullチェック
-                if (GameObject.Find("Cubetestes") != null)
-                {
-                    var tmpObj = GameObject.Find("Cubetestes");
-
-                    GameObject tmpPosObj
-                        = Resources.Load("_Temporary/Cubetestes (1)") as GameObject;
-
-                    //Obj移動
-                    tmpObj.transform.DOLocalMove(
-                    tmpPosObj.transform.localPosition
-                    , 5f)
-                    .SetEase(Ease.OutQuad);
-                    //Obj回転
-                    tmpObj.transform.DOLocalRotate(
-                    tmpPosObj.transform.localEulerAngles
-                    , 5f)
-                    .SetEase(Ease.OutQuad);
-
-                    //Objスケール
-                    tmpObj.transform.DOScale(
-                    tmpPosObj.transform.localScale
-                    , 5f)
-                    .SetEase(Ease.OutQuad);
-
-                }
-                else
-                { Debug.Log("■Cubetestesがヒエラルキーにない？"); }
-                #endregion
-
-                //■ClipEnd0
+                //#region カメラ揺れコルーチンスタート
+                //StartCoroutine(UTLDOShakePosition
+                ////durationDOShake //コード読み込み用コメント
+                //(1f
+                ////strengthDOShake //コード読み込み用コメント
+                //, 0.05f
+                ////vibratoDOShake //コード読み込み用コメント
+                //, 20
+                //, 90 //Randomness
+                //, false //Snaping
+                //        //fadeOutDOShake //コード読み込み用コメント
+                //, true)
+                //);
+                //#endregion
 
 
-                #endregion □ChieriTimelineTest02Kakutyou1
+                //#region Obj移動 回転 拡縮
+                ////Nullチェック
+                //if (GameObject.Find("Cubetestes") != null)
+                //{
+                //    var tmpObj = GameObject.Find("Cubetestes");
+
+                //    GameObject tmpPosObj
+                //        = Resources.Load("_Temporary/Cubetestes (1)") as GameObject;
+
+                //    //Obj移動
+                //    tmpObj.transform.DOLocalMove(
+                //    tmpPosObj.transform.localPosition
+                //    , 5f)
+                //    .SetEase(Ease.OutQuad);
+                //    //Obj回転
+                //    tmpObj.transform.DOLocalRotate(
+                //    tmpPosObj.transform.localEulerAngles
+                //    , 5f)
+                //    .SetEase(Ease.OutQuad);
+
+                //    //Objスケール
+                //    tmpObj.transform.DOScale(
+                //    tmpPosObj.transform.localScale
+                //    , 5f)
+                //    .SetEase(Ease.OutQuad);
+
+                //}
+                //else
+                //{ Debug.Log("■Cubetestesがヒエラルキーにない？"); }
+                //#endregion
+
+                ////■ClipEnd0
+
+
+                //#endregion □ChieriTimelineTest02Kakutyou1
 
             }
             #endregion
@@ -3559,10 +3572,10 @@ public partial class DataCounter
             //{
             //    //移動Obj本体
             //    GameObject tmpMovePointObj
-            //        = Instantiate(Resources.Load("EventSystem/KakureOni/Prefab/KO_SimplePointObj") as GameObject
+            //        = Instantiate(ResourceFiles.KO_SimplePointObj
             //        , GameObjectsTrs);
             //    //システム終了時削除するようにリストに入れ
-            //    KO_KakurePosObjsList.Add(tmpMovePointObj);
+            //    KO_SimpleKakurePosObjsList.Add(tmpMovePointObj);
 
             //    //移動Objの位置大きさ
             //    GameObject TempMovePointPosObj
@@ -3649,53 +3662,71 @@ public partial class DataCounter
 
             #endregion
 
-            #region シーン追加読み込みテスト
+            #region //シーン追加読み込みテスト
 
             if (Input.GetKeyDown(KeyCode.S))
             {
-                #region City用Fogシーンを読み込み
+                //#region City用Fogシーンを読み込み
 
-                Debug.Log("□シーンをロード開始");
-                yield return null;
+                //Debug.Log("□シーンをロード開始");
+                //yield return null;
 
-                #region シーン読み込み
+                //#region シーン読み込み
 
-                UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Bath", UnityEngine.SceneManagement.LoadSceneMode.Additive);
+                //UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Bath", UnityEngine.SceneManagement.LoadSceneMode.Additive);
 
-                ////FogVolume出てくるまで待機
-                //while (GameObject.Find("CitySKy/Fog Volume Data") == null)
-                //{
-                //    Debug.Log("Cityx100Fogシーンロード中");
-                //    yield return null;
-                //}
-
-
-                ////カメラ削除
-                //if (GameObject.Find("CameraAll_Cityx100") != null) { Destroy(GameObject.Find("CameraAll_Cityx100")); }
-
-                ////FogVolumeに割り当て
-                //GameObject.Find("CitySKy/Fog Volume Data").GetComponent<FogVolumeData>()
-                //    .GameCamera = VRCamera;
-
-                #endregion
-                ////■GameObjects_Cityを取得（CityのPrefabを入れる入れ物）
-                //if (GameObject.Find("GameObjects_City"))
-                //{ GameObjects_City = GameObject.Find("GameObjects_City"); }
-                //else
-                //{ Debug.Log("■GameObjects_Cityがオフまたはない？"); }
+                //////FogVolume出てくるまで待機
+                ////while (GameObject.Find("CitySKy/Fog Volume Data") == null)
+                ////{
+                ////    Debug.Log("Cityx100Fogシーンロード中");
+                ////    yield return null;
+                ////}
 
 
-                Debug.Log("■シーンロード終了");
+                //////カメラ削除
+                ////if (GameObject.Find("CameraAll_Cityx100") != null) { Destroy(GameObject.Find("CameraAll_Cityx100")); }
+
+                //////FogVolumeに割り当て
+                ////GameObject.Find("CitySKy/Fog Volume Data").GetComponent<FogVolumeData>()
+                ////    .GameCamera = VRCamera;
+
+                //#endregion
+                //////■GameObjects_Cityを取得（CityのPrefabを入れる入れ物）
+                ////if (GameObject.Find("GameObjects_City"))
+                ////{ GameObjects_City = GameObject.Find("GameObjects_City"); }
+                ////else
+                ////{ Debug.Log("■GameObjects_Cityがオフまたはない？"); }
 
 
-                while (true) { yield return null; }
+                //Debug.Log("■シーンロード終了");
 
-                #endregion
+
+                //while (true) { yield return null; }
+
+                //#endregion
 
             }
 
 
 
+            #endregion
+
+            #region 脚登りモードEasyとHard切り替え
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                if (AN_isInputSwitchEasyMode)
+                {
+                    AN_isInputSwitchEasyMode = false;
+                    AN_isInputSwitchHardMode = true;
+                    Debug.Log("脚登りHard、手が外れる");
+                }
+                else
+                {
+                    AN_isInputSwitchEasyMode = true;
+                    AN_isInputSwitchHardMode = false;
+                    Debug.Log("脚登りEasy、手が外れない");
+                }
+            }
             #endregion
 
             yield return null;
@@ -15559,7 +15590,8 @@ public partial class DataCounter
         speaker.audioSource.volume = 0f;
         speakerHighPass.cutoffFrequency = 200;
         speakerHighPass.highpassResonanceQ = 1;
-        speaker.audioSource.clip = Resources.Load("Main/BGM/大地獣ループ化") as AudioClip;
+        //speaker.audioSource.clip = Resources.Load("Main/BGM/大地獣ループ化") as AudioClip;
+        speaker.audioSource.clip = ResourceFiles.BGM["大地獣ループ化"];
         speaker.audioSource.Play();
         speaker.audioSource.loop = true;
         speaker.audioSource.spatialize = true;
@@ -16085,6 +16117,8 @@ public partial class DataCounter
         FadeBlack(1, 0);
         yield return null;
 
+        Debug.Log(HwNowStageInt);
+        Debug.Log(drillTexturesList.Count);
 
         #region 暗幕設定
         Drill_chieriTrs.gameObject.SetActive(false);
@@ -16727,7 +16761,7 @@ public partial class DataCounter
         //歩きスピードにしてモーションも歩きに
         playerMoveSpeed = 1;
         KO_AsiotoTimeCountMaxFloat = 0.7f;
-        isPlayerWalk = true;
+        isKO_PlayerWalk = true;
         #endregion
 
         while (isTikaduitemiruPos_Enter == false) { yield return null; }
@@ -17627,12 +17661,17 @@ public partial class DataCounter
                 //同時にカメラリセット設定(ペアレントされるので、そのローカルを入れる)
                 DB.cameraObjectsResetLocalEul = CameraObjectsTrs.localEulerAngles;
                 DB.cameraAnchorResetLocalPos = DB.cameraSitAnchorDefLocalPos;//座りに
+
             });
 
         #endregion
 
 
         yield return new WaitForSeconds(3f);
+        //消えちゃうの阻止(内部的には消えてないのに消えてしまう現象。こうしてなんとか再表示された)
+        Player_DummyTrs.Find("mesh").Find("Body").GetComponent<SkinnedMeshRenderer>().updateWhenOffscreen = false;
+        yield return null;
+        Player_DummyTrs.Find("mesh").Find("Body").GetComponent<SkinnedMeshRenderer>().updateWhenOffscreen = true;
 
         isReloadSkinMeshColliderSystem = false;
 
@@ -19656,7 +19695,7 @@ public partial class DataCounter
 
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         KO_KakurePosObjsList[tmpInt].SetActive(true);
         //寝る場所移動ポイント出現 演出
@@ -21976,7 +22015,22 @@ public partial class DataCounter
         #endregion
         yield break;
     }
-    IEnumerator T_ChieriSumahoObj()//布団へ飛び降りスマホ前へ移動
+    IEnumerator T_ChieriSumahoObj()//布団へ飛び降りスマホ前へ移動開始
+    {
+        #region ■監禁2範囲外から初回チェック時は
+        if (EnumChieriSumaho == enumChieriSumaho.探索2監禁範囲外_初回)
+        {
+            NovelSetVis("F3060030");//（……見つけた！　あれだ！）
+            while (isNovelSetVisIng) { yield return null; }
+
+            isF3060SumahoHakken = true;
+        }
+        yield break;
+
+        #endregion
+
+    }
+    IEnumerator T_ChieriSumahoObj_Old()//布団へ飛び降りスマホ前へ移動開始_旧状態（もしも再現したいなら↑をこの内容にする）
     {
         #region ■監禁2範囲外から初回チェック（布団へ飛び降りスマホ前へ移動ポイント）
         if (EnumChieriSumaho == enumChieriSumaho.探索2監禁範囲外_初回)
@@ -22099,7 +22153,7 @@ public partial class DataCounter
         //FadeBlack(1, 0.1f);
         //yield return new WaitForSeconds(0.1f);
 
-        //EventMove("監禁1_床上起床");
+        //EventMove("床上起床");
         //isKOSystem = false;
         //isTansakuSystem = false;
     }
@@ -22192,7 +22246,13 @@ public partial class DataCounter
         #endregion
 
     }
+    IEnumerator T_USBCable_BedUnderObj()
+    {
+        NovelSetVis("T_USBCable_BedUnder_010");
+        while (isNovelSetVisIng) { yield return null; }
 
+        yield break;
+    }
     //■コリダー系
 
     #region UTL拡張用の
@@ -22644,7 +22704,7 @@ public partial class DataCounter
     {
         yield break;
     }
-    IEnumerator T_SumahoMae01Enter()//監禁ルート夜ベッドスマホ（スマホに乗りあがる）
+    IEnumerator T_SumahoMae01Enter()//監禁ルート夜ベッドスマホ（スマホに乗りあがる）_旧状態 古いイベント状態でしか使用してない
     {
         //連続再生させない
         if (EnumSumahoMae01 == enumSumahoMae01.終了) { yield break; }
@@ -22871,31 +22931,15 @@ public partial class DataCounter
         #endregion
 
 
-        #region //スマホ画面ONOFFデバッグ操作
-        //bool tmpDebug = true;
-        //while (tmpDebug)
-        //{
-        //    //フェードテスト
-        //    if (Input.GetKeyDown(KeyCode.F))
-        //    {
-        //        ChieriSumahoPower();
-        //    }
-        //    if (Input.GetKeyDown(KeyCode.G))
-        //    {
-        //        ChieriSumahoPower(false);
-        //    }
-
-        //    yield return null;
-        //}
-        #endregion
         yield break;
     }
     IEnumerator T_SumahoMae01Exit()
     {
         yield break;
     }
-    IEnumerator T_SumahoUeCableMae01Enter()//ケーブル引っ張り引っ張られ落ち
+    IEnumerator T_SumahoUeCableMae01Enter()//ケーブル引っ張り引っ張られ落ち_旧状態 古いイベント状態でしか使用してない
     {
+        Debug.Log("コリダーイベント");
         KO_isMovePosLock = true;//移動止め
         NovelSetVis("SumahoUeCableMae01Enter010");//やっぱりきちんと刺さってる
         while (isNovelSetVisIng) { yield return null; }
@@ -23105,7 +23149,7 @@ public partial class DataCounter
         NovelSetVis("SumahoUeCableMae01Enter050");//（ひ、ひとまず、うっかり踏まれない場所を探そう）
         while (isNovelSetVisIng) { yield return null; }
 
-        EventMove("探索3_寝床探し");
+        EventMove("寝床探し");
 
         yield break;
     }
@@ -23118,7 +23162,7 @@ public partial class DataCounter
         if (EnumBedUnder01 == enumBedUnder01.初回到着)
         {
             EnumBedUnder01 = enumBedUnder01.終了;
-            NovelSetVis("T_BedUnder01_初回");//うっぷ
+            NovelSetVis("T_BedUnder01_初回", true);//うっぷ
         }
 
         yield break;
@@ -23137,7 +23181,7 @@ public partial class DataCounter
         else if (EnumCarpet_Area == enumCarpet_Area.繊維と思えない)
         {
             EnumCarpet_Area = enumCarpet_Area.終了;
-            NovelSetVis("T_Carpet_Area_初回到着");//これがカーペットの繊維……
+            //NovelSetVis("T_Carpet_Area_初回到着");//これがカーペットの繊維……
         }
 
         yield break;
@@ -23147,7 +23191,7 @@ public partial class DataCounter
         if (EnumCarpet_Area == enumCarpet_Area.起きぬけ脱出前)
         {
             EnumCarpet_Area = enumCarpet_Area.終了;
-            NovelSetVis("E4000b040");//ここにいるぞー！
+            NovelSetVis("F3080b040");//ここにいるぞー！
         }
         yield break;
     }//カーペット出た時
@@ -23161,9 +23205,11 @@ public partial class DataCounter
         {
             EnumPlayerStartPosArea01 = enumPlayerStartPosArea01.終了;
             //SE
-            SEPlay("heart_def");
-            PlayerHPAddSub(-300);
-            NovelSetVis("T_PlayerStartPosArea01Exit_初回");//あいっづ…！
+            SEPlay("heart_def", 0.4f);
+            //白フラッシュ
+            FadeWhite(0.3f, 0.05f); yield return new WaitForSeconds(0.05f); FadeWhite(0, 0.05f);
+
+            NovelSetVis("F3070010");//あいっづ…！
         }
         yield break;
     }
@@ -23208,19 +23254,20 @@ public partial class DataCounter
         isKOSystem = false;
         isTansakuSystem = false;
 
-        //ビルド手間なので一旦オフ
-        //kisyouBedUnder = true;
-        //kisyouTableUnder = false;
+        staticFlagDict["起床ガラステーブル下"] = false;
+
 
         yield return new WaitForSeconds(0.5f);
         NovelSetVis("T_BedUnderSleepPos01Enter_初回a010");//しょうがないよな　なんでこんな目に
         while (novelCurrentPageInt < 3) { yield return null; };
 
         //暗幕
+        KankyouBGMVolumer(0.4f, 2);
         FadeBlack(1, 3);
         while (isNovelSetVisIng) { yield return null; };
-        yield return new WaitForSeconds(5);
-        EventMove("監禁1_床上起床");
+        KankyouBGMVolumer(0, 4);
+        yield return new WaitForSeconds(2);
+        EventMove("床上起床");
 
         yield break;
 
@@ -23280,20 +23327,22 @@ public partial class DataCounter
         isKOSystem = false;
         isTansakuSystem = false;
 
-        //ビルド手間なので一旦オフ
-        //kisyouBedUnder = false;
-        //kisyouTableUnder = true;
+        staticFlagDict["起床ガラステーブル下"] = true;
+
 
         yield return new WaitForSeconds(0.5f);
         NovelSetVis("T_GrasstableUnderSleepPos01Enter_初回a010");//まあここでいいか
         while (novelCurrentPageInt < 3) { yield return null; };
 
+        KankyouBGMVolumer(0.4f, 2);
+
         //暗幕
         FadeBlack(1, 3);
         while (isNovelSetVisIng) { yield return null; };
-        yield return new WaitForSeconds(5);
+        KankyouBGMVolumer(0, 4);
+        yield return new WaitForSeconds(2);
 
-        EventMove("監禁1_床上起床");
+        EventMove("床上起床");
 
         yield break;
 
@@ -23669,7 +23718,7 @@ public partial class DataCounter
         KO_KakurePosObjsList[tmpListInt].SetActive(true);
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         #region ■使用する探索オブジェ選別
 
@@ -25357,7 +25406,7 @@ public partial class DataCounter
         KO_KakurePosObjsList[tmpListInt].SetActive(true);
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         #region ■使用する探索オブジェ選別
 
@@ -26326,7 +26375,7 @@ public partial class DataCounter
         playerMoveSpeed = 0.5f;
         KO_AsiotoTimeCountMaxFloat = 0.7f;
 
-        isPlayerWalk = true;
+        isKO_PlayerWalk = true;
 
         #endregion
 
@@ -26457,8 +26506,7 @@ public partial class DataCounter
         yield return new WaitForSeconds(0.5f / girlAnim.speed);
 
         //まばたき
-        ChieriMotion("まばたき", 0f, 4);
-        blinkTime = 0;
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
         yield return new WaitForSeconds(0.2f / girlAnim.speed);
         ChieriMotion("まばたき", 0f, 4);
         blinkTime = 0;
@@ -29757,8 +29805,12 @@ public partial class DataCounter
             });
         #endregion
 
-        if (DB.isUserClothsBarefoot) { NovelSetVis("USBケーブル降り中見つかり320Barefoot"); }//素足版
+        //if (DB.isUserClothsBarefoot) { NovelSetVis("USBケーブル降り中見つかり320Barefoot"); }//素足版
+        //else { NovelSetVis("USBケーブル降り中見つかり320"); }//そ、そうだな・・・あはは・・
+
+        if (DB.intCurrentShoes == 1) { NovelSetVis("USBケーブル降り中見つかり320Barefoot"); }//素足版
         else { NovelSetVis("USBケーブル降り中見つかり320"); }//そ、そうだな・・・あはは・・
+
 
         while (isNovelSetVisIng) { yield return null; }
 
@@ -30222,7 +30274,7 @@ public partial class DataCounter
 
             while (true)
             {
-                if (Input.GetKeyDown(KeyCode.F))
+                if (Input.GetKeyDown(KeyCode.G))
                 {
                     //顔隠し位置
                     IKRFootTargetTrs.DOLocalMove(IKRFoot_010OsitukePosObj.transform.localPosition, 2);
@@ -30236,7 +30288,7 @@ public partial class DataCounter
                     DOTweenToIKEfRot(PlayerIKRHandEf, 1, 1f);
                     SEPlay(Other3DSEObj, FootStepSE(woodFloorCreakingPicthMinus6SEStrList), GirlLFootTrs.gameObject, 1, 0.5f);
                 }
-                if (Input.GetKeyDown(KeyCode.G))
+                if (Input.GetKeyDown(KeyCode.H))
                 {
                     //ギリ顔見せ位置
                     IKRFootTargetTrs.DOLocalMove(IKRFoot_040HikiLittlePosObj.transform.localPosition, 2);
@@ -30250,7 +30302,7 @@ public partial class DataCounter
                     DOTweenToIKEfRot(PlayerIKRHandEf, 1, 1f);
                     SEPlay(Other3DSEObj, FootStepSE(woodFloorCreakingPicthMinus6SEStrList), GirlLFootTrs.gameObject, 1, 0.5f);
                 }
-                if (Input.GetKeyDown(KeyCode.H))
+                if (Input.GetKeyDown(KeyCode.J))
                 {
                     //顔見せ位置
                     IKRFootTargetTrs.DOLocalMove(IKRFoot_020HikiPosObj.transform.localPosition, 2);
@@ -30264,7 +30316,7 @@ public partial class DataCounter
                     DOTweenToIKEfRot(PlayerIKRHandEf, 1, 1f);
                     SEPlay(Other3DSEObj, FootStepSE(woodFloorCreakingPicthMinus6SEStrList), GirlLFootTrs.gameObject, 1, 0.5f);
                 }
-                if (Input.GetKeyDown(KeyCode.J))
+                if (Input.GetKeyDown(KeyCode.K))
                 {
                     //引き下げ位置
                     IKRFootTargetTrs.DOLocalMove(IKRFoot_030HikiAgePosObj.transform.localPosition, 2);
@@ -30368,9 +30420,10 @@ public partial class DataCounter
         HukidashiNovelDistanceChange(0.6f, 3);
         yield return new WaitForSeconds(2);
         SEPlay(SocksSEObj, "紐・ロープ・引っ張る・きしむ02_単発03", RFootWindnoiseSoundObj, 1, 0f);
-        if (DB.isUserClothsBarefoot) { NovelSetVis("足指攻められ040Barefoot"); }//素足版
+        //if (DB.isUserClothsBarefoot) { NovelSetVis("足指攻められ040Barefoot"); }//素足版
+        //else { NovelSetVis("足指攻められ040"); }//呼吸できない
+        if (DB.intCurrentShoes == 1) { NovelSetVis("足指攻められ040Barefoot"); }//素足版
         else { NovelSetVis("足指攻められ040"); }//呼吸できない
-
 
         ChieriMotion("RToe_つま先くにゅ1（無意識系）", 1, 13);
         FadeBlack(0.9f, 1f); yield return new WaitForSeconds(1f);
@@ -30425,7 +30478,9 @@ public partial class DataCounter
         while (isNovelSetVisIng) { yield return null; }
 
         playerRHandTatakiTweener.Restart();
-        if (DB.isUserClothsBarefoot) { NovelSetVis("足指攻められ080Barefoot"); }//素足版
+        //if (DB.isUserClothsBarefoot) { NovelSetVis("足指攻められ080Barefoot"); }//素足版
+        //else { NovelSetVis("足指攻められ080"); }//ちがう！　ほんとに苦しいんだって・・・！
+        if (DB.intCurrentShoes == 1) { NovelSetVis("足指攻められ080Barefoot"); }//素足版
         else { NovelSetVis("足指攻められ080"); }//ちがう！　ほんとに苦しいんだって・・・！
 
 
@@ -31334,9 +31389,9 @@ public partial class DataCounter
     #endregion
     #region AnimTriggerを利用した新しいの
 
-    bool isActionLoopSystem = false;
+    public bool isActionLoopSystem = false;
 
-    IEnumerator ActionLoopSystemCor(System.Action action, float intervalTime = 1, float loopTime = 10)
+    public IEnumerator ActionLoopSystemCor(System.Action action, float intervalTime = 1, float loopTime = 10)
     {
         isActionLoopSystem = true;
         float loopTimeCounter = 0;
@@ -31466,7 +31521,8 @@ public partial class DataCounter
 
             ChieriMotion("ドアからデスク横ポーズ原点", 0 / girlAnim.speed, 0);
             //智恵理 デスク横ポーズ位置に
-            GameObject Chieri_20_DeskYokoPosePosObj = Resources.Load("_PosObj/D_Henai_Day1_Tansaku1-2/Chieri_20_DeskYokoPosePosObj") as GameObject;
+            GameObject Chieri_20_DeskYokoPosePosObj
+                = Resources.Load("_PosObj/D_Henai_Day1_Tansaku1-2/Chieri_20_DeskYokoPosePosObj") as GameObject;
             GirlTrs.localPosition = Chieri_20_DeskYokoPosePosObj.transform.localPosition;
             yield return null;
             ChieriMotion("デスク横探しゴミ箱持ち上げるまで原点", 1 / girlAnim.speed, 0);
@@ -32145,8 +32201,10 @@ public partial class DataCounter
 
             //足音ループ
             StartCoroutine(ActionLoopSystemCor(() =>
-            { SEPlay(UISEObj, KO_PlayerAsioto_DefList[UnityEngine.Random.Range(0, KO_PlayerAsioto_DefList.Count)], 0.3f); }
-            , 0.25f, Mathf.Infinity));
+            {
+                SEPlay(UISEObj, KO_PlayerAsioto_DefList[UnityEngine.Random.Range(0, KO_PlayerAsioto_DefList.Count)], 0.3f); }
+            , 0.25f
+            , Mathf.Infinity));
 
             NovelSetVis("T_Door_気づいてa120");//冗談じゃない！
             Hukidashi("気づいてもらい060");//3
@@ -35911,7 +35969,7 @@ public partial class DataCounter
 
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         KO_KakurePosObjsList[tmpInt].SetActive(true);
         //寝る場所移動ポイント出現 演出
@@ -37064,7 +37122,7 @@ public partial class DataCounter
         //早歩きスピードにしてモーションも歩きに
         playerMoveSpeed = 2f;
         KO_AsiotoTimeCountMaxFloat = 0.6f;
-        isPlayerWalk = true;
+        isKO_PlayerWalk = true;
         #endregion
 
         //ペットボトル出るまで待機
@@ -44231,10 +44289,10 @@ public partial class DataCounter
                     #region シンプル移動point開始
                     //移動ポイントObj本体
                     GameObject tmpMovePointObj
-                        = Instantiate(Resources.Load("EventSystem/KakureOni/Prefab/KO_SimplePointObj") as GameObject
+                        = Instantiate(ResourceFiles.KO_SimplePointObj
                         , GameObjectsTrs);
                     //システム終了時削除するようにリストに入れ
-                    KO_KakurePosObjsList.Add(tmpMovePointObj);
+                    KO_SimpleKakurePosObjsList.Add(tmpMovePointObj);
 
                     //移動ポイントObjの位置大きさ
                     GameObject SimpleMovePoint020_DoorOutPosObj
@@ -44251,7 +44309,7 @@ public partial class DataCounter
                     //歩きスピードにしてモーションも歩きに
                     playerMoveSpeed = 1;
                     KO_AsiotoTimeCountMaxFloat = 0.7f;
-                    isPlayerWalk = true;
+                    isKO_PlayerWalk = true;
 
 
                     KO_isMovePosLock = true;
@@ -46288,7 +46346,7 @@ public partial class DataCounter
 
         yield break;
     }
-    IEnumerator E4050UT()//追われる続き1
+    IEnumerator E4045UT()//追われる2
     {
         if (debugEventMoveFlag == true)
         {
@@ -46296,8 +46354,9 @@ public partial class DataCounter
         EventReset();
 
         //■既に都市が置かれてるならそのまま(エディタ再生のためライトなどのONOFF命令)
-        if (GameObject.Find("GameObjects_Cityx100") != null)
+        if (GameObjects_City != null)
         {
+            Debug.Log("追われる2 既存読み込み");
             //オフになっているROOMその他（ライト含む）をONにする
             RoomTrs.gameObject.SetActive(true);
             SotoTrs.gameObject.SetActive(true);
@@ -46316,6 +46375,7 @@ public partial class DataCounter
         }
         else //■都市がなければシーンロードなので白フェード化してから都市データ読み込み
         {
+            Debug.Log("追われる2 新規読み込み");
             //■■■シーンロード用暗幕かかってること前提
             //とりあえずデバッグのため普通の暗幕かけ
             FadeBlack(1, 0);
@@ -54713,9 +54773,13 @@ public partial class DataCounter
         //既存のポストプロセスオフ
         PostProcessVolume00DirectDataObj.SetActive(false);
 
-        //既存のライトオフ
-        var defLightObj = GameObject.Find("GameObjects/Light");
-        defLightObj.SetActive(false);
+        //既存のライトオフ(サメで読み込むためにifチェック追加（サメシーンにはライトがない）)
+        GameObject defLightObj = null;
+        if (GameObject.Find("GameObjects/Light") != null)
+        {
+            defLightObj = GameObject.Find("GameObjects/Light");
+            defLightObj.SetActive(false);
+        }
 
         ////既存のライトからEventLightTargetレイヤーオフ
         //var defLight = GameObject.Find("GameObjects/Light/Floor light_Realtime").GetComponent<Light>();
@@ -54797,10 +54861,10 @@ public partial class DataCounter
 
         //こもり虫に変え
         KankyouBGMChanger(semiSE.audioSource, "musi2_loop_EQKomori");
-
         //環境音フェード
         KankyouBGMVolumer(0.5f, 5);
 
+        HukidashiNovelDistanceChange(2f, 0);
 
         #region 設定
 
@@ -55006,6 +55070,8 @@ public partial class DataCounter
         FadeBlack(0, 2);
         yield return new WaitForSeconds(2);
 
+        tmpRHandSound.aSource.DOFade(1, 1f);
+
         //ChieriMotion("_noData", 0f, 7);//解除　首の動きが固定されて、舐めシーン動かなくなるので
         //OriBreathController.enabled = false;
         //tmpRHandSound.aSource.DOFade(1, 1f);
@@ -55075,28 +55141,7 @@ public partial class DataCounter
         NovelSetVis("F3040020"); //（……も、戻……す……？）　移動し始めた。
         while (isNovelSetVisIng) { yield return null; }
 
-
-        #region //ToBeContinude消しタイトルへ
-        //yield return new WaitForSeconds(5f);
-
-        ////徐々に透明に
-        //DOTween.To(() => tmpImage.color, (x) => tmpImage.color = x, new Color(1, 1, 1, 0)
-        //    , 5f)
-        //     .SetEase(Ease.InOutQuad)
-        //     .SetUpdate(true);
-
-        ////NovelSetVis("ToBeContinued");
-
-
-        //isNovelFadeTween = isNovelSetVisIng = false;
-        //KankyouBGMVolumer(0f, 5);
-        //yield return new WaitForSeconds(5f);
-
-
-        //EventMove("タイトル", true, true);
-
-        //yield break;
-        #endregion
+        yield return new WaitForSeconds(1);
 
 
         EventMove("ハンカチのマット", true, true);
@@ -55107,14 +55152,17 @@ public partial class DataCounter
     {
         if (debugEventMoveFlag == true)
         {
-            //プレイヤー大きさ
-            //nowPlayerLocalScl = new Vector3(0.05f, 0.05f, 0.05f);
-            nowPlayerLocalScale = new Vector3(0.015f, 0.015f, 0.015f);
             //暗幕
             FadeBlack(1, 0);
         }
         EventReset();
         //goto デバッグスキップ;
+
+        //こもり虫に変え
+        KankyouBGMChanger(semiSE.audioSource, "musi2_loop_EQKomori");
+        //環境音フェード
+        KankyouBGMVolumer(0.5f, 5);
+        HukidashiNovelDistanceChange(3f, 0);
 
         #region 設定
         #region 宿題ペン消しゴムなくし
@@ -55179,6 +55227,18 @@ public partial class DataCounter
         GameObject Player010_HankachiUePosObj = Resources.Load("_PosObj/0350HankachiNoMat/Player010_HankachiUePosObj") as GameObject;
         CameraObjectsTrs.localPosition = Player010_HankachiUePosObj.transform.localPosition;
         CameraObjectsTrs.localEulerAngles = Player010_HankachiUePosObj.transform.localEulerAngles;
+
+        //倒れカメラ戻し
+        isPlayerUniqueMotion = false;
+
+        //カメラリセット値変更してリセット（+回転と座り設定）
+        CameraReset(Player010_HankachiUePosObj.transform.localEulerAngles
+            , DB.cameraSitAnchorDefLocalPos //座りに
+            , false
+            , DB.cameraAnchorResetLocalPos);//Anchorをゼロに
+
+        //プレイヤー大きさ
+        nowPlayerLocalScale = DB.playerScale_Vore01;
 
         //ハンカチ設置
         GameObject HandkerchiefObj =
@@ -55459,7 +55519,8 @@ public partial class DataCounter
         #endregion
 
 
-        StartCoroutine(ToBeContinued());
+        //StartCoroutine(ToBeContinued());
+
 
         yield return new WaitForSeconds(1);
 
@@ -55469,6 +55530,7 @@ public partial class DataCounter
         yield return new WaitForSeconds(1);
 
         Hukidashi("F3050160");//洗ってあげる
+        FadeBlack(1, 2);
         yield return new WaitForSeconds(1); yield return KeyOrWait(3);
 
         NovelSetVis("F3050080");//いやごめんとか！
@@ -55480,14 +55542,2612 @@ public partial class DataCounter
         NovelSetVis("F3050090");//待て待て待て待て！
         while (isNovelSetVisIng) { yield return null; }
 
+        yield return new WaitForSeconds(1);
 
-        //EventMove();
+
+        EventMove("就寝");
+
 
         yield break;
     }
+    IEnumerator F3060()//就寝
+    {
+        if (debugEventMoveFlag == true)
+        {
+            //暗幕
+            FadeBlack(1, 0);
+        }
+        EventReset();
+        //MoveScene("TH_Yoru"); yield return new WaitForSeconds(1);
+
+        //こもり虫に変え
+        KankyouBGMChanger(semiSE.audioSource, "musi2_loop_EQKomori");
+        //環境音フェード
+        KankyouBGMVolumer(0.5f, 5);
+
+        #region 設定
+
+        #region 宿題ペン消しゴムなくし
+        //宿題
+        Drill_chieriTrs.gameObject.SetActive(false);
+
+        ////プレイヤーの宿題
+        //HomeworkObjectsTrs.gameObject.SetActive(false);
+        DrillTrs.gameObject.SetActive(false);
+
+        //ペンなくし
+        SharpenObj.SetActive(false);
+        //消しゴム無くし
+        KeshigomuObj.SetActive(false);
+        #endregion
+
+        #region バッテリー設置
+        GameObject BatteryObj;
+        //既に編集用に置いてあったら取得
+        if (GameObject.Find("Battery") != null)
+        { BatteryObj = GameObject.Find("Battery"); }
+        else //無ければリソースから
+        {
+            BatteryObj
+                = Instantiate(Resources.Load("_PosObj/0360Syuusin/Battery_Makuramoto") as GameObject
+              , GameObjectsTrs, false);
+        }
+        BatteryObj.name = "Battery";
+        DB.sceneMoveDelObjList.Add(BatteryObj);
+        #endregion
+
+        //スクールバッグオフ
+        SchoolBagTrs.gameObject.SetActive(false);
+
+        //智恵理ON
+        GirlMeshTrs.gameObject.SetActive(true);
+        //智恵理0位置ロック
+        DB.isChieriPosLock = true;
+        //アニメスピード
+        girlAnim.speed = 0.5f;
+
+        //智恵理 ベッドで寝
+        //ポーズ表情
+        ChieriMotion("ベッド横寝", 0f, 0);
+        ChieriMotion("f_Sleep100Only", 0f, 2);
+
+        //IKオフ
+        DOTweenToLAIKSEyes(LAIKEyeS, 0, 0);
+        DOTweenToLAIKSHead(LAIKHeadS, 0, 0);
+
+
+        //プレイヤー位置 //仰向け
+        GameObject Player010_StartPosObj
+            = Resources.Load("_PosObj/0360Syuusin/Player010_StartPosObj") as GameObject;
+        CameraObjectsTrs.localPosition = Player010_StartPosObj.transform.localPosition;
+        CameraObjectsTrs.localEulerAngles = Player010_StartPosObj.transform.localEulerAngles;
+        CameraReset();
+
+        CameraReset(
+            Player010_StartPosObj.transform.localEulerAngles
+            , DB.cameraStandAnchorDefLocalPos//立ち
+            , true
+            , null
+            , false
+            , true);
+
+
+        //プレイヤー大きさ
+        nowPlayerLocalScale = DB.playerScale_JougiDeHakariZero;
+
+
+        //ハンカチ設置
+        GameObject HandkerchiefObj =
+            Instantiate(Resources.Load("_PosObj/0350HankachiNoMat/HandkerchiefObj") as GameObject
+            , GameObjectsTrs, false);
+
+
+        //スピーカー 位置に
+        SpeakerTrs.gameObject.SetActive(true);
+        GameObject SpeaKer_DeskPosObj = Resources.Load("_PosObj/D_Henai_Day1/SpeaKer_DeskPosObj") as GameObject;
+        SpeakerTrs.localPosition = SpeaKer_DeskPosObj.transform.localPosition;
+        SpeakerTrs.localEulerAngles = SpeaKer_DeskPosObj.transform.localEulerAngles;
+
+        //智恵理スマホベッドの上に
+        ChieriSumahoObj.transform.SetParent(GameObjectsTrs);
+        GameObject ChieriSumaho_Bed01PosObj = Resources.Load("_PosObj/_ParentPoseObjs/ChieriSumaho_Bed01PosObj") as GameObject;
+        ChieriSumahoObj.transform.localPosition = ChieriSumaho_Bed01PosObj.transform.localPosition;
+        ChieriSumahoObj.transform.localEulerAngles = ChieriSumaho_Bed01PosObj.transform.localEulerAngles;
+        ChieriSumahoObj.SetActive(true);
+        //ケーブルOn
+        ChieriSumahoUSBCableObj.SetActive(true);
+
+        #endregion 設定
+
+        #region ポストプロセス設置
+
+        GameObject PostProcessVolumeShinyaSyuusinObj =
+            Instantiate(Resources.Load("PostProcessing/Prefab/PostProcessVolumeShinyaSyuusin") as GameObject);
+
+        //既存のポストプロセスオフ
+        PostProcessVolume00DirectDataObj.SetActive(false);
+
+
+        #endregion
+
+        yield return new WaitForSeconds(2);
+
+        NovelSetVis("F3060010");//気がつけば、マコトは布団の上で
+        while (isNovelSetVisIng) { yield return null; };
+
+        //倒れた姿勢で目覚め
+        //開幕
+        FadeBlack(0, 3);
+        yield return new WaitForSeconds(3);
+
+
+        NovelSetVis("F3060013");//ほんとに寝ちゃってたか……
+        while (isNovelSetVisIng) { yield return null; }
+
+        //暗転立ち上がり
+        //暗幕
+        FadeBlack(1, 1);
+        yield return new WaitForSeconds(1);
+
+        //■プレイヤー ベッドの上探索位置に
+        GameObject Player020_OkiagariPosObj
+            = Resources.Load("_PosObj/0360Syuusin/Player020_OkiagariPosObj") as GameObject;
+        CameraObjectsTrs.localPosition = Player020_OkiagariPosObj.transform.localPosition;
+        CameraObjectsTrs.localEulerAngles = Player020_OkiagariPosObj.transform.localEulerAngles;
+
+        CameraReset(
+            Player020_OkiagariPosObj.transform.localEulerAngles
+            , DB.cameraStandAnchorDefLocalPos//立ち
+            , true
+            , null
+            , false
+            , true);
+
+        NovelSetVis("F3060016");//体を起こした。
+        while (isNovelSetVisIng) { yield return null; }
+
+
+        //開幕
+        FadeBlack(0, 1);
+        yield return new WaitForSeconds(2);
+
+
+        NovelSetVis("F3060020");//よし、寝てるよな　スマホをいじりながら寝てたよな
+        while (isNovelSetVisIng) { yield return null; }
+
+        yield return new WaitForSeconds(1);
+
+        #region 探索 「ベッドのスマホ」 を移植
+
+        //■探索システム コルーチン始動
+        StartCoroutine(TansakuSystemLoad());
+
+        //■隠れ鬼移動システムON
+        KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
+        //ローディング待ち
+        while (isKOSystemLoading) { yield return null; }
+        //移動場所05オン
+        KO_KakurePosObjsList[5].SetActive(true);
+
+        //デバッグ移動（スマホケーブル前に移動することで落ちるイベントすぐ再生）
+        //CameraObjectsTrs.localPosition = KO_KakurePosObjsList[5].transform.Find("SumahoUeCableMae").gameObject.transform.localPosition;
+
+
+        #region ■使用する探索オブジェ選別
+
+        #region //以前のやり方（ちえりスマホがヒエラルキーに常駐してた頃のもの？）
+        ////■該当の探索オブジェのコリダータグ書き換え
+        //foreach (GameObject tmpObj in TansakuObjList)
+        //{
+        //    //■まずは全部オフ
+        //    //（子の0番目にコリダーのフォルダがあること前提）
+        //    foreach (Transform CollObjs in tmpObj.transform.GetChild(0).transform)
+        //    { CollObjs.tag = "TansakuSeeCollOffObj"; }
+
+        //    //該当していたら再度ONに戻し
+        //    if (
+        //        tmpObj.name == "ChieriSumaho"
+        //        )
+        //    {
+        //        foreach (Transform CollObjs in tmpObj.transform.GetChild(0).transform)
+        //        { CollObjs.tag = "TansakuSeeCollOnObj"; }
+        //    }
+
+        //}
+        #endregion
+
+        //20200202 直接書き換え
+        foreach (Transform CollObjs in ChieriSumahoObj.transform.Find("Collider_ChieriSumaho"))
+        { CollObjs.tag = "TansakuSeeCollOnObj"; }
+
+        #endregion
+
+
+        #region //移動ポイントフラグチェック
+        ////椅子前
+        //if (DB.isIsuMaeKOPosFlag)
+        //{
+        //    GameObject tmpObj = KO_KakurePosObjsList[1].transform.Find("IsuMae01Sphere").gameObject;
+        //    tmpObj.GetComponent<Renderer>().enabled = true;
+        //    tmpObj.GetComponent<Collider>().enabled = true;
+        //}
+        //else
+        //{
+        //    GameObject tmpObj = KO_KakurePosObjsList[1].transform.Find("IsuMae01Sphere").gameObject;
+        //    tmpObj.GetComponent<Renderer>().enabled = false;
+        //    tmpObj.GetComponent<Collider>().enabled = false;
+        //}
+
+        #endregion
+
+        //フラグ立てておく（再プレイ時用）
+        EnumChieriSumaho = enumChieriSumaho.探索2監禁範囲外_初回;
+        EnumSumahoMae01 = enumSumahoMae01.初回到着;
+        isF3060SumahoHakken = false;
+        #endregion
+
+        //スマホ発見までウェイト
+        while (isF3060SumahoHakken == false) { yield return null; }
+
+        isTansakuSystem = false;
+
+        #region 布団へ飛び降りスマホ前へ移動ポイント
+
+        #region 暗幕 設定 開幕
+
+        //暗幕
+        FadeBlack(1, 0.5f);
+        yield return new WaitForSeconds(0.5f);
+
+        isKOSystem = false;
+
+        //■PosObjで読み込み
+        //プレイヤー ベッド上探索位置に
+        GameObject Player030_TobiorimaePosObj
+            = Resources.Load("_PosObj/0360Syuusin/Player030_TobiorimaePosObj") as GameObject;
+        CameraObjectsTrs.localPosition = Player030_TobiorimaePosObj.transform.localPosition;
+        CameraObjectsTrs.localEulerAngles = Player030_TobiorimaePosObj.transform.localEulerAngles;
+
+        CameraAnchorTrs.localEulerAngles = Vector3.zero;
+
+        //開幕
+        FadeBlack(0, 0.5f);
+        yield return new WaitForSeconds(0.5f);
+        #endregion
+
+        #region 布団へ飛び降り
+        NovelSetVis("F3060040");//……まあ、そのためにはここを
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(0.5f);
+
+        //ANの重力設定のみロード
+        AN_SetPlayerRigidbody();
+        AN_GravitiDragBool = true;//FixedUpdateのやつON
+                                  //rigid監視スタート
+        StartCoroutine(RigidReadSystem());
+
+        //ベッドマットコリダーにPhysicMaterialセット
+        GameObject.Find("BedMatCollider").GetComponent<Collider>().material
+            = Resources.Load("Main/PhysicMaterial/BedMatBound01") as PhysicMaterial;
+
+        //DragAdjust調整(ベッドで跳ねるために)(ベッドにもPhisicsMaterial適用されている)
+        float
+            tmpDefDragAdjust = dragAdjust,
+            tmpDefGravityAdjust = gravityAdjust;
+
+        dragAdjust = 0.4f;
+        gravityAdjust = 2;
+
+
+        //ジャンプ
+        AN_PlayerRigidbody.velocity
+            += (new Vector3(0.1f, 0.2f, 0f))
+            * nowPlayerLocalScale.x * AN_GrapJumpVelocity;
+
+        isShockWait = true;
+        while (isShockWait) { yield return null; }
+
+        //ジャンプ(はねてつんのめる表現)
+        AN_PlayerRigidbody.velocity
+            += (new Vector3(0.1f, 0f, 0f))
+            * nowPlayerLocalScale.x * AN_GrapJumpVelocity;
+
+        yield return new WaitForSeconds(4);
+
+
+        //元に戻す
+        dragAdjust = tmpDefDragAdjust;
+        gravityAdjust = tmpDefGravityAdjust;
+        GameObject.Find("BedMatCollider").GetComponent<Collider>().material
+            = null;
+        //■重力設定消し
+        AN_GravitiDragBool = false;
+        isRigidReadSystem = false;
+        Destroy(CameraObjectsTrs.GetComponent<Rigidbody>());
+
+        #endregion
+
+        NovelSetVis("F3060050");//とりあえず今は
+        while (isNovelSetVisIng) { yield return null; }
+
+        #endregion
+
+        #region スマホ前へ移動
+
+        #region シンプル移動point開始
+        //移動ポイントObj本体
+        GameObject tmpMovePointObj
+            = Instantiate(ResourceFiles.KO_SimplePointObj
+            , GameObjectsTrs);
+        //システム終了時削除するようにリストに入れ
+        KO_SimpleKakurePosObjsList.Add(tmpMovePointObj);
+
+        //移動ポイントObjの位置大きさ
+        GameObject SimpleMovePoint010_SumahoMaePosObj
+            = Resources.Load("_PosObj/0360Syuusin/SimpleMovePoint010_SumahoMaePosObj") as GameObject;
+        tmpMovePointObj.transform.localPosition = SimpleMovePoint010_SumahoMaePosObj.transform.localPosition;
+        tmpMovePointObj.transform.localEulerAngles = SimpleMovePoint010_SumahoMaePosObj.transform.localEulerAngles;
+        tmpMovePointObj.transform.localScale = SimpleMovePoint010_SumahoMaePosObj.transform.localScale;
+
+        //シンプル移動システム開始
+        StartCoroutine(KakureOniSimpleSystemLoad());
+        //ポイント出現
+        KO_NewPosPointObjVis(tmpMovePointObj);
+
+        //歩きスピードにしてモーションも歩きに
+        playerMoveSpeed = 1;
+        KO_AsiotoTimeCountMaxFloat = 0.7f;
+        isKO_PlayerWalk = true;
+
+        #endregion
+        //到着待ち
+        while (isKO_SimplePointObj_Enter == false) { yield return null; }
+        isKO_SimplePointObj_Enter = false;//移動ポイントEnterフラグ戻し
+                                          //終了（ポイント削除命令も自動で行われる）
+        isKOSystem = false;
+
+        #endregion
+
+
+        //スマホ到着
+        KO_isMovePosLock = true;//移動止め
+        NovelSetVis("F3060060");//引き出しのような
+        while (isNovelSetVisIng) { yield return null; }
+
+
+        #region ■画面に手をあ乗りあがる
+
+
+        yield return new WaitForSeconds(0.5f);
+
+        NovelSetVis("F3060070");//ぐっ・・！　うわっ　起きてないな・・・　このまま乗りあがろう
+        while (novelCurrentPageInt < 8) { yield return null; }
+
+        //カメラ揺れ
+        CameraAnchorTrs.DOShakePosition(0.5f, 0.1f);
+        yield return new WaitForSeconds(0.5f);
+
+        ChieriSumahoPower();
+
+        while (isNovelSetVisIng) { yield return null; }
+
+        //プレイヤー 机の上探索位置に乗りあがりTween
+        GameObject Player02SumahoNoriagariPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player02SumahoNoriagariPosObj") as GameObject;
+        CameraObjectsTrs.DOLocalMoveY(Player02SumahoNoriagariPosObj.transform.localPosition.y, 1)
+            .SetEase(Ease.InOutBack);
+        CameraObjectsTrs.DOLocalMoveX(Player02SumahoNoriagariPosObj.transform.localPosition.x, 1)
+            .SetEase(Ease.InBack);
+        CameraObjectsTrs.DOLocalMoveZ(Player02SumahoNoriagariPosObj.transform.localPosition.z, 1)
+            .SetEase(Ease.InBack);
+
+        //ウェイト
+        yield return new WaitForSeconds(3);
+
+        isANSystem = false;
+        NovelSetVis("F3060080");//ふう・・問題はどう操作したら……
+        while (isNovelSetVisIng) { yield return null; }
+
+        #endregion
+        GirlPosToIKTargetPosRot();
+
+        #region バッテリーLow出現
+
+        GameObject tmpBatteryLowObj = Instantiate(Resources.Load("Main/KomonoObj/SmartPhone/Prefab/BatteryLow") as GameObject);
+        DB.evMoveDelObjList.Add(tmpBatteryLowObj);
+        tmpBatteryLowObj.transform.SetParent(ChieriSmartPhoneCanvasTrs, false);
+        //バッテリーLow以外明るさ手動で下げる
+        for (int i = 0; i < chieriSumahoFadeImageList.Count; i++)
+        { chieriSumahoFadeImageList[i].DOColor(new Color(1, 1, 1, 0.5f), 0.2f); }
+
+        for (int i = 0; i < chieriSumahoFadeTextList.Count; i++)
+        { chieriSumahoFadeTextList[i].DOColor(new Color(1, 1, 1, 0.5f), 0.2f); }
+
+        //SE
+        GameObject tmpSpeakerPosObj = Instantiate(Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/SumahoSpeakerPosObj") as GameObject);
+        tmpSpeakerPosObj.transform.SetParent(ChieriSumahoObj.transform, false);
+        SEPlay(UISEObj, "ui_notification_01_error", tmpSpeakerPosObj);
+        #endregion
+
+        #region 起きるかとおびえる
+
+        NovelSetVis("F3060090");//うわ！　起きないでくれ……！！
+        while (novelCurrentPageInt < 2) { yield return null; }
+
+        Hukidashi("F3060010");//んん
+
+        #region IKで右手接近
+        GameObject IKRHand010_Okisou1PosObj
+            = Resources.Load("_PosObj/0360Syuusin/IKRHand010_Okisou1PosObj") as GameObject;
+        IKRHandTargetTrs.localPosition = IKRHand010_Okisou1PosObj.transform.localPosition;
+        IKRHandTargetTrs.localEulerAngles = IKRHand010_Okisou1PosObj.transform.localEulerAngles;
+        //SEPlay("swing41_12低い_長い", RHandSphereTrs.gameObject);
+
+        //右手
+        DOTweenToIKEfPos(IKRHandEf, 1, 6);
+        DOTweenToIKEfRot(IKRHandEf, 1, 6);
+        #endregion
+
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(3);
+
+        #region IKで右手さらに Tweener
+        GameObject IKRHand020_Okisou2PosObj
+            = Resources.Load("_PosObj/0360Syuusin/IKRHand020_Okisou2PosObj") as GameObject;
+        var tmpRHandPosTweener =
+            IKRHandTargetTrs.DOLocalMove(IKRHand020_Okisou2PosObj.transform.localPosition
+            , 5f)
+            .SetEase(Ease.InOutQuad)
+            .SetAutoKill(false);
+
+        var tmpRHandRotTweener =
+            IKRHandTargetTrs.DOLocalRotate(IKRHand020_Okisou2PosObj.transform.localEulerAngles
+            , 5f)
+            .SetEase(Ease.InOutQuad)
+            .SetAutoKill(false);
+
+        #endregion
+
+        Hukidashi("・・・");//・・・
+        yield return new WaitForSeconds(3);
+
+        NovelSetVis("F3060100");//な、なんとか起きずに済んだ……か……？
+        while (isNovelSetVisIng) { yield return null; }
+
+        #endregion
+
+
+        #region ケーブル前へシンプル移動point開始
+        //移動ポイントObj本体
+        GameObject tmpMovePointObjTwo
+            = Instantiate(ResourceFiles.KO_SimplePointObj
+            , GameObjectsTrs);
+        //システム終了時削除するようにリストに入れ
+        KO_SimpleKakurePosObjsList.Add(tmpMovePointObjTwo);
+
+        //移動ポイントObjの位置大きさ
+        GameObject SimpleMovePoint020_SumahoCableMaePosObj
+            = Resources.Load("_PosObj/0360Syuusin/SimpleMovePoint020_SumahoCableMaePosObj") as GameObject;
+        tmpMovePointObjTwo.transform.localPosition = SimpleMovePoint020_SumahoCableMaePosObj.transform.localPosition;
+        tmpMovePointObjTwo.transform.localEulerAngles = SimpleMovePoint020_SumahoCableMaePosObj.transform.localEulerAngles;
+        tmpMovePointObjTwo.transform.localScale = SimpleMovePoint020_SumahoCableMaePosObj.transform.localScale;
+
+        //シンプル移動システム開始
+        StartCoroutine(KakureOniSimpleSystemLoad());
+        //ポイント出現
+        KO_NewPosPointObjVis(tmpMovePointObjTwo);
+
+        //歩きスピードにしてモーションも歩きに
+        playerMoveSpeed = 1;
+        KO_AsiotoTimeCountMaxFloat = 0.7f;
+        isKO_PlayerWalk = true;
+
+        #endregion
+
+        //到着待ち
+        while (isKO_SimplePointObj_Enter == false) { yield return null; }
+        isKO_SimplePointObj_Enter = false;//移動ポイントEnterフラグ戻し
+                                          //終了（ポイント削除命令も自動で行われる）
+        isKOSystem = false;
+
+        //プレイヤー　しゃがんでケーブルに向く //■※座りにすることでケーブルに手が届く
+        //暗幕
+        FadeBlack(1, 0.3f);
+        yield return new WaitForSeconds(0.3f);
+
+        //ケーブル前位置しゃがみ
+        GameObject Player040_CablemaePosObj
+            = Resources.Load("_PosObj/0360Syuusin/Player040_CablemaePosObj") as GameObject;
+        CameraObjectsTrs.localPosition = Player040_CablemaePosObj.transform.localPosition;
+        CameraObjectsTrs.localEulerAngles = Player040_CablemaePosObj.transform.localEulerAngles;
+
+        CameraReset(
+            Player040_CablemaePosObj.transform.localEulerAngles,
+            DB.cameraSitAnchorDefLocalPos,//Anchorを座りに
+            true,
+            null,
+            false,
+            true);
+
+
+        //開幕
+        FadeBlack(0, 0.3f);
+        yield return new WaitForSeconds(1);
+
+
+        #region ケーブル引っ張り落ち
+
+        KO_isMovePosLock = true;//移動止め
+        NovelSetVis("F3060110");//やっぱりきちんと刺さってる
+        while (isNovelSetVisIng) { yield return null; }
+
+        #region ゲームシステム設定
+        isKOSystem = false;
+        isTansakuSystem = false;
+        KO_isMovePosLock = false;//移動止め解除
+
+        //■■■脚のぼりシステム コルーチン始動
+        StartCoroutine(AsinoboriSystem());
+        //脚のぼりシステム設定
+        AN_isGrapPowerMode = false;
+        //rigid監視スタート
+        StartCoroutine(RigidReadSystem());
+
+        AN_PlayerHuseSphereCollider.enabled = true;
+        AN_PlayerNormalCapsuleCollider.enabled = false;
+
+        #endregion
+
+        #region 両手ケーブル掴み待ち
+        while (true)
+        {
+            if (AN_nowLSerchCollObj != null && AN_nowRSerchCollObj != null)
+            {
+                if (AN_nowLSerchCollObj.name == "Cable_Bone14" &&
+                AN_nowRSerchCollObj.name == "Cable_Bone14" &&
+                AN_isLGrap == true &&
+                AN_isRGrap == true)
+                {
+                    AN_isInputLock = true;//離さないように
+                    AN_isAutoPullLeaveMode = false;//落ちるときも離さないように
+                    NovelSetVis("F3060120");//ぐにぐにと
+                    while (isNovelSetVisIng) { yield return null; }
+                    goto 両手ケーブル掴んだ;
+                }
+            }
+            yield return null;
+        }
+        #endregion
+
+        両手ケーブル掴んだ:
+        #region ぐにぐに動かすシステム
+        //VRカメラをゆっくり追いかけるObjとの距離が離れるほどメーターが上がる仕組み
+
+        #region 設定
+
+        //Objを生成
+        GameObject tmpVRChaseObj = new GameObject();
+        tmpVRChaseObj.name = "tmpVRChaseObj";
+        tmpVRChaseObj.transform.SetParent(CameraAdjustTrackingTrs, false);
+        tmpVRChaseObj.transform.localPosition = VRCameraTrs.localPosition;
+
+        //スライダーをカメラにくっつける
+        GameObject VRCamGoalSliderObj = Instantiate(Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/VRCamGoalSliderObj") as GameObject);
+        DB.evMoveDelObjList.Add(VRCamGoalSliderObj);
+        VRCamGoalSliderObj.transform.SetParent(VRCameraTrs, false);
+
+        //スライダー取得
+        Slider VRCamGoalSlider = VRCamGoalSliderObj.GetComponent<Slider>();
+
+        //ケーブル根元取得
+        GameObject USBCable14Obj = ChieriSumahoUSBCableObj.transform.Find("Cable_Bone14").gameObject;
+
+        float //VRカメラとObjとの距離
+            tmpVRCamMag = (VRCameraTrs.localPosition - tmpVRChaseObj.transform.localPosition).magnitude;
+        Tweener
+            tmpVRCamChaseTweener = tmpVRChaseObj.transform.DOLocalMove(VRCameraTrs.localPosition, 0.4f)
+            .SetEase(Ease.Linear)
+            .SetAutoKill(false);
+
+        //距離 最小値 最大値 設定
+        VRCamGoalSlider.minValue = 0;
+        VRCamGoalSlider.maxValue = 0.1f;
+        #endregion
+        goto デバッグ移動; //（ぐにぐにいじるイベントスキップ）
+
+        //■三回引っ張ったらループ抜けてケーブル外れる
+        //引っ張り回数カウンタ
+        int tmpCount = 0;
+        while (tmpCount <= 2)
+        {
+            //スライダー代入
+            tmpVRCamMag = (VRCameraTrs.localPosition - tmpVRChaseObj.transform.localPosition).magnitude;
+            VRCamGoalSlider.value = tmpVRCamMag;
+
+            //Obj追従
+            tmpVRCamChaseTweener.ChangeEndValue(VRCameraTrs.localPosition, true).Restart();
+
+            //スライダーマックス時
+            if (VRCamGoalSlider.maxValue == VRCamGoalSlider.value)
+            {
+                //少しケーブル抜ける
+                USBCable14Obj.transform.DOLocalMove(USBCable14Obj.transform.localPosition
+                    + new Vector3(0, 0.0002f, 0), 0.5f);
+
+                //カメラのxがObjのxより多い = カメラより左にObjがある = 右に引っ張る
+                if (VRCameraTrs.localPosition.x - tmpVRChaseObj.transform.localPosition.x >= 0)
+                {
+                    USBCable14Obj.transform.DOLocalRotate(USBCable14Obj.transform.localEulerAngles
+                        + new Vector3(0, 0, -1f), 0.5f);
+                }
+                //その逆
+                else if (VRCameraTrs.localPosition.x - tmpVRChaseObj.transform.localPosition.x <= 0)
+                {
+                    USBCable14Obj.transform.DOLocalRotate(USBCable14Obj.transform.localEulerAngles
+                        + new Vector3(0, 0, 1f), 0.5f);
+                }
+
+                SEPlay(UISEObj, "UI_pek");
+                tmpVRChaseObj.transform.localPosition = VRCameraTrs.localPosition;
+                tmpCount++;
+            }
+            yield return null;
+        }
+        #endregion
+
+        デバッグ移動:
+        #region ケーブル外れる
+        Destroy(tmpVRChaseObj);
+        Destroy(VRCamGoalSliderObj);
+
+        KankyouBGMVolumer(0, 1);
+        NovelSetVis("F3060130");//しまっ……！？　抜けて……！？
+
+        USBCable14Obj.transform.DOLocalMove(USBCable14Obj.transform.localPosition
+            + new Vector3(0, 0.021f, 0), 0.5f);
+        yield return new WaitForSeconds(1.5f);
+
+        USBCable14Obj.transform.DOLocalMove(USBCable14Obj.transform.localPosition
+            + new Vector3(0, 0.051f, 0), 0.5f);
+        yield return new WaitForSeconds(1f);
+        isNovelFadeTween = isNovelSetVisIng = false;
+
+        #region //ペアレントしてカメラ回転するなら
+        //isANSystem = false;
+        //CameraObjectsTrs.SetParent(USBCable12Obj.transform);
+        //USBCable12Obj.GetComponent<Rigidbody>().isKinematic = false;
+        //while (true)
+        //{
+        //    if (Input.GetKeyDown(KeyCode.V))
+        //    {
+        //        CameraObjectsTrs.SetParent(GameObjectsTrs);
+        //        goto 落下;
+        //    }
+        //    yield return null;
+        //}
+        #endregion
+
+        USBCable14Obj.GetComponent<Rigidbody>().isKinematic = false;
+        #endregion
+
+        #region 地面に激突して、起き上がるまで
+        while (CameraObjectsTrs.localPosition.y >= 0.01f)
+        {
+            if ((DB.isDebugMode && Input.GetKeyDown(KeyCode.V))) { goto 落下; }
+            yield return null;
+        }
+        落下:
+        FadeWhite(1, 0);
+
+        SEPlay("cableFallShock01_cannon1", 0.6f);
+        //PlayerHPAddSub(-800);
+        isANSystem = false;
+
+        GameObject Player03CableFallBoundPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player03CableFallBoundPosObj") as GameObject;
+        CameraObjectsTrs.localEulerAngles = Player03CableFallBoundPosObj.transform.localEulerAngles;
+
+
+        CameraObjectsTrs.DOLocalMoveX(Player03CableFallBoundPosObj.transform.localPosition.x, 2)
+            .SetEase(Ease.OutSine);
+        CameraObjectsTrs.DOLocalMoveZ(Player03CableFallBoundPosObj.transform.localPosition.z, 2)
+            .SetEase(Ease.OutSine);
+        CameraObjectsTrs.DOLocalMoveY(0.03f, 0.3f)
+            .SetEase(Ease.OutCubic)
+            .OnComplete(() =>
+            {
+                SEPlay("CableFallSlip01_fuse1", 0.8f);
+                CameraObjectsTrs.DOLocalMoveY(Player03CableFallBoundPosObj.transform.localPosition.y, 0.3f)
+                .SetEase(Ease.OutBounce);
+                //PlayerHPAddSub(-400);
+            });
+
+        yield return new WaitForSeconds(0.05f);
+
+        FadeWhite(0, 0);
+
+        yield return new WaitForSeconds(3f);
+
+        KankyouBGMVolumer(0.4f, 2);
+        NovelSetVis("F3060140");//ぐ、が、なにやってんだおれ
+        while (isNovelSetVisIng) { yield return null; }
+
+        //暗幕
+        FadeBlack(1, 0.5f);
+        yield return new WaitForSeconds(0.5f);
+
+        GameObject Player04CableFallBoundStandPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player04CableFallBoundStandPosObj") as GameObject;
+        CameraObjectsTrs.localEulerAngles = Player04CableFallBoundStandPosObj.transform.localEulerAngles;
+        CameraObjectsTrs.localPosition = Player04CableFallBoundStandPosObj.transform.localPosition;
+        CameraAnchorTrs.localEulerAngles = Vector3.zero;
+
+
+        #region USBケーブルとっかえ
+        //既存のUSBケーブルオフ
+        ChieriSumahoUSBCableObj.SetActive(false);
+
+        //既に置かれてなければ設置
+        if (GameObject.Find("USBCable_BedUnder") == null)
+        {
+            //探索用ケーブル設置
+            GameObject USBCable_BedUnder
+                = Instantiate(Resources.Load("_PosObj/0370YukaueKisyou/USBCable_BedUnder") as GameObject
+                , GameObjectsTrs
+                , false);
+            USBCable_BedUnder.name = nameof(USBCable_BedUnder);
+        }
+
+        #endregion
+
+        //開幕
+        FadeBlack(0, 0.5f);
+        yield return new WaitForSeconds(0.5f);
+
+        yield return new WaitForSeconds(2f);
+
+        #endregion
+
+
+        KankyouBGMVolumer(0.3f, 2);
+        NovelSetVis("F3060150");//（ひ、ひとまず、うっかり踏まれない場所を探そう）
+        while (isNovelSetVisIng) { yield return null; }
+
+
+        #endregion
+
+        EventMove("寝床探し");
+
+        yield break;
+    }
+    #region ┗■探索待ちのウェイト用Boolなど
+    bool isF3060SumahoHakken;
+
+    #endregion
+    IEnumerator F3070()//寝床探し
+    {
+        if (debugEventMoveFlag == true)
+        {
+            #region 設定
+
+            #region //ライト消し デバッグで一旦消さない
+            //if (GameObject.Find("Floor light") != null)
+            //{ NullJudgeFind("Floor light").GetComponent<Light>().enabled = false; }
+            #endregion
+
+
+            //プレイヤー大きさ
+            //nowPlayerLocalScl = new Vector3(0.05f, 0.05f, 0.05f);
+            nowPlayerLocalScale = DB.playerScale_JougiDeHakariZero;
+
+            //■PosObjで読み込み
+            //プレイヤー 床の上ケーブル落とされ位置に
+            GameObject DebugPlayer04CableFallBoundStandPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player04CableFallBoundStandPosObj") as GameObject;
+            CameraObjectsTrs.localPosition = DebugPlayer04CableFallBoundStandPosObj.transform.localPosition;
+            CameraObjectsTrs.localEulerAngles = DebugPlayer04CableFallBoundStandPosObj.transform.localEulerAngles;
+
+            //スピーカー 位置に
+            SpeakerTrs.gameObject.SetActive(true);
+            GameObject SpeaKer_DeskPosObj = Resources.Load("_PosObj/D_Henai_Day1/SpeaKer_DeskPosObj") as GameObject;
+            SpeakerTrs.localPosition = SpeaKer_DeskPosObj.transform.localPosition;
+            SpeakerTrs.localEulerAngles = SpeaKer_DeskPosObj.transform.localEulerAngles;
+
+            #region 宿題ペン消しゴムなくし
+            //宿題
+            Drill_chieriTrs.gameObject.SetActive(false);
+
+            ////プレイヤーの宿題
+            //HomeworkObjectsTrs.gameObject.SetActive(false);
+            //DrillTrs.gameObject.SetActive(false);
+
+            //ペンなくし
+            SharpenObj.SetActive(false);
+            //消しゴム無くし
+            KeshigomuObj.SetActive(false);
+            #endregion
+
+            //■智恵理ON
+            GirlMeshTrs.gameObject.SetActive(true);
+            //智恵理0位置ロック
+            DB.isChieriPosLock = true;
+            //アニメスピード
+            girlAnim.speed = 0.5f;
+
+            //IKオフ
+            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0);
+            DOTweenToLAIKSHead(LAIKHeadS, 0, 0);
+
+            //智恵理 ベッドで寝
+            //ポーズ表情
+            ChieriMotion("ベッド横寝", 0f, 0);
+            ChieriMotion("f_Sleep100Only", 0f, 2);
+
+            //智恵理スマホベッドの上に
+            ChieriSumahoObj.transform.SetParent(GameObjectsTrs);
+            GameObject ChieriSumaho_Bed01PosObj = Resources.Load("_PosObj/_ParentPoseObjs/ChieriSumaho_Bed01PosObj") as GameObject;
+            ChieriSumahoObj.transform.localPosition = ChieriSumaho_Bed01PosObj.transform.localPosition;
+            ChieriSumahoObj.transform.localEulerAngles = ChieriSumaho_Bed01PosObj.transform.localEulerAngles;
+            ChieriSumahoObj.SetActive(true);
+            #endregion
+        }
+        EventReset();
+        yield return null;
+
+        //こもり虫に変え
+        KankyouBGMChanger(semiSE.audioSource, "musi2_loop_EQKomori");
+        //環境音フェード
+        KankyouBGMVolumer(0.3f, 5);
+
+        //走りスピードにしてモーションも走りに
+        playerMoveSpeed = 4;
+        isKO_PlayerWalk = false;
+
+        #region バッテリー設置
+        GameObject BatteryObj;
+        //既に編集用に置いてあったら取得
+        if (GameObject.Find("Battery") != null)
+        { BatteryObj = GameObject.Find("Battery"); }
+        else //無ければリソースから
+        {
+            BatteryObj
+                = Instantiate(Resources.Load("_PosObj/0360Syuusin/Battery_Makuramoto") as GameObject
+              , GameObjectsTrs, false);
+        }
+        BatteryObj.name = "Battery";
+        DB.sceneMoveDelObjList.Add(BatteryObj);
+        #endregion
+
+        //スクールバッグオフ
+        SchoolBagTrs.gameObject.SetActive(false);
+
+        #region USBケーブル設置　探索対象に追加
+        //既存のUSBケーブルオフ
+        ChieriSumahoUSBCableObj.SetActive(false);
+
+        //既に置かれてなければ設置
+        if (GameObject.Find("USBCable_BedUnder") == null)
+        {
+            //探索用ケーブル設置
+            GameObject USBCable_BedUnder
+                = Instantiate(Resources.Load("_PosObj/0370YukaueKisyou/USBCable_BedUnder") as GameObject
+                , GameObjectsTrs
+                , false);
+            USBCable_BedUnder.name = nameof(USBCable_BedUnder);
+        }
+
+        #region 探索対象に追加（Prefabで追加したObjなので、GamgeObject.Findでリストに追加）
+
+        //入ってなければ
+        if (TansakuObjList.Contains(GameObject.Find("USBCable_BedUnderObj")) == false)//中身のObj名なことに注意
+        { TansakuObjList.Add(GameObject.Find("USBCable_BedUnderObj")); }
+        //後は同じ処理
+        foreach (GameObject tmpObj in TansakuObjList)
+        {
+            //該当していたらONに
+            if (tmpObj.name == "USBCable_BedUnderObj")
+            {
+                foreach (Transform CollObjs in tmpObj.transform.GetChild(0).transform)
+                { CollObjs.tag = "TansakuSeeCollOnObj"; }
+            }
+        }
+        #endregion
+
+        #endregion
+
+
+        #region ベッド下、テーブル下移動PosObj設置■探索、移動システム コルーチン始動
+        //■探索システム コルーチン始動
+        StartCoroutine(TansakuSystemLoad());
+
+        //■隠れ鬼移動システムON
+        KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
+        //ローディング待ち
+        while (isKOSystemLoading) { yield return null; }
+        //移動場所06オン
+        int tmpListInt = 6;
+        KO_KakurePosObjsList[tmpListInt].SetActive(true);
+        //寝る場所移動ポイント出現 演出
+        KO_NewPosPointObjVis
+            (KO_KakurePosObjsList[tmpListInt].transform.Find("BedUnderSleepPos").gameObject);
+        yield return new WaitForSeconds(0.5f);
+        KO_NewPosPointObjVis
+            (KO_KakurePosObjsList[tmpListInt].transform.Find("GrasstableUnderSleepPos").gameObject);
+
+        //プレイヤー歩き始め判定用コリダー設置
+        //プレイヤー位置にコリダーを置いて、そこから出たら発生する仕組み
+        GameObject Player04CableFallBoundStandPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player04CableFallBoundStandPosObj") as GameObject;
+        KO_KakurePosObjsList[tmpListInt].transform.Find("PlayerStartPosArea01").localPosition
+            = Player04CableFallBoundStandPosObj.transform.localPosition;
+        //発生するイベントはこれ(検索用メモ)
+        //T_PlayerStartPosArea01Exit()
 
 
 
+        #region ■使用する探索オブジェ選別
+
+
+
+        #endregion
+
+
+
+
+        #endregion
+
+
+        //ここでコンティニューだったときの
+        //yield return new WaitForSeconds(3);
+        //EventMove("ToBeContinued");
+
+
+
+
+
+        yield break;
+    }
+    IEnumerator F3080()//床上起床
+    {
+        if (debugEventMoveFlag == true)
+        {
+            //プレイヤー大きさ
+            nowPlayerLocalScale = DB.playerScale_JougiDeHakariZero;
+            //暗幕
+            FadeBlack(1, 0);
+            #region 宿題ペン消しゴムなくし
+            //宿題 位置に
+            Drill_chieriTrs.gameObject.SetActive(false);
+
+            //プレイヤーの
+            //HomeworkObjectsTrs.gameObject.SetActive(false);
+            DrillTrs.gameObject.SetActive(false);
+
+            //ペンなくし
+            SharpenObj.SetActive(false);
+            //消しゴム無くし
+            KeshigomuObj.SetActive(false);
+            #endregion //宿題置き
+            //スピーカー 位置に
+            SpeakerTrs.gameObject.SetActive(true);
+            GameObject SpeaKer_DeskPosObj = Resources.Load("_PosObj/D_Henai_Day1/SpeaKer_DeskPosObj") as GameObject;
+            SpeakerTrs.localPosition = SpeaKer_DeskPosObj.transform.localPosition;
+            SpeakerTrs.localEulerAngles = SpeaKer_DeskPosObj.transform.localEulerAngles;
+
+        }
+        EventReset();
+
+        #region ■デバッグで来た場合は起床場所選択
+        if (DB.isDebugMode)
+        {
+            GameObject KisyouPosSelectText = Instantiate(Resources.Load("EventSystem/GameSelect/KisyouPosSelectText") as GameObject, FadeCanvasObj.transform);
+            DB.evMoveDelObjList.Add(KisyouPosSelectText);
+
+            while (true)
+            {
+                if (DB.isDebugMode && Input.GetKeyDown(KeyCode.V))
+                {
+                    staticFlagDict["起床ガラステーブル下"] = true;
+                    Destroy(KisyouPosSelectText);
+
+                    goto デバッグ起床場所選択抜け;
+                }
+                else if (DB.isDebugMode && Input.GetKeyDown(KeyCode.B))
+                {
+                    staticFlagDict["起床ガラステーブル下"] = false;
+                    Destroy(KisyouPosSelectText);
+
+                    goto デバッグ起床場所選択抜け;
+                }
+                yield return null;
+            }
+        }
+        デバッグ起床場所選択抜け:
+        #endregion
+
+        //朝環境音に変え
+        KankyouBGMChanger(semiSE.audioSource, "residential-area-in-early-morning-1_loop");
+        //環境音フェード　はそれぞれ↓のフラグ別の場所に
+
+        #region 設定
+        #region //ライト消し（デバッグで一旦なし）
+        //if (GameObject.Find("Floor light") != null)
+        //{ NullJudgeFind("Floor light").GetComponent<Light>().enabled = false; }
+        #endregion
+
+        #region バッテリーとケーブル設置
+        GameObject BatteryObj;
+        //既に編集用に置いてあったら取得
+        if (GameObject.Find("Battery") != null)
+        { BatteryObj = GameObject.Find("Battery"); }
+        else //無ければリソースから
+        {
+            BatteryObj
+                = Instantiate(Resources.Load("_PosObj/0370YukaueKisyou/BatteryAndCable_Miyadana") as GameObject
+              , GameObjectsTrs, false);
+        }
+        BatteryObj.name = "Battery";
+        DB.sceneMoveDelObjList.Add(BatteryObj);
+        #endregion
+
+
+        //スクールバッグオフ
+        SchoolBagTrs.gameObject.SetActive(false);
+
+        //智恵理ON
+        GirlMeshTrs.gameObject.SetActive(true);
+        //智恵理0位置ロック
+        DB.isChieriPosLock = true;
+        //アニメスピード
+        girlAnim.speed = 0.5f;
+
+        //IKオフ
+        DOTweenToLAIKSEyes(LAIKEyeS, 0, 0);
+        DOTweenToLAIKSHead(LAIKHeadS, 0, 0);
+
+        //智恵理 ベッド横起き
+        //ポーズ表情
+        ChieriMotion("ベッド座りポーズ", 0f, 0);
+
+        #region ■左手スマホ取り出し　マスク IK版
+
+        GirlPosToIKTargetPosRot();
+
+        string
+            tmpBaseAnimStateName = "片膝立ちミラー手伸ばしループ原点";
+        #region スマホ片手いじりPosへ
+        GameObject ChieriSumaho_LHand_SekurabeKatatePosObj
+            = Resources.Load("_PosObj/_ParentPoseObjs/ChieriSumaho_LHand_SekurabeKatatePosObj") as GameObject;
+        ChieriSumahoObj.transform.localPosition = ChieriSumaho_LHand_SekurabeKatatePosObj.transform.localPosition;
+        ChieriSumahoObj.transform.localEulerAngles = ChieriSumaho_LHand_SekurabeKatatePosObj.transform.localEulerAngles;
+        #endregion
+
+        StartCoroutine(GirlAnimReadSystem(11));
+
+        //マスクのため、レイヤーのアニメを1フレでベースと同じモーション状態にする（ParameterでNormlizedTimeが指定できる（ただし指定し続けないと静止））
+        ChieriMotion(tmpBaseAnimStateName, 0f, 11);//現在のベースアニメと同じアニメ指定
+        girlAnim.SetFloat("現在ベースアニメのNormalizedTime", girlAnimNomTime);//同じNomTimeに
+
+        yield return null;//↑適用に1フレ必要
+
+        ChieriMotion("背比べ左手スマホ取り出し", 0f, 11);
+
+        while (nowGirlAnimOtherLayerClipNameDict[11] != "背比べスマホ取り出し") { yield return null; }
+        while (girlAnimOtherLayerNomTimeDict[11] <= 0.375f) { yield return null; }
+        isGirlAnimReadSystem = false;
+        //スマホObjオン（取り出し）
+        ChieriSumahoObj.SetActive(true);
+        //画面つける（画面更新も一緒に起動される）
+        ChieriSumahoPower(true);
+
+        #region スマホ見
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+        FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 0f);
+        DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0f);
+        FollowDOMove(IKLookAtHeadTargetTrs, ChieriSumahoObj.transform, new Vector3(0, -0.5f, 0), 1f);
+        DOTweenToLAIKSHead(LAIKHeadS, 0.8f, 1);
+        #endregion
+
+
+        #region 左手IKいじり位置へ（力技
+        //まずターゲットTween移動
+        GameObject IKLHand010_SumahoPosObj
+            = Resources.Load("_PosObj/0370YukaueKisyou/IKLHand010_SumahoPosObj") as GameObject;
+        IKLHandTargetTrs.DOLocalMove(IKLHand010_SumahoPosObj.transform.localPosition, 1f);
+        IKLHandTargetTrs.DOLocalRotate(IKLHand010_SumahoPosObj.transform.localEulerAngles, 1f);
+
+        //少しウェイト下げて
+        DOTweenToIKEfPos(IKLHandEf, 0.6f, 0.5f);
+        DOTweenToIKEfRot(IKLHandEf, 0.6f, 0.5f);
+
+        yield return new WaitForSeconds(0.5f);
+        //ウェイト戻す
+        DOTweenToIKEfPos(IKLHandEf, 1, 0.5f);
+        DOTweenToIKEfRot(IKLHandEf, 1, 0.5f);
+        #endregion
+
+        #endregion
+
+        #region 足にサウンドオブジェ設置
+        //WindnoiseSoundObj付与（左足）
+        GameObject LFootWindnoiseSoundObj = Instantiate(Resources.Load("Main/Prefab/SoundObj/WindnoiseSoundObj") as GameObject
+            , GirlLFootTrs);
+        DB.evMoveDelObjList.Add(LFootWindnoiseSoundObj);
+        LFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = true;//設置時に音鳴るので一時ミュート
+                                                                       //SoundObjのPos
+        GameObject SoundObj_02_DoorSurinuke_LFootParentPosObj = Resources.Load("_PosObj/D_Henai_Day1_Tansaku1-2/SoundObj_02_DoorSurinuke_LFootParentPosObj") as GameObject;
+        LFootWindnoiseSoundObj.transform.localPosition = SoundObj_02_DoorSurinuke_LFootParentPosObj.transform.localPosition;
+
+        //WindnoiseSoundObj付与（右足）
+        GameObject RFootWindnoiseSoundObj = Instantiate(Resources.Load("Main/Prefab/SoundObj/WindnoiseSoundObj") as GameObject
+            , GirlRFootTrs);
+        DB.evMoveDelObjList.Add(RFootWindnoiseSoundObj);
+        RFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = true;//設置時に音鳴るので一時ミュート
+                                                                       //SoundObjのPos
+        GameObject SoundObj_03_DoorSurinuke_RFootParentPosObj = Resources.Load("_PosObj/D_Henai_Day1_Tansaku1-2/SoundObj_03_DoorSurinuke_RFootParentPosObj") as GameObject;
+        RFootWindnoiseSoundObj.transform.localPosition = SoundObj_03_DoorSurinuke_RFootParentPosObj.transform.localPosition;
+
+        #endregion
+
+        //両方で使う変数事前取得
+        GameObject Player05TableUnderKisyouStandRotObj
+            = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player05TableUnderKisyouStandRotObj") as GameObject;
+
+
+        #region ■隠れ鬼移動システム事前ON（ロードかかるほど重くなったので）
+        isSeePointTempOff = true;//ポインタ表示OFF
+        KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
+        //ローディング待ち
+        while (isKOSystemLoading) { yield return null; }
+        #endregion
+
+        #endregion 設定
+
+
+        if (staticFlagDict["起床ガラステーブル下"] == false)
+        {
+            //ベッド下起床の場合
+            #region 起きて智恵理台詞と近づき移動
+            //プレイヤー ベッドの下位置に
+            ////ためしに隠れ鬼のデータを参照して配置
+            //GameObject EV_C_KakureOni
+            //    = Resources.Load("EventSystem/KakureOni/Prefab/EV_C_KakureOni") as GameObject;
+            CameraObjectsTrs.localPosition
+                = EV_C_KakureOni.transform.Find("KO_KakurePosObjs").Find("06_NightFloor").Find("BedUnderSleepPos").localPosition;
+
+            //倒れ角度と高さは別
+            GameObject Player01BedUnderKisyouPosObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player01BedUnderKisyouPosObj") as GameObject;
+            Vector3 tmpV3 = CameraObjectsTrs.localPosition;
+            tmpV3.y = Player01BedUnderKisyouPosObj.transform.localPosition.y;
+
+            CameraObjectsTrs.localPosition = tmpV3;
+            //CameraObjectsTrs.localEulerAngles = Player01BedUnderKisyouPosObj.transform.localEulerAngles;
+
+            //↑変な倒れ角度だったので、RMEのを使う
+            StartCoroutine(PlayerFallDownSystemIEnum(0));
+
+            //足のほう見るユーザーカメラ
+            GameObject Plyer010UserCamera_BedUnderSleepPosObj
+                = Resources.Load("_PosObj/0370YukaueKisyou/Plyer010UserCamera_BedUnderSleepPosObj") as GameObject;
+            CameraUserControlTrs.localEulerAngles
+                = userCameraControlEul
+                = DB.cameraUserResetLocalEul
+                = Plyer010UserCamera_BedUnderSleepPosObj.transform.localEulerAngles;
+
+
+            NovelSetVis("F3080a010");//目が覚めたのは振動
+            while (isNovelSetVisIng) { yield return null; }
+
+            //環境音フェード
+            KankyouBGMVolumer(1.4f, 2);
+            isAnimTriggerRForcePlay = true;
+            yield return new WaitForSeconds(2);
+
+            NovelSetVis("F3080a020");//ん？　ああ……
+            yield return new WaitForSeconds(1);
+
+            isAnimTriggerRForcePlay = true;
+
+            yield return new WaitForSeconds(1);
+
+            //開幕
+            FadeBlack(0, 2);
+            yield return new WaitForSeconds(2);
+
+            //足ミュート解除
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().mute =
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = false;
+
+
+
+            NovelSetVis("F3080a025");//ちえりがおきたのか！
+
+            while (novelCurrentPageInt < 5) { yield return null; }
+
+            //カメラ揺れ（RMEの）
+            StartCoroutine(UTLDOShakePosition
+                (0.5f
+                , 0.05f
+                , 10
+                , 90 //Randomness
+                , false //Snaping
+                , true)
+                );
+
+
+            while (isNovelSetVisIng) { yield return null; }
+
+            //立ち上がり暗幕
+            FadeBlack(1, 1);
+            yield return new WaitForSeconds(1);
+
+            #region RMEプレイヤー立ち（倒れてたら　倒れから復帰するように立つ）
+            if (isPlayerFallDownSystem)
+            {
+                playerFallDownDefCameraAnchorPos = DB.cameraStandAnchorDefLocalPos;
+                playerFallDownDefCameraAnchorEul = Vector3.zero;
+                isPlayerFallDownSystem = false;
+            }
+            else//倒れてないなら一瞬で
+            {
+                //立ちでカメラリセット（ユーザーカメラ動かさない）
+                CameraReset(null,
+                    DB.cameraStandAnchorDefLocalPos//Anchorを立ちに
+                    , false, null, false, false);
+            }
+            #endregion
+
+            GameObject Player02BedUnderKisyouStandPosObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player02BedUnderKisyouStandPosObj") as GameObject;
+            tmpV3.y = Player02BedUnderKisyouStandPosObj.transform.localPosition.y;
+            CameraObjectsTrs.localPosition = tmpV3;
+            CameraObjectsTrs.localEulerAngles = Player02BedUnderKisyouStandPosObj.transform.localEulerAngles;
+            //カメラリセットの値
+            DB.cameraUserResetLocalEul = Vector3.zero;
+
+            yield return new WaitForSeconds(1);
+
+            CameraReset();
+
+            Hukidashi("F3080010");//そっか、そうだよね
+            yield return new WaitForSeconds(1);
+
+
+            //立ち上がり開幕
+            FadeBlack(0, 1);
+            yield return KeyOrWait(3);
+            yield return new WaitForSeconds(1);
+
+            Hukidashi("F3080020");//怖いに決まってるよね
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            Hukidashi("・・・");
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            yield return new WaitForSeconds(1);
+            NovelSetVis("F3080a030");//何言ってるんだ？
+            while (isNovelSetVisIng) { yield return null; }
+
+            #region 探索とかくれおに移動設置
+            //■隠れ鬼移動システムON
+            KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
+            //ローディング待ち
+            while (isKOSystemLoading) { yield return null; }
+            isSeePointTempOff = false;//ポインタ表示
+            //移動場所07オン
+            int tmpListInt = 7;
+            KO_KakurePosObjsList[tmpListInt].SetActive(true);
+            //寝る場所移動ポイント出現 演出
+            KO_NewPosPointObjVis
+                (KO_KakurePosObjsList[tmpListInt].transform.Find("BedAsiKage").gameObject);
+
+            #endregion
+            yield return new WaitForSeconds(1);
+
+            Hukidashi("F3080030");//でもこんな風だと
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            Hukidashi("F3080040");//諦めきれないや
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            yield return new WaitForSeconds(1);
+            Hukidashi("F3080050");//・・ごめんね
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            Hukidashi("・・・");
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+
+            //IKで足固定準備（座りなおしに対応するために）
+            FixedAction(() =>
+            {
+
+                IKRFootTargetTrs.position = GirlRFootTrs.position;
+                IKRFootTargetTrs.rotation = GirlRFootTrs.rotation;
+                DOTweenToIKEfPos(IKRFootEf, 1, 0);
+                DOTweenToIKEfRot(IKRFootEf, 1, 0);
+
+                IKLFootTargetTrs.position = GirlLFootTrs.position;
+                IKLFootTargetTrs.rotation = GirlLFootTrs.rotation;
+                DOTweenToIKEfPos(IKLFootEf, 1, 0);
+                DOTweenToIKEfRot(IKLFootEf, 1, 0);
+
+            });
+            yield return new WaitForSeconds(3);
+
+            #region 左手スマホいじり位置もどし　左腕マスク外し　左手指マスクON（スマホ持ち）
+
+            ////スマホObjオフ（しまう）
+            //ChieriSumahoObj.SetActive(false);
+
+            //ウェイト戻す
+            DOTweenToIKEfPos(IKLHandEf, 0, 2f);
+            DOTweenToIKEfRot(IKLHandEf, 0, 2f);
+
+            ChieriMotion("_noData", 0f, 11);
+            ChieriMotion("背比べ左手スマホいじり", 1f, 18);
+
+            #endregion
+
+            #region スマホ見やめ
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0, 1);
+            #endregion
+
+
+            Hukidashi("F3080055");//ふぅよっし
+            ChieriMotion("ベッドから立ち上がり", 0f, 0);
+            yield return new WaitForSeconds(0.7f);
+            ChieriMotion("ベッド座りポーズ", 0.6f, 0);
+
+            yield return KeyOrWait(3);
+
+            yield return new WaitForSeconds(0.6f);
+
+            //IK切り
+            DOTweenToIKEfPos(IKRFootEf, 0, 0f);
+            DOTweenToIKEfRot(IKRFootEf, 0, 0f);
+            DOTweenToIKEfPos(IKLFootEf, 0, 0f);
+            DOTweenToIKEfRot(IKLFootEf, 0, 0f);
+
+
+            Hukidashi("F3080060");//起きてる？
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            yield return new WaitForSeconds(0.5f);
+            NovelSetVis("F3080a040");//え？
+            while (isNovelSetVisIng) { yield return null; }
+
+            Hukidashi("F3080070");//いるよね
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            Hukidashi("F3080080");//探さない
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080090");//好きにしてて
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080100");//虫として
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080110");//生きてていいよ
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080120");//一瞬だけど
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            #endregion
+            #region ■左手スマホ取り出し　マスク IK版
+
+            GirlPosToIKTargetPosRot();
+
+            //string
+            //    tmpBaseAnimStateName = "片膝立ちミラー手伸ばしループ原点";
+            #region スマホ片手いじりPosへ
+            //GameObject ChieriSumaho_LHand_SekurabeKatatePosObj
+            //    = Resources.Load("_PosObj/_ParentPoseObjs/ChieriSumaho_LHand_SekurabeKatatePosObj") as GameObject;
+            ChieriSumahoObj.transform.DOLocalMove(ChieriSumaho_LHand_SekurabeKatatePosObj.transform.localPosition, 3f);
+            ChieriSumahoObj.transform.DOLocalRotate(ChieriSumaho_LHand_SekurabeKatatePosObj.transform.localEulerAngles, 3f);
+            #endregion
+
+            StartCoroutine(GirlAnimReadSystem(11));
+
+            //マスクのため、レイヤーのアニメを1フレでベースと同じモーション状態にする（ParameterでNormlizedTimeが指定できる（ただし指定し続けないと静止））
+            ChieriMotion(tmpBaseAnimStateName, 1f, 11);//現在のベースアニメと同じアニメ指定
+            girlAnim.SetFloat("現在ベースアニメのNormalizedTime", girlAnimNomTime);//同じNomTimeに
+
+            yield return null;//↑適用に1フレ必要
+
+            ChieriMotion("背比べ左手スマホ取り出し", 0f, 11);
+
+            while (nowGirlAnimOtherLayerClipNameDict[11] != "背比べスマホ取り出し") { yield return null; }
+            while (girlAnimOtherLayerNomTimeDict[11] <= 0.375f) { yield return null; }
+            isGirlAnimReadSystem = false;
+            //スマホObjオン（取り出し）
+            ChieriSumahoObj.SetActive(true);
+            //画面つける（画面更新も一緒に起動される）
+            ChieriSumahoPower(true);
+
+            #region スマホ見
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+            FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 0f);
+            DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0f);
+            FollowDOMove(IKLookAtHeadTargetTrs, ChieriSumahoObj.transform, new Vector3(0, -0.5f, 0), 1f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0.8f, 1);
+            #endregion
+
+
+            #region 左手IKいじり位置へ（力技
+            //まずターゲットTween移動
+            //GameObject IKLHand010_SumahoPosObj
+            //    = Resources.Load("_PosObj/0370YukaueKisyou/IKLHand010_SumahoPosObj") as GameObject;
+            IKLHandTargetTrs.DOLocalMove(IKLHand010_SumahoPosObj.transform.localPosition, 1f);
+            IKLHandTargetTrs.DOLocalRotate(IKLHand010_SumahoPosObj.transform.localEulerAngles, 1f);
+
+            //少しウェイト下げて
+            DOTweenToIKEfPos(IKLHandEf, 0.6f, 0.5f);
+            DOTweenToIKEfRot(IKLHandEf, 0.6f, 0.5f);
+
+            yield return new WaitForSeconds(0.5f);
+            //ウェイト戻す
+            DOTweenToIKEfPos(IKLHandEf, 1, 0.5f);
+            DOTweenToIKEfRot(IKLHandEf, 1, 0.5f);
+            #endregion
+
+            #endregion
+
+            yield return new WaitForSeconds(2);
+
+
+            #region 時間補正切られ意識混濁
+
+            //環境音フェード
+            KankyouBGMVolumer(0f, 5);
+            NovelSetVis("F3080a050");//探さない？自由？　！？
+            while (novelCurrentPageInt < 2) { yield return null; }
+            isKOSystem = false;
+            isTansakuSystem = false;
+
+            PPEffect_ZikanHosei();
+            //心音ループ
+            StartCoroutine(ActionLoopSystemCor(() =>
+            { SEPlay(UISEObj, "心臓音101025_IEZ001", 0.3f); }
+            , 0.7f, Mathf.Infinity));
+
+
+            //体傾き
+            Vector3 tmpKatamukiRotA = CameraObjectsTrs.localEulerAngles;
+            CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotA.x + 14, tmpKatamukiRotA.y, tmpKatamukiRotA.z + 14), 1)
+                .OnComplete(() =>
+                {
+                    CameraObjectsTrs.DOLocalRotate(tmpKatamukiRotA
+                        , 1);
+                });
+
+            isPlayerUniqueMotion = true;
+            PlayerMotion("四つん這い両手_モブ", 1f, 0);
+
+
+            Hukidashi("F3080130");//少しだけど
+            ChieriMotion("背比べ左手スマホいじり", 0f, 11);
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            #region 左手スマホいじり位置もどし　左腕マスク外し　左手指マスクON（スマホ持ち）
+
+            ////スマホObjオフ（しまう）
+            //ChieriSumahoObj.SetActive(false);
+
+            //ウェイト戻す
+            DOTweenToIKEfPos(IKLHandEf, 0, 1f);
+            DOTweenToIKEfRot(IKLHandEf, 0, 1f);
+
+            ChieriMotion("_noData", 0f, 11);
+            ChieriMotion("背比べ左手スマホいじり", 1f, 18);
+
+            #endregion
+
+            #region スマホ見やめ
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0, 1);
+            #endregion
+
+            //ゆっくりになりながら立ち上がり
+            ChieriMotion("ベッドから立ち上がり", 0f, 0);
+            //Tweener slowTweener = DOTween.To(() => testFloat01, (x) => testFloat01 = x, testFloat01, 0f);//ダミー
+            //slowTweener.Kill();
+            //slowTweener =
+            DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x, 0.042f, 12f);
+            Hukidashi("F3080135");//待ってあげる
+            yield return null;
+
+
+            //立ち上がるまで待ち
+            StartCoroutine(GirlAnimReadSystem());
+            while (girlAnimNomTime <= 1f)
+            { yield return null; }
+
+            ChieriMotion("ベッドからテーブルへ", 0f, 0);
+            yield return null;
+            //歩きが終わる直前か、ノベルが指定段階に入ったら黒フェード
+            while (true)
+            {
+                //歩き終わりになったら
+                if (girlAnimNomTime >= 0.57f)
+                {
+                    goto 視界眩み;
+                }
+                //ノベルがおわったら
+                else if (isNovelSetVisIng == false)
+                {
+                    goto 視界眩み;
+                }
+                yield return null;
+            }
+            視界眩み:
+            NovelSetVis("F3080a055");//眩む
+
+            isGirlAnimReadSystem = false;
+            FadeBlack(1, 4, false, Ease.InOutBounce);
+
+            while (isNovelSetVisIng) { yield return null; }
+
+            isActionLoopSystem = false;
+
+            //ボリューム下げ
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0f, 4);
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0f, 4);
+
+            yield return new WaitForSeconds(2);
+            NovelSetVis("F3080a060");//そういえば死ぬ前
+            while (isNovelSetVisIng) { yield return null; }
+
+
+            isPlayerUniqueMotion = false;
+
+            yield return new WaitForSeconds(3);
+
+            #endregion
+
+        }
+        else
+        {
+            //テーブル下起床の場合
+            #region 起きて智恵理台詞と近づき移動
+            //プレイヤー ベッドの下位置に
+            ////ためしに隠れ鬼のデータを参照して配置
+            //GameObject EV_C_KakureOni
+            //    = Resources.Load("EventSystem/KakureOni/Prefab/EV_C_KakureOni") as GameObject;
+            CameraObjectsTrs.localPosition
+                = EV_C_KakureOni.transform.Find("KO_KakurePosObjs").Find("06_NightFloor").Find("GrasstableUnderSleepPos").localPosition;
+
+            //RMEの倒れ
+            StartCoroutine(PlayerFallDownSystemIEnum(0));
+
+            //倒れ角度と高さは別
+            GameObject Player01BedUnderKisyouPosObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player01BedUnderKisyouPosObj") as GameObject;
+            Vector3 tmpV3 = CameraObjectsTrs.localPosition;
+            tmpV3.y = Player01BedUnderKisyouPosObj.transform.localPosition.y;
+
+            CameraObjectsTrs.localPosition = tmpV3;
+            //CameraObjectsTrs.localEulerAngles = Player01BedUnderKisyouPosObj.transform.localEulerAngles;
+
+            #region 左手スマホいじり位置もどし　左腕マスク外し　左手指マスクON（スマホ持ち）
+
+            ////スマホObjオフ（しまう）
+            //ChieriSumahoObj.SetActive(false);
+
+            //ウェイト戻す
+            DOTweenToIKEfPos(IKLHandEf, 0, 2f);
+            DOTweenToIKEfRot(IKLHandEf, 0, 2f);
+
+            ChieriMotion("_noData", 0f, 11);
+            ChieriMotion("背比べ左手スマホいじり", 1f, 18);
+
+            #endregion
+
+            #region スマホ見やめ
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0, 1);
+            #endregion
+
+            yield return new WaitForSeconds(2);
+
+            Hukidashi("F3080060");//寝てるかな？
+            yield return new WaitForSeconds(1);
+            //環境音フェード
+            KankyouBGMVolumer(1.4f, 5);
+            NovelSetVis("■F3080b010");//目が覚めたのは声
+            while (novelCurrentPageInt < 1) { yield return null; }
+
+            //開幕
+            FadeBlack(0, 2);
+            yield return new WaitForSeconds(2);
+            //足ミュート解除
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().mute =
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = false;
+
+            NovelSetVis("F3080b020");//ん？　ああ……
+            while (isNovelSetVisIng) { yield return null; }
+
+            //立ち上がり暗幕
+            FadeBlack(1, 0.5f);
+            yield return new WaitForSeconds(0.5f);
+
+            #region RMEプレイヤー立ち（倒れてたら　倒れから復帰するように立つ）
+            if (isPlayerFallDownSystem)
+            {
+                playerFallDownDefCameraAnchorPos = DB.cameraStandAnchorDefLocalPos;
+                playerFallDownDefCameraAnchorEul = Vector3.zero;
+                isPlayerFallDownSystem = false;
+            }
+            else//倒れてないなら一瞬で
+            {
+                //立ちでカメラリセット（ユーザーカメラ動かさない）
+                CameraReset(null,
+                    DB.cameraStandAnchorDefLocalPos//Anchorを立ちに
+                    , false, null, false, false);
+            }
+            #endregion
+
+            GameObject Plyer015_TableUnderWakePosObj
+                = Resources.Load("_PosObj/0370YukaueKisyou/Plyer015_TableUnderWakePosObj") as GameObject;
+            CameraObjectsTrs.localPosition = Plyer015_TableUnderWakePosObj.transform.localPosition;
+            CameraObjectsTrs.localEulerAngles = Plyer015_TableUnderWakePosObj.transform.localEulerAngles;
+            //カメラリセット値変更してリセット
+            CameraReset(Plyer015_TableUnderWakePosObj.transform.localEulerAngles
+                , DB.cameraStandAnchorDefLocalPos);//Anchorを立ちに
+
+            yield return new WaitForSeconds(0.5f);
+
+            //立ち上がり開幕
+            FadeBlack(0, 0.5f);
+            yield return new WaitForSeconds(1);
+            NovelSetVis("F3080b030");//智恵理もおきてる
+            while (isNovelSetVisIng) { yield return null; }
+
+            #region 探索とかくれおに移動設置
+            //■隠れ鬼移動システムON
+            KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
+            //ローディング待ち
+            while (isKOSystemLoading) { yield return null; }
+            isSeePointTempOff = false;//ポインタ表示
+            //移動場所07オン
+            int tmpListInt = 7;
+            KO_KakurePosObjsList[tmpListInt].SetActive(true);
+            //寝る場所移動ポイント出現 演出
+            KO_NewPosPointObjVis
+                (KO_KakurePosObjsList[tmpListInt].transform.Find("ChieriHumiPos").gameObject);
+
+            //カーペット出るときに台詞用
+            EnumCarpet_Area = enumCarpet_Area.起きぬけ脱出前;
+
+            #endregion
+            yield return new WaitForSeconds(4);
+
+            Hukidashi("F3080070");//でも部屋にはいるよね
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            yield return new WaitForSeconds(4);
+
+            Hukidashi("F3080080");//探さない
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080090");//好きにしてて
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080100");//虫として
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080110");//生きてていいよ
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+            Hukidashi("F3080120");//少しだけだけど
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            #region ■左手スマホ取り出し　マスク IK版
+
+            GirlPosToIKTargetPosRot();
+
+            //string
+            //    tmpBaseAnimStateName = "片膝立ちミラー手伸ばしループ原点";
+            #region スマホ片手いじりPosへ
+            //GameObject ChieriSumaho_LHand_SekurabeKatatePosObj
+            //    = Resources.Load("_PosObj/_ParentPoseObjs/ChieriSumaho_LHand_SekurabeKatatePosObj") as GameObject;
+            ChieriSumahoObj.transform.DOLocalMove(ChieriSumaho_LHand_SekurabeKatatePosObj.transform.localPosition, 3f);
+            ChieriSumahoObj.transform.DOLocalRotate(ChieriSumaho_LHand_SekurabeKatatePosObj.transform.localEulerAngles, 3f);
+            #endregion
+
+            StartCoroutine(GirlAnimReadSystem(11));
+
+            //マスクのため、レイヤーのアニメを1フレでベースと同じモーション状態にする（ParameterでNormlizedTimeが指定できる（ただし指定し続けないと静止））
+            ChieriMotion(tmpBaseAnimStateName, 1f, 11);//現在のベースアニメと同じアニメ指定
+            girlAnim.SetFloat("現在ベースアニメのNormalizedTime", girlAnimNomTime);//同じNomTimeに
+
+            yield return null;//↑適用に1フレ必要
+
+            ChieriMotion("背比べ左手スマホ取り出し", 0f, 11);
+
+            while (nowGirlAnimOtherLayerClipNameDict[11] != "背比べスマホ取り出し") { yield return null; }
+            while (girlAnimOtherLayerNomTimeDict[11] <= 0.375f) { yield return null; }
+            isGirlAnimReadSystem = false;
+            //スマホObjオン（取り出し）
+            ChieriSumahoObj.SetActive(true);
+            //画面つける（画面更新も一緒に起動される）
+            ChieriSumahoPower(true);
+
+            #region スマホ見
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+            FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 0f);
+            DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0f);
+            FollowDOMove(IKLookAtHeadTargetTrs, ChieriSumahoObj.transform, new Vector3(0, -0.5f, 0), 1f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0.8f, 1);
+            #endregion
+
+
+            #region 左手IKいじり位置へ（力技
+            //まずターゲットTween移動
+            //GameObject IKLHand010_SumahoPosObj
+            //    = Resources.Load("_PosObj/0370YukaueKisyou/IKLHand010_SumahoPosObj") as GameObject;
+            IKLHandTargetTrs.DOLocalMove(IKLHand010_SumahoPosObj.transform.localPosition, 1f);
+            IKLHandTargetTrs.DOLocalRotate(IKLHand010_SumahoPosObj.transform.localEulerAngles, 1f);
+
+            //少しウェイト下げて
+            DOTweenToIKEfPos(IKLHandEf, 0.6f, 0.5f);
+            DOTweenToIKEfRot(IKLHandEf, 0.6f, 0.5f);
+
+            yield return new WaitForSeconds(0.5f);
+            //ウェイト戻す
+            DOTweenToIKEfPos(IKLHandEf, 1, 0.5f);
+            DOTweenToIKEfRot(IKLHandEf, 1, 0.5f);
+            #endregion
+
+            #endregion
+
+            #endregion
+
+            #region 時間補正切られ意識混濁 近づきすぎると踏まれるように
+
+            //環境音フェード
+            KankyouBGMVolumer(0f, 5);
+            yield return new WaitForSeconds(2f);
+            NovelSetVis("F3080a050");//何言ってんだ・・？　！？
+            isKOSystem = false;
+            isTansakuSystem = false;
+
+            while (novelCurrentPageInt < 2) { yield return null; }
+
+
+            PPEffect_ZikanHosei();
+            //心音ループ
+            StartCoroutine(ActionLoopSystemCor(() =>
+            { SEPlay(UISEObj, "心臓音101025_IEZ001", 0.3f); }
+            , 0.7f, Mathf.Infinity));
+
+            ////体傾き以前の
+            //Vector3 tmpKatamukiRotA = CameraObjectsTrs.localEulerAngles;
+            //CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotA.x + 14, tmpKatamukiRotA.y, tmpKatamukiRotA.z + 14), 3)
+            //    .SetEase(Ease.InOutBack);
+            //体傾き
+            Vector3 tmpKatamukiRotB = CameraObjectsTrs.localEulerAngles;
+            CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotB.x + 14, tmpKatamukiRotB.y, tmpKatamukiRotB.z + 14), 1)
+                .OnComplete(() =>
+                {
+                    CameraObjectsTrs.DOLocalRotate(tmpKatamukiRotB
+                        , 1);
+                });
+
+
+            isPlayerUniqueMotion = true;
+            PlayerMotion("四つん這い両手_モブ", 1f, 0);
+
+
+            Hukidashi("F3080130");//少しだけど
+            ChieriMotion("背比べ左手スマホいじり", 0f, 11);
+            yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+            #region 左手スマホいじり位置もどし　左腕マスク外し　左手指マスクON（スマホ持ち）
+
+            ////スマホObjオフ（しまう）
+            //ChieriSumahoObj.SetActive(false);
+
+            //ウェイト戻す
+            DOTweenToIKEfPos(IKLHandEf, 0, 2f);
+            DOTweenToIKEfRot(IKLHandEf, 0, 2f);
+
+            ChieriMotion("_noData", 0f, 11);
+            ChieriMotion("背比べ左手スマホいじり", 1f, 18);
+
+            #endregion
+
+            #region スマホ見やめ
+            ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0f);
+            DOTweenToLAIKSHead(LAIKHeadS, 0, 1);
+            #endregion
+
+            //ゆっくりになりながら立ち上がり
+            ChieriMotion("ベッドから立ち上がり", 0f, 0);
+
+            DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x, 0.042f, 12f);
+            Hukidashi("F3080135");//待っててあげるね
+            yield return null;
+
+
+            //立ち上がるまで待ち
+            StartCoroutine(GirlAnimReadSystem());
+            while (girlAnimNomTime <= 1f)
+            { yield return null; }
+
+
+            ChieriMotion("ベッドからテーブルへ", 0f, 0);
+            yield return null;
+
+            #region ■if カーペットから出てなかったら何も起きずに眩み倒れへ
+            if (EnumCarpet_Area == enumCarpet_Area.起きぬけ脱出前)
+            {
+                EnumCarpet_Area = enumCarpet_Area.終了;
+                Debug.Log(EnumCarpet_Area);
+                //歩きが終わる直前か、ノベルが指定段階に入ったら黒フェード
+                while (true)
+                {
+                    //歩き終わりになったら
+                    if (girlAnimNomTime >= 0.57f)
+                    {
+                        goto 視界眩み;
+                    }
+                    //ノベルが16ページになったら
+                    else if (novelCurrentPageInt > 17)
+                    {
+                        NovelSetVis("F3080a055");//眩む
+                        goto 視界眩み;
+                    }
+                    yield return null;
+                }
+            }
+            Debug.Log(EnumCarpet_Area);
+            #endregion
+
+            #region ■カーペットから出ていたら 踏まれるかギリギリか
+
+            //この場合のみ待ち
+            yield return new WaitForSeconds(15);
+            NovelSetVis("F3080b050a010");//それ以上に、途轍もない現実にやっと気づく。
+
+            //足のコリダーオフ（VRBlock消し）
+            GameObject.Find("Tsumasaki_R_coll_Convex").gameObject.SetActive(false);
+
+            //踏み潰され判定用コリダー取得
+            Collider Tsumasaki_R_coll =
+                FixedMoveChieriColliderFollderObj.transform.Find("BoneBip001 R Foot/Tsumasaki_R_coll").GetComponent<Collider>();
+
+            //※■↑だと貫通しちゃうので、当たり判定は専用の大きめコリダーを設置
+            GameObject KisyouHumareColliderObj
+                = Instantiate(Resources.Load("_PosObj/0370YukaueKisyou/KisyouHumareColliderObj") as GameObject);
+            KisyouHumareColliderObj.transform.SetParent(GirlRFootTrs, false);
+
+            Collider kisyouHumareCollider
+                = KisyouHumareColliderObj.GetComponent<Collider>();
+
+
+
+
+
+            //接近量計算用Float（通り過ぎ度計るために）
+            float mostNearFloat = Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position);
+
+            #region ■ループ 踏まれるか ニアミスか 離れたままか判定
+            while (true)
+            {
+                //単純に当たったら踏み潰され判定
+                if (nowVRBlockThroughCollList.Contains(kisyouHumareCollider))
+                { goto 踏み潰され; }
+
+                //通り過ぎたら
+                if (girlAnimNomTime >= 0.29f)
+                { goto 踏まれず通り過ぎ; }
+
+                //歩き終わりまで無事なら
+                if (girlAnimNomTime >= 0.59f)
+                {
+                    goto 視界眩み;
+                }
+
+                ////ノベルが16ページになったら
+                //else if (novelCurrentPageInt > 16)
+                //{
+                //    goto 視界眩み;
+                //}
+
+                yield return null;
+            }
+            #endregion
+
+            踏まれず通り過ぎ:
+            #region
+            NovelSetVis("F3080b050b010");//息を止め続けた。
+            while (true)
+            {
+                //歩き終わりになったら
+                if (girlAnimNomTime >= 0.57f)
+                {
+                    goto 視界眩み;
+                }
+                //ノベルが14ページになったら
+                else if (novelCurrentPageInt > 14)
+                {
+                    goto 視界眩み;
+                }
+                yield return null;
+            }
+            #endregion
+
+            踏み潰され:
+            #region
+            isActionLoopSystem = false;
+            isPlayerUniqueMotion = false;
+
+            //蹴られ判定コリダーObjオフ
+            KisyouHumareColliderObj.SetActive(false);
+
+            //足のコリダーオフ（VRBlock判定消し）
+            Tsumasaki_R_coll.gameObject.SetActive(false);
+
+            #region プレイヤーダメージとカメラ倒れ 直
+
+            //フラッシュと音とダメージ
+            FadeWhite(1, 0);
+            FadeBlack(1, 0);
+            SEPlay("soccer-ball1", 3);
+            SEPlay("足音・べた足-08", 3);
+            yield return new WaitForSeconds(0.05f);
+            FadeWhite(0, 0);
+            FadeBlack(0.5f, 3);
+
+            //TPSプレイヤー倒れモーション
+            isPlayerUniqueMotion = true;
+            PlayerMotion("liedown_00_Re", 0.2f, 0);
+
+            Vector3
+                tmpDefCameraPosTwo = CameraAnchorTrs.localPosition,
+                tmpDefCameraEulTwo = CameraAnchorTrs.localEulerAngles,
+                tmpFlowCameraPosTwo = new Vector3(0, 1.2f, 0),
+                tmpSlipCameraPosTwo = new Vector3(0, 0.2f, -0.7f),
+                tmpSlipCameraEulTwo = new Vector3(-45, 0, 0);
+
+            CameraAnchorTrs.DOLocalMove(tmpFlowCameraPosTwo, 0.05f);
+            yield return new WaitForSeconds(0.05f);
+            CameraAnchorTrs.DOLocalMove(tmpSlipCameraPosTwo, 0.5f).SetEase(Ease.OutBounce);
+            yield return new WaitForSeconds(0.05f);
+            CameraAnchorTrs.DOLocalMove(tmpDefCameraPosTwo, 0.05f);
+            yield return new WaitForSeconds(0.05f);
+
+            CameraAnchorTrs.DOLocalMove(tmpSlipCameraPosTwo, 0.5f).SetEase(Ease.OutBounce);
+            CameraAnchorTrs.DOLocalRotate(tmpSlipCameraEulTwo, 0.2f).SetEase(Ease.InSine);
+
+
+
+            #endregion
+
+            //プレイヤー踏まれ位置にすべり移動
+            GameObject Plyer020_KerareSuberiPosObj
+                = Resources.Load("_PosObj/0370YukaueKisyou/Plyer020_KerareSuberiPosObj") as GameObject;
+            CameraObjectsTrs.DOLocalMove(Plyer020_KerareSuberiPosObj.transform.localPosition, 2)
+                .SetEase(Ease.OutQuint);
+            CameraObjectsTrs.DOLocalRotate(Plyer020_KerareSuberiPosObj.transform.localEulerAngles, 2)
+                .SetEase(Ease.OutQuint);
+
+            SEPlay("dan01", 0.5f);
+            SEPlay("soccer-ball1", 1);
+            SEPlay("足音・べた足-08", 1);
+
+
+            #region //以前の踏まれイベント
+            //NovelSetVis("F3080b050a020");//ここで途絶えた。   
+
+            ////FadeBlack(1, 1f, false, Ease.OutBounce);
+            ////足ボリューム消し
+            //LFootWindnoiseSoundObj.GetComponent<AudioSource>().volume =
+            //RFootWindnoiseSoundObj.GetComponent<AudioSource>().volume = 0;
+
+            ////足離れ判定のためにObj設置
+            //GameObject tmpCrashCameraPosObj = new GameObject();
+            //tmpCrashCameraPosObj.name = "tmpCrashCameraPosObj";
+            //tmpCrashCameraPosObj.transform.position = PlayerTargetTrs.position;
+
+
+
+            //////足にペアレントしてへばりつき演出
+            ////MoreLateAction(() =>
+            ////{
+            ////    CameraObjectsTrs.SetParent(GirlRFootTrs);
+
+            ////    CameraObjectsTrs.DOLocalMove(new Vector3(
+            ////        CameraObjectsTrs.localPosition.x + 0.009f,//xが高さ （回転しているので近づく）
+            ////        CameraObjectsTrs.localPosition.y,
+            ////        CameraObjectsTrs.localPosition.z)
+            ////        , 1f).SetEase(Ease.InBounce);
+
+            ////    //回転は暗幕後にしても良いかも
+            ////    CameraObjectsTrs.DOLocalRotate(new Vector3(0, 90, 0), 0.8f);
+
+            ////});
+
+            ////↑変な倒れ角度だったので、RMEのを使う
+            //StartCoroutine(PlayerFallDownSystemIEnum(0));
+
+
+            //SEPlay("pakipoki", 0.4f);
+            ////赤フラッシュ
+            //FadeColor(Color.red, 1, 0.05f, false); yield return new WaitForSeconds(0.05f); FadeColor(Color.red, 0, 0.05f, false);
+
+            //#region //ダメージ関連削除
+            //////コンティニューのためにHP取得
+            ////float tmpPlayerHP = DB.playerHPFloat;
+
+            //////ダメージ
+            ////PlayerHPAddSub(-(DB.playerHPMaxFloat / 2));
+            ////yield return new WaitForSeconds(0.2f);
+
+            //////ダメージ
+            ////PlayerHPAddSub(-(DB.playerHPMaxFloat / 2));
+            //#endregion
+
+
+            //FadeColor(Color.red, 1, 0.05f, false); yield return new WaitForSeconds(0.05f); FadeColor(Color.red, 0, 0.05f, false);
+            //yield return new WaitForSeconds(0.5f);
+
+
+
+            //////歩き去り早める（長いので）
+            ////girlAnim.speed = 0.14f;
+
+            ////テストで遅く
+            //girlAnim.speed = 0.000001f;
+
+            ////足はなれるまで待機
+            //while (Vector3.Distance(tmpCrashCameraPosObj.transform.position, Tsumasaki_R_coll.transform.position) < 17)
+            //{
+            //    Debug.Log(Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position));
+
+            //    if (Input.GetKey(KeyCode.V))
+            //    {
+            //        girlAnim.speed += 0.001f;
+            //        Debug.Log(girlAnim.speed);
+            //    }
+
+            //    yield return null;
+
+
+            //}
+
+            #endregion
+
+            //足かぶさるまで待機
+            StartCoroutine(GirlAnimReadSystem());
+            while (nowGirlAnimClipName != "ベッドからテーブルへ") { yield return null; }//クリップネーム自体は逆再生ではない
+            while (girlAnimNomTime <= 0.29f) { yield return null; }
+            {
+                //デバッグ
+                if (Input.GetKey(KeyCode.V))
+                {
+                    girlAnim.speed += 0.001f;
+                    Debug.Log(girlAnim.speed);
+                }
+                yield return null;
+            }
+
+            //ちえりアニメ遅く
+            DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x
+            , 0.000001f
+            , 1f);
+
+            //足ボリューム消し
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().volume =
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().volume = 0;
+
+            NovelSetVis("F3080b050a020");//あ。　理解した
+            while (isNovelSetVisIng) { yield return null; }
+
+            //ちえりアニメ再開
+            DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x
+            , 0.1f
+            , 4f);
+
+            //ボリューム少し上げ
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.5f, 1);
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.5f, 1);
+
+            //暗幕
+            FadeBlack(1, 1f);
+            yield return new WaitForSeconds(1f);
+
+            //足ボリューム消し
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().volume =
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().volume = 0;
+
+            isAnimTriggerRForcePlay = true;
+
+            SEPlay("pakipoki", 0.8f);
+            //赤フラッシュ
+            FadeColor(Color.red, 1, 0.05f, false); yield return new WaitForSeconds(0.05f); FadeColor(Color.red, 0, 0.05f, false);
+
+            FadeColor(Color.red, 1, 0.05f, false); yield return new WaitForSeconds(0.05f); FadeColor(Color.red, 0, 0.05f, false);
+
+
+            //へばりつき視界開きタイミングまで待機
+            while (nowGirlAnimClipName != "ベッドからテーブルへ") { yield return null; }//クリップネーム自体は逆再生ではない
+            while (girlAnimNomTime <= 0.42f) { yield return null; }
+
+            //プレイヤー足裏へばりつき
+            GameObject Plyer030_PareRFoot_HebaritukiPosObj
+                = Resources.Load("_PosObj/0370YukaueKisyou/Plyer030_PareRFoot_HebaritukiPosObj") as GameObject;
+
+            CameraObjectsTrs.SetParent(GirlRFootTrs);
+            CameraObjectsTrs.localPosition = Plyer030_PareRFoot_HebaritukiPosObj.transform.localPosition;
+            CameraObjectsTrs.localEulerAngles = Plyer030_PareRFoot_HebaritukiPosObj.transform.localEulerAngles;
+
+            girlAnim.speed = 0.04f;
+
+            FadeBlack(0, 4, false, Ease.OutBounce);
+            //ボリューム少し上げ
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.5f, 3);
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.5f, 3);
+
+            //朝環境音に変え
+            KankyouBGMChanger(semiSE.audioSource, "residential-area-in-early-morning-1_loop");
+            KankyouBGMVolumer(1f, 3);
+
+            //へばり落ちタイミングまで待機
+            while (nowGirlAnimClipName != "ベッドからテーブルへ") { yield return null; }//クリップネーム自体は逆再生ではない
+            while (girlAnimNomTime <= 0.445f) { yield return null; }
+
+
+            CameraObjectsTrs.SetParent(GameObjectsTrs, true);
+
+            //プレイヤーへばり落ち移動
+            GameObject Plyer040_HebariOtiPosobj
+                = Resources.Load("_PosObj/0370YukaueKisyou/Plyer040_HebariOtiPosobj") as GameObject;
+            CameraObjectsTrs.DOLocalMove(Plyer040_HebariOtiPosobj.transform.localPosition, 1)
+                .SetEase(Ease.OutBounce);
+            CameraObjectsTrs.DOLocalRotate(Plyer040_HebariOtiPosobj.transform.localEulerAngles, 1)
+                .SetEase(Ease.OutBounce);
+
+            yield return new WaitForSeconds(0.2f);
+            SEPlay("dan01", 0.5f);
+            SEPlay("soccer-ball1", 1);
+            SEPlay("足音・べた足-08", 1);
+
+
+
+
+            #region　//以前の足から離れ落ちる演出（重力利用）
+            //yield return new WaitForSeconds(0.3f);
+            //FixedAction(() =>
+            //{
+            //    CameraObjectsTrs.SetParent(GameObjectsTrs);
+            //    //ANの重力設定のみロード
+            //    AN_SetPlayerRigidbody();
+            //    AN_GravitiDragBool = true;//FixedUpdateのやつON
+            //    //rigid監視スタート
+            //    StartCoroutine(RigidReadSystem());
+            //    CameraObjectsTrs.DOLocalRotate(new Vector3(340, 90, 90), 1);
+
+            //});
+
+            #endregion
+
+            PPEffect_FadeToDef(15);
+
+
+            NovelSetVis("F3080b050a030");//虫の最後   
+
+            while (isNovelSetVisIng &&
+                   girlAnimNomTime <= 0.57f)
+            { yield return null; }
+
+            KankyouBGMVolumer(2f, 5);
+
+            FadeColor(Color.red, 1, 3f);
+            yield return new WaitForSeconds(4);
+            FadeBlack(1, 0f);
+            yield return null;
+            FadeColor(Color.red, 0, 3f);
+
+            KankyouBGMVolumer(0f, 5);
+            yield return new WaitForSeconds(4);
+
+            //メニュー強制開き
+            StartCoroutine(MenuSystemIEnum(true, false, true));
+
+            yield break;
+
+
+            #region //以前の■コンティニューセレクト
+            //GameObject ContinueSelectText = Instantiate(Resources.Load("EventSystem/GameSelect/ContinueSelectText") as GameObject, FadeCanvasObj.transform);
+            //DB.evMoveDelObjList.Add(ContinueSelectText);
+
+            ////DB.playerHPFloat = tmpPlayerHP;
+            ////PPEffect_FadeToDef(0);
+            //AN_GravitiDragBool = false;
+            //isRigidReadSystem = false;
+            //Destroy(CameraObjectsTrs.GetComponent<Rigidbody>());
+
+            //while (true)
+            //{
+            //    if (Input.GetKeyDown(KeyCode.V))
+            //    {
+            //        Destroy(ContinueSelectText);
+
+            //        EventMove("監禁1_床上起床");
+            //        yield break;
+            //    }
+            //    else if (Input.GetKeyDown(KeyCode.B))
+            //    {
+            //        Destroy(ContinueSelectText);
+
+            //        EventMove("タイトル");
+            //        yield break;
+            //    }
+            //    yield return null;
+            //}
+            #endregion
+
+            #endregion
+
+            視界眩み:
+            #region
+            isGirlAnimReadSystem = false;
+            FadeBlack(1, 4, false, Ease.InOutBounce);
+
+            while (isNovelSetVisIng) { yield return null; }
+
+            isActionLoopSystem = false;
+
+            //足ボリューム下げ
+            LFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0f, 4);
+            RFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0f, 4);
+
+            yield return new WaitForSeconds(2);
+            NovelSetVis("F3080a060");//そういえば死ぬ前
+            while (isNovelSetVisIng) { yield return null; }
+
+
+            isPlayerUniqueMotion = false;
+
+            yield return new WaitForSeconds(2);
+
+            #endregion
+
+            #endregion
+
+            #endregion
+
+        }
+
+        #region 目覚めて歩き出し
+        FadeBlack(1, 0);
+        girlAnim.speed = 0.042f;
+
+        ChieriMotion("寝そべり足パタループ", 0f, 0);
+        ChieriMotion("f_リラックス01", 0f, 2);
+
+        //左手指スマホ持ちマスクはずし
+        ChieriMotion("_noData", 0f, 18);
+
+        //カーペット出るときに台詞出さない用
+        EnumCarpet_Area = enumCarpet_Area.終了;
+
+        #region スマホ、床置き（元タブレット）
+
+        //スマホObjペアレントはずし
+        ChieriSumahoObj.transform.SetParent(GameObjectsTrs);
+
+        GameObject ChieriSumaho_YukaokiPosObj
+            = Resources.Load("_PosObj/0370YukaueKisyou/ChieriSumaho_YukaokiPosObj") as GameObject;
+        ChieriSumahoObj.transform.localPosition = ChieriSumaho_YukaokiPosObj.transform.localPosition;
+        ChieriSumahoObj.transform.localEulerAngles = ChieriSumaho_YukaokiPosObj.transform.localEulerAngles;
+
+        ////タブレット設置
+        //GameObject Tablet01ChieriNesoberiPosObj =
+        //    Instantiate(Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Tablet01ChieriNesoberiPosObj") as GameObject
+        //    , GameObjectsTrs);
+        //DB.evMoveDelObjList.Add(Tablet01ChieriNesoberiPosObj);
+
+
+        //IKタブレット見る
+        FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform);
+        DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 1);
+        FollowDOMove(IKLookAtHeadTargetTrs, ChieriSumahoObj.transform);
+        DOTweenToLAIKSHead(LAIKHeadS, LAIKSHeadDefWeight, 1);
+
+        #endregion
+
+        //プレイヤー仰向け 場所そのまま、回転と高さのみ
+        GameObject Player04AomukeRotObj
+        = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player04AomukeRotObj") as GameObject;
+        CameraObjectsTrs.localEulerAngles = Player04AomukeRotObj.transform.localEulerAngles;
+
+        Vector3 tmpAomukeV3 = new Vector3(CameraObjectsTrs.localPosition.x, Player04AomukeRotObj.transform.localPosition.y, CameraObjectsTrs.localPosition.z);
+        CameraObjectsTrs.localPosition = tmpAomukeV3;
+
+        //カメラリセット値変更してリセット
+        CameraReset(Player04AomukeRotObj.transform.localEulerAngles
+            , CameraAnchorTrs.localEulerAngles);//Anchorを立ちに
+
+        yield return new WaitForSeconds(3);
+
+        //目覚め
+        FadeBlack(0, 4, false, Ease.InOutBounce);
+
+        //ボリューム少し上げ
+        LFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.5f, 5);
+        RFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.5f, 5);
+
+        NovelSetVis("F3080a070");//はぁーはぁー
+        while (novelCurrentPageInt < 2) { yield return null; }
+
+        //PPエフェクトフェードアウト
+        PPEffect_FadeToDef(10);
+
+
+        while (isNovelSetVisIng) { yield return null; }
+
+        //立ち上がり黒フェード
+        FadeBlack(1, 1f);
+        yield return new WaitForSeconds(1);
+
+        //智恵理腰方向へ向く
+        CameraObjectsTrs.LookAt(Bip001PelvisTrs);
+        CameraObjectsTrs.localEulerAngles = new Vector3(0, CameraObjectsTrs.localEulerAngles.y, 0);
+        Vector3 tmpAomukeStandV3 = new Vector3(CameraObjectsTrs.localPosition.x, Player05TableUnderKisyouStandRotObj.transform.localPosition.y, CameraObjectsTrs.localPosition.z);
+        CameraObjectsTrs.localPosition = tmpAomukeStandV3;
+
+        //カメラリセット値変更してリセット
+        CameraReset(CameraObjectsTrs.localEulerAngles
+            , DB.cameraStandAnchorDefLocalPos);//Anchorを立ちに
+
+        FadeBlack(0, 1f);
+        yield return new WaitForSeconds(2);
+
+
+        NovelSetVis("F3080a080");//なにやってんだ・・？
+        while (isNovelSetVisIng) { yield return null; }
+
+
+        yield return new WaitForSeconds(2);
+        NovelSetVis("F3080a082");//とりあえず近づくしかなさそうだ
+        while (isNovelSetVisIng) { yield return null; }
+
+        #region 探索とかくれおに移動設置
+        //■隠れ鬼移動システムON
+        KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
+        //ローディング待ち
+        while (isKOSystemLoading) { yield return null; }
+        isSeePointTempOff = false;//ポインタ表示
+        //移動場所07オン
+        int tmpInt = 7;
+        KO_KakurePosObjsList[tmpInt].SetActive(true);
+        //寝る場所移動ポイント出現 演出
+        KO_NewPosPointObjVis
+            (KO_KakurePosObjsList[tmpInt].transform.Find("TableAsiKage").gameObject);
+
+        #endregion
+
+        #endregion
+
+        //テーブル・智恵理横に来るまで待機
+        while (isTableAsiKage_Enter == false) { yield return null; }
+        #region 近づいて呼びかけ
+        KO_isMovePosLock = true;
+
+        NovelSetVis("F3080a085");//おーい起きたぞー！
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(2);
+        NovelSetVis("F3080a090");//聴こえないのか
+        while (isNovelSetVisIng) { yield return null; }
+        NovelSetVis("F3080a100");//仕方ない近づいて…………いいのか？
+        while (isNovelSetVisIng) { yield return null; }
+        //タブレット前 移動ポイント出現 演出
+        KO_NewPosPointObjVis
+            (KO_KakurePosObjsList[tmpInt].transform.Find("TabletYoko").gameObject);
+        KO_isMovePosLock = false;
+
+
+        //テーブル・智恵理横から少し動くまで待機
+        while (isTableAsiKage_Exit == false) { yield return null; }
+
+        KankyouBGMVolumer(0f, 0.5f);
+
+        SEPlay("心臓音101025_IEZ001", 0.5f);
+
+        KO_isMovePosLock = true;
+        NovelSetVis("F3080a110");//足がピタリと止まる。
+        while (isNovelSetVisIng) { yield return null; }
+
+        NovelSetVis("F3080a115");//しっかりしろ俺
+        SEPlay("shoulder-touch1");
+        FadeWhite(0.5f, 0.05f); yield return new WaitForSeconds(0.05f); FadeWhite(0, 0.05f);
+        while (isNovelSetVisIng) { yield return null; }
+
+
+        KO_isMovePosLock = false;
+
+        #endregion
+
+        //スマホ横に来るまで待機
+        while (isTabletYoko_Enter == false) { yield return null; }
+
+        #region スマホ横で話しかけ
+        //探索終了
+        isKOSystem = false;
+        isTansakuSystem = false;
+
+        #region プレイヤー見てタブレット見る
+        NovelSetVis("F3080a200");//おーい
+
+        while (isNovelSetVisIng) { yield return null; }
+        //IKプレイヤー見る
+        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 5);
+        yield return new WaitForSeconds(2);
+
+        FollowDOMove(IKLookAtHeadTargetTrs, PlayerHeadTargetTrs, new Vector3(0, -0.045f, 0), 10);
+        ChieriMotion("f_気づき（明）", 5f, 2);
+        ChieriMotion("寝そべりポーズ", 5f, 0);
+        yield return new WaitForSeconds(5);
+
+        NovelSetVis("F3080a210");//気づいたのか・・？
+        while (isNovelSetVisIng) { yield return null; }
+
+        //タブレットに視線戻す
+        FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 5);
+        yield return new WaitForSeconds(2);
+        FollowDOMove(IKLookAtHeadTargetTrs, ChieriSumahoObj.transform, 10);
+        ChieriMotion("f_気づき（明）", 5f, 2);
+        ChieriMotion("寝そべり足パタループ", 5f, 0);
+        yield return new WaitForSeconds(5);
+
+
+        NovelSetVis("F3080a220");//あれ 勘違いか？ 
+        #endregion
+
+        while (novelCurrentPageInt < 2) { yield return null; }
+
+        PPEffect_ZikanHosei();
+        //心音ループ
+        StartCoroutine(ActionLoopSystemCor(() =>
+        { SEPlay(UISEObj, "心臓音101025_IEZ001", 0.3f); }
+        , 0.7f, Mathf.Infinity));
+
+
+        ////体傾き以前の
+        //Vector3 tmpKatamukiRot = CameraObjectsTrs.localEulerAngles;
+        //CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRot.x + 14, tmpKatamukiRot.y, tmpKatamukiRot.z + 14), 3)
+        //    .SetEase(Ease.InOutBack);
+        //体傾き
+        Vector3 tmpKatamukiRotC = CameraObjectsTrs.localEulerAngles;
+        CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotC.x + 14, tmpKatamukiRotC.y, tmpKatamukiRotC.z + 14), 1)
+            .OnComplete(() =>
+            {
+                CameraObjectsTrs.DOLocalRotate(tmpKatamukiRotC
+                    , 1);
+            });
+
+        isPlayerUniqueMotion = true;
+        PlayerMotion("四つん這い両手_モブ", 1f, 0);
+
+
+        while (novelCurrentPageInt < 5) { yield return null; }
+
+        DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x, 0.5f, 12f);
+
+        yield return new WaitForSeconds(6);
+        Hukidashi("F3080200");//おつかれさまー
+
+        //朝環境音に変え
+        KankyouBGMChanger(semiSE.audioSource, "residential-area-in-early-morning-1_loop");
+        KankyouBGMVolumer(3f, 5f);
+
+        //IKプレイヤー見る
+        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs);
+        DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0.5f);
+        FollowDOMove(IKLookAtHeadTargetTrs, PlayerHeadTargetTrs, new Vector3(0, -0.045f, 0));
+        DOTweenToLAIKSHead(LAIKHeadS, LAIKSHeadDefWeight, 1);
+        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+        ChieriMotion("寝そべりポーズ", 5f, 0);
+        yield return new WaitForSeconds(1);
+
+        ChieriMotion("f_気づき（明）目閉じ笑顔", 0.05f, 2);
+        ChieriMotionDelay(1, "f_気づき（明）", 0.1f, 2);
+        Hukidashi("F3080205");//来てくれたんだ
+        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+        ChieriMotion("f_リラックス01", 1f, 2);
+        Hukidashi("F3080210");//大変でしょ
+        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+        isActionLoopSystem = false;
+        yield return new WaitForSeconds(2);
+        NovelSetVis("F3080a230");//はぁー・・・！　慣れはあるのか
+        while (novelCurrentPageInt < 1) { yield return null; }
+
+        PPEffect_FadeToDef(20);
+
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(1);
+
+        Hukidashi("F3080220");//ちいさいままでいられるのって
+        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
+
+        //まばたき
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+        //目タブレット
+        FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 0f);
+
+        Hukidashi("F3080230");//色々補整されてるんだよ
+        yield return new WaitForSeconds(1);
+
+        //まばたき
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+        //目プレイヤー
+        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 0f);
+        yield return KeyOrWait(3);
+
+        yield return new WaitForSeconds(2);
+        NovelSetVis("F3080a240");//言葉が出なかった。
+        while (novelCurrentPageInt < 4) { yield return null; }
+
+        //まばたき
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+        //目顔タブレット 
+        FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 0f);
+        FollowDOMove(IKLookAtHeadTargetTrs, ChieriSumahoObj.transform, 1f);
+        ChieriMotion("寝そべり足パタループ", 1f, 0);
+
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(2);
+        NovelSetVis("F3080a250");//補整って・・。
+        while (novelCurrentPageInt < 4) { yield return null; }
+
+        ChieriMotionDelay(1, "f_気づき（明）", 1f, 2);
+        Hukidashi("F3080240");//おなかペコペコかな？
+        yield return new WaitForSeconds(1);
+        yield return KeyOrWait(3);
+
+        Hukidashi("F3080250");//今ごはんあげるね
+        //まばたき
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+        //目プレイヤー
+        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 0f);
+        yield return new WaitForSeconds(1);
+        ChieriMotion("f_気づき（明）目閉じ笑顔", 0.05f, 2);
+        ChieriMotionDelay(1, "f_リラックス01", 0.1f, 2);
+        ChieriMotion("寝そべりポーズ", 1f, 0);
+
+        yield return KeyOrWait(3);
+        yield return new WaitForSeconds(1);
+
+        //まばたき
+        ChieriMotion("まばたき", 0f, 4); blinkTime = 0;
+        //目タブレット
+        FollowDOMove(IKLookAtEyeTargetTrs, ChieriSumahoObj.transform, 0f);
+        ChieriMotion("寝そべり足パタループ", 1f, 0);
+        FadeBlack(1, 7f);
+        KankyouBGMVolumer(0, 7f);
+
+        yield return new WaitForSeconds(2);
+
+
+        ////ToBeコンティニュー
+        //EventMove("ToBeContinued");
+
+
+        NovelSetVis("F3080a260");//全てがおかしくなっていることを
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(1);
+        FadeBlack(1, 0f);
+        yield return new WaitForSeconds(1);
+        NovelSetVis("F3080a270");//運ばれた
+
+        #endregion
+
+        while (isNovelSetVisIng) { yield return null; }
+        yield return new WaitForSeconds(3);
+
+        isPlayerUniqueMotion = false;
+
+        EventMove("終わりへと近づく日々",false,true);
+
+        //EventMove("監禁2_ペットボトル");
+        yield break;
+    }
 
     IEnumerator KomaDataEvent()//※コマデータ追加でのタイムラインイベント
     {
@@ -55559,6 +58219,8 @@ public partial class DataCounter
                 //if (GameObjects_City.transform.Find("City_Light") != null)
                 //{ GameObjects_City.transform.Find("City_Light").gameObject.SetActive(false); }
 
+                //ホコリオフ
+                Particle_DustTrs.gameObject.SetActive(false);
 
                 Debug.Log("■Cityx100Fogシーンロード終了");
 
@@ -55623,6 +58285,10 @@ public partial class DataCounter
 
                 RoomTrs.gameObject.SetActive(false);
                 LightFolder.SetActive(false);
+
+                //ホコリオフ
+                Particle_DustTrs.gameObject.SetActive(false);
+
                 Debug.Log("■Bathシーンロード終了　RoomとLightをオフに");
 
                 #endregion
@@ -55630,10 +58296,14 @@ public partial class DataCounter
                 #region ビキニに着替え（ユーザーの着替え設定を読み込まない場合）
                 if (DB.isUserFixityOutfit == false)
                 {
-                    DB.isUserClothsBarefoot = DB.isUserClothsTankTop = false;
-                    DB.isUserClothsBikini = true;
+                    //DB.isUserClothsBarefoot = DB.isUserClothsTankTop = false;
+                    //DB.isUserClothsBikini = true;
 
-                    ClothsApply();
+                    DB.intCurrentShoes = DB.intCurrentCloth = 0;
+                    DB.intCurrentALL = 1;
+
+                    //ClothsApply();
+                    ClothsApply_ydload();
                 }
 
                 #endregion
@@ -55685,6 +58355,10 @@ public partial class DataCounter
     public TimelineAsset KDEventPlayable;
     public bool isKDEventFogSceneLoad = false;
     public bool isKDEventBathSceneLoad = false;
+
+    //タイムラインで使うスクリプト用に、現在再生しているTimelineAssetを登録しておく用
+    public PlayableDirector nowPlayPD;
+
     #endregion
 
 
@@ -58470,9 +61144,10 @@ public partial class DataCounter
                 //FadeColor(Color.blue, 1, 1, false);
 
                 #region fadeImageセット ピンク
-                Texture moya2 = Resources.Load("Main/Camera/FadeImageRuleTexture/moya2") as Texture;
-                fadeImage.maskTexture = moya2;
-                //fadeImage.color = new Color(0.94f, 0.49f, 0.89f);//ピンク
+                //(モヤのルール画像はResoucesからなくしたため一旦コメントアウト（また使うならResouces_Movedから参照して使う）)
+                //Texture moya2 = Resources.Load("Main/Camera/FadeImageRuleTexture/moya2") as Texture;
+                //fadeImage.maskTexture = moya2;
+
                 fadeImage.color = new Color(0.94f, 0.49f, 0.89f, 0.2f);//ピンク薄
                 DOTween.To(() => fadeImage.Range, (x) => fadeImage.Range = x, 0.24f, 1f);
                 #endregion
@@ -58831,7 +61506,7 @@ public partial class DataCounter
 
 
         yield break;
-    }
+    }//排除
     IEnumerator E3700()//探索2_ベッドのスマホ
     {
         if (debugEventMoveFlag == true)
@@ -58964,102 +61639,6 @@ public partial class DataCounter
 
         //フラグ立てておく（再プレイ時用）
         EnumSumahoMae01 = enumSumahoMae01.初回到着;
-
-        yield break;
-    }
-    IEnumerator E3800()//探索3_寝床探し
-    {
-        if (debugEventMoveFlag == true)
-        {
-            #region 設定
-
-            #region //ライト消し デバッグで一旦消さない
-            //if (GameObject.Find("Floor light") != null)
-            //{ NullJudgeFind("Floor light").GetComponent<Light>().enabled = false; }
-            #endregion
-
-
-            //プレイヤー大きさ
-            //nowPlayerLocalScl = new Vector3(0.05f, 0.05f, 0.05f);
-            nowPlayerLocalScale = new Vector3(0.015f, 0.015f, 0.015f);
-
-            //■PosObjで読み込み
-            //プレイヤー 床の上ケーブル落とされ位置に
-            GameObject DebugPlayer04CableFallBoundStandPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player04CableFallBoundStandPosObj") as GameObject;
-            CameraObjectsTrs.localPosition = DebugPlayer04CableFallBoundStandPosObj.transform.localPosition;
-            CameraObjectsTrs.localEulerAngles = DebugPlayer04CableFallBoundStandPosObj.transform.localEulerAngles;
-
-            //スピーカー 位置に
-            SpeakerTrs.gameObject.SetActive(true);
-            GameObject SpeaKer_DeskPosObj = Resources.Load("_PosObj/D_Henai_Day1/SpeaKer_DeskPosObj") as GameObject;
-            SpeakerTrs.localPosition = SpeaKer_DeskPosObj.transform.localPosition;
-            SpeakerTrs.localEulerAngles = SpeaKer_DeskPosObj.transform.localEulerAngles;
-
-            #region 宿題ペン消しゴムなくし
-            //宿題
-            Drill_chieriTrs.gameObject.SetActive(false);
-
-            //プレイヤーの宿題
-            HomeworkObjectsTrs.gameObject.SetActive(false);
-            DrillTrs.gameObject.SetActive(false);
-
-            //ペンなくし
-            SharpenObj.SetActive(false);
-            //消しゴム無くし
-            KeshigomuObj.SetActive(false);
-            #endregion
-
-            //■智恵理ON
-            GirlMeshTrs.gameObject.SetActive(true);
-            //智恵理0位置ロック
-            DB.isChieriPosLock = true;
-            //アニメスピード
-            girlAnim.speed = 0.5f;
-
-            //IKオフ
-            DOTweenToLAIKSEyes(LAIKEyeS, 0, 0);
-            DOTweenToLAIKSHead(LAIKHeadS, 0, 0);
-
-            //智恵理 ベッドで寝
-            //ポーズ表情
-            ChieriMotion("ベッド横寝", 0f, 0);
-            ChieriMotion("_noData", 0f, 2);
-
-            //智恵理スマホベッドの上に
-            ChieriSumahoObj.transform.SetParent(GameObjectsTrs);
-            GameObject ChieriSumaho_Bed01PosObj = Resources.Load("_PosObj/_ParentPoseObjs/ChieriSumaho_Bed01PosObj") as GameObject;
-            ChieriSumahoObj.transform.localPosition = ChieriSumaho_Bed01PosObj.transform.localPosition;
-            ChieriSumahoObj.transform.localEulerAngles = ChieriSumaho_Bed01PosObj.transform.localEulerAngles;
-            ChieriSumahoObj.SetActive(true);
-            #endregion
-        }
-        EventReset();
-        yield return null;
-
-        #region ベッド下、テーブル下移動PosObj設置
-
-        //■隠れ鬼移動システムON
-        KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
-        //ローディング待ち
-        while (isKOSystemLoading) { yield return null; }
-        //移動場所06オン
-        int tmpListInt = 6;
-        KO_KakurePosObjsList[tmpListInt].SetActive(true);
-        //寝る場所移動ポイント出現 演出
-        KO_NewPosPointObjVis
-            (KO_KakurePosObjsList[tmpListInt].transform.Find("BedUnderSleepPos").gameObject);
-        yield return new WaitForSeconds(0.5f);
-        KO_NewPosPointObjVis
-            (KO_KakurePosObjsList[tmpListInt].transform.Find("GrasstableUnderSleepPos").gameObject);
-
-        //プレイヤー歩き始め判定用コリダー設置
-        //プレイヤー位置にコリダーを置いて、そこから出たら発生
-        GameObject Player04CableFallBoundStandPosObj = Resources.Load("_PosObj/E_Kankin_Day1/SumahoDengen/Player04CableFallBoundStandPosObj") as GameObject;
-        KO_KakurePosObjsList[tmpListInt].transform.Find("PlayerStartPosArea01").localPosition
-            = Player04CableFallBoundStandPosObj.transform.localPosition;
-        #endregion
-
-
 
         yield break;
     }
@@ -59221,959 +61800,6 @@ public partial class DataCounter
 
         EventMove("練習1_朝");
 
-        yield break;
-    }
-    //bool kisyouBedUnder = false, kisyouTableUnder = true;//↓寝た場所で少し分岐//ビルド手間なので一旦オフ
-    IEnumerator E4000()//監禁1_床上起床
-    {
-        if (debugEventMoveFlag == true)
-        {
-            //プレイヤー大きさ
-            nowPlayerLocalScale = new Vector3(0.015f, 0.015f, 0.015f);
-            //暗幕
-            FadeBlack(1, 0);
-            #region 宿題ペン消しゴムなくし
-            //宿題 位置に
-            Drill_chieriTrs.gameObject.SetActive(false);
-
-            //プレイヤーの
-            //HomeworkObjectsTrs.gameObject.SetActive(false);
-            DrillTrs.gameObject.SetActive(false);
-
-            //ペンなくし
-            SharpenObj.SetActive(false);
-            //消しゴム無くし
-            KeshigomuObj.SetActive(false);
-            #endregion //宿題置き
-            //スピーカー 位置に
-            SpeakerTrs.gameObject.SetActive(true);
-            GameObject SpeaKer_DeskPosObj = Resources.Load("_PosObj/D_Henai_Day1/SpeaKer_DeskPosObj") as GameObject;
-            SpeakerTrs.localPosition = SpeaKer_DeskPosObj.transform.localPosition;
-            SpeakerTrs.localEulerAngles = SpeaKer_DeskPosObj.transform.localEulerAngles;
-
-        }
-        EventReset();
-
-        #region ■デバッグで来た場合は起床場所選択
-        if (DB.isDebugMode)
-        {
-            GameObject KisyouPosSelectText = Instantiate(Resources.Load("EventSystem/GameSelect/KisyouPosSelectText") as GameObject, FadeCanvasObj.transform);
-            DB.evMoveDelObjList.Add(KisyouPosSelectText);
-
-            while (true)
-            {
-                if (DB.isDebugMode && Input.GetKeyDown(KeyCode.V))
-                {
-                    //ビルド手間なので一旦オフ
-                    //kisyouBedUnder = false;
-                    //kisyouTableUnder = true;
-                    Destroy(KisyouPosSelectText);
-
-                    goto デバッグ起床場所選択抜け;
-                }
-                else if (DB.isDebugMode && Input.GetKeyDown(KeyCode.B))
-                {
-                    //ビルド手間なので一旦オフ
-                    //kisyouBedUnder = true;
-                    //kisyouTableUnder = false;
-                    Destroy(KisyouPosSelectText);
-
-                    goto デバッグ起床場所選択抜け;
-                }
-                yield return null;
-            }
-        }
-        デバッグ起床場所選択抜け:
-        #endregion
-
-        #region 設定
-        #region //ライト消し（デバッグで一旦なし）
-        //if (GameObject.Find("Floor light") != null)
-        //{ NullJudgeFind("Floor light").GetComponent<Light>().enabled = false; }
-        #endregion
-
-
-        //智恵理ON
-        GirlMeshTrs.gameObject.SetActive(true);
-        //智恵理0位置ロック
-        DB.isChieriPosLock = true;
-        //アニメスピード
-        girlAnim.speed = 0.5f;
-
-        //IKオフ
-        DOTweenToLAIKSEyes(LAIKEyeS, 0, 0);
-        DOTweenToLAIKSHead(LAIKHeadS, 0, 0);
-
-        //智恵理 ベッド横起き
-        //ポーズ表情
-        ChieriMotion("ベッド座りポーズ", 0f, 0);
-
-
-        #region 足にサウンドオブジェ設置
-        //WindnoiseSoundObj付与（左足）
-        GameObject LFootWindnoiseSoundObj = Instantiate(Resources.Load("Main/Prefab/SoundObj/WindnoiseSoundObj") as GameObject
-            , GirlLFootTrs);
-        DB.evMoveDelObjList.Add(LFootWindnoiseSoundObj);
-        LFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = true;//設置時に音鳴るので一時ミュート
-                                                                       //SoundObjのPos
-        GameObject SoundObj_02_DoorSurinuke_LFootParentPosObj = Resources.Load("_PosObj/D_Henai_Day1_Tansaku1-2/SoundObj_02_DoorSurinuke_LFootParentPosObj") as GameObject;
-        LFootWindnoiseSoundObj.transform.localPosition = SoundObj_02_DoorSurinuke_LFootParentPosObj.transform.localPosition;
-
-        //WindnoiseSoundObj付与（右足）
-        GameObject RFootWindnoiseSoundObj = Instantiate(Resources.Load("Main/Prefab/SoundObj/WindnoiseSoundObj") as GameObject
-            , GirlRFootTrs);
-        DB.evMoveDelObjList.Add(RFootWindnoiseSoundObj);
-        RFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = true;//設置時に音鳴るので一時ミュート
-                                                                       //SoundObjのPos
-        GameObject SoundObj_03_DoorSurinuke_RFootParentPosObj = Resources.Load("_PosObj/D_Henai_Day1_Tansaku1-2/SoundObj_03_DoorSurinuke_RFootParentPosObj") as GameObject;
-        RFootWindnoiseSoundObj.transform.localPosition = SoundObj_03_DoorSurinuke_RFootParentPosObj.transform.localPosition;
-
-        #endregion
-
-        //両方で使う変数事前取得
-        GameObject Player05TableUnderKisyouStandRotObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player05TableUnderKisyouStandRotObj") as GameObject;
-
-        #endregion 設定
-
-
-        //ビルド手間なので一旦オフ
-        //if (kisyouBedUnder)
-        //{
-        //    //ベッド下起床の場合
-        //    #region 起きて智恵理台詞と近づき移動
-        //    //プレイヤー ベッドの下位置に
-        //    //ためしに隠れ鬼のデータを参照して配置
-        //    GameObject EV_C_KakureOni
-        //        = Resources.Load("EventSystem/KakureOni/Prefab/EV_C_KakureOni") as GameObject;
-        //    CameraObjectsTrs.localPosition
-        //        = EV_C_KakureOni.transform.Find("KO_KakurePosObjs").Find("06_NightFloor").Find("BedUnderSleepPos").localPosition;
-
-        //    //倒れ角度と高さは別
-        //    GameObject Player01BedUnderKisyouPosObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player01BedUnderKisyouPosObj") as GameObject;
-        //    Vector3 tmpV3 = CameraObjectsTrs.localPosition;
-        //    tmpV3.y = Player01BedUnderKisyouPosObj.transform.localPosition.y;
-
-        //    CameraObjectsTrs.localPosition = tmpV3;
-        //    //CameraObjectsTrs.localEulerAngles = Player01BedUnderKisyouPosObj.transform.localEulerAngles;
-
-
-
-        //    NovelSetVis("E4000a010");//目が覚めたのは振動
-        //    while (isNovelSetVisIng) { yield return null; }
-
-        //    //開幕
-        //    FadeBlack(0, 2);
-        //    yield return new WaitForSeconds(2);
-
-        //    //足ミュート解除
-        //    LFootWindnoiseSoundObj.GetComponent<AudioSource>().mute =
-        //    RFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = false;
-
-
-        //    NovelSetVis("E4000a020");//ん？　ああ……
-        //    while (isNovelSetVisIng) { yield return null; }
-
-        //    //立ち上がり暗幕
-        //    FadeBlack(1, 1);
-        //    yield return new WaitForSeconds(1);
-
-        //    GameObject Player02BedUnderKisyouStandPosObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player02BedUnderKisyouStandPosObj") as GameObject;
-        //    tmpV3.y = Player02BedUnderKisyouStandPosObj.transform.localPosition.y;
-        //    CameraObjectsTrs.localPosition = tmpV3;
-        //    CameraObjectsTrs.localEulerAngles = Player02BedUnderKisyouStandPosObj.transform.localEulerAngles;
-
-        //    yield return new WaitForSeconds(1);
-        //    Hukidashi("E4000010");//そっか、そうだよね
-        //    yield return new WaitForSeconds(1);
-
-
-        //    //立ち上がり開幕
-        //    FadeBlack(0, 1);
-        //    yield return KeyOrWait(3);
-        //    yield return new WaitForSeconds(1);
-
-        //    Hukidashi("E4000020");//怖いに決まってるよね
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    Hukidashi("・・・");
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    yield return new WaitForSeconds(1);
-        //    NovelSetVis("E4000a030");//何言ってるんだ？
-        //    while (isNovelSetVisIng) { yield return null; }
-
-        //    #region 探索とかくれおに移動設置
-        //    //■隠れ鬼移動システムON
-        //    KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
-        //    //ローディング待ち
-        //    while (isKOSystemLoading) { yield return null; }
-        //    //移動場所07オン
-        //    int tmpListInt = 7;
-        //    KO_KakurePosObjsList[tmpListInt].SetActive(true);
-        //    //寝る場所移動ポイント出現 演出
-        //    KO_NewPosPointObjVis
-        //        (KO_KakurePosObjsList[tmpListInt].transform.Find("BedAsiKage").gameObject);
-
-        //    #endregion
-        //    yield return new WaitForSeconds(1);
-
-        //    Hukidashi("E4000030");//でもこんな風だと
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    Hukidashi("E4000040");//諦めきれないや
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    yield return new WaitForSeconds(1);
-        //    Hukidashi("E4000050");//・・ごめんね
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    Hukidashi("・・・");
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-
-        //    //IKで足固定準備（座りなおしに対応するために）
-        //    FixedAction(() =>
-        //    {
-
-        //        IKRFootTargetTrs.position = GirlRFootTrs.position;
-        //        IKRFootTargetTrs.rotation = GirlRFootTrs.rotation;
-        //        DOTweenToIKEfPos(IKRFootEf, 1, 0);
-        //        DOTweenToIKEfRot(IKRFootEf, 1, 0);
-
-        //        IKLFootTargetTrs.position = GirlLFootTrs.position;
-        //        IKLFootTargetTrs.rotation = GirlLFootTrs.rotation;
-        //        DOTweenToIKEfPos(IKLFootEf, 1, 0);
-        //        DOTweenToIKEfRot(IKLFootEf, 1, 0);
-
-        //    });
-        //    yield return new WaitForSeconds(3);
-
-        //    Hukidashi("E4000055");//ふぅよっし
-        //    ChieriMotion("ベッドから立ち上がり", 0f, 0);
-        //    yield return new WaitForSeconds(0.7f);
-        //    ChieriMotion("ベッド座りポーズ", 0.6f, 0);
-
-        //    yield return KeyOrWait(3);
-
-        //    yield return new WaitForSeconds(0.6f);
-
-        //    //IK切り
-        //    DOTweenToIKEfPos(IKRFootEf, 0, 0f);
-        //    DOTweenToIKEfRot(IKRFootEf, 0, 0f);
-        //    DOTweenToIKEfPos(IKLFootEf, 0, 0f);
-        //    DOTweenToIKEfRot(IKLFootEf, 0, 0f);
-
-
-        //    Hukidashi("E4000060");//起きてる？
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    yield return new WaitForSeconds(0.5f);
-        //    NovelSetVis("E4000a040");//え？
-        //    while (isNovelSetVisIng) { yield return null; }
-
-        //    Hukidashi("E4000070");//いるよね
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    Hukidashi("E4000080");//探さない
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000090");//好きにしてて
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000100");//虫として
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000110");//生きてていいよ
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000120");//気をつけてね
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    #endregion
-
-        //    #region 時間補正切られ意識混濁
-
-        //    NovelSetVis("E4000a050");//探さない？自由？　！？
-        //    while (novelCurrentPageInt < 2) { yield return null; }
-        //    isKOSystem = false;
-        //    isTansakuSystem = false;
-
-        //    //PPEffect_ZikanHosei();
-
-        //    //体傾き
-        //    Vector3 tmpKatamukiRotA = CameraObjectsTrs.localEulerAngles;
-        //    CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotA.x + 14, tmpKatamukiRotA.y, tmpKatamukiRotA.z + 14), 1)
-        //        .OnComplete(() =>
-        //        {
-        //            CameraObjectsTrs.DOLocalRotate(tmpKatamukiRotA
-        //                , 1);
-        //        });
-
-
-        //    //ゆっくりになりながら立ち上がり
-        //    ChieriMotion("ベッドから立ち上がり", 0f, 0);
-        //    //Tweener slowTweener = DOTween.To(() => testFloat01, (x) => testFloat01 = x, testFloat01, 0f);//ダミー
-        //    //slowTweener.Kill();
-        //    //slowTweener =
-        //    DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x, 0.042f, 12f);
-        //    Hukidashi("E4000130");//待ってあげる
-        //    yield return null;
-
-
-        //    //立ち上がるまで待ち
-        //    StartCoroutine(GirlAnimReadSystem());
-        //    while (girlAnimNomTime <= 1f)
-        //    { yield return null; }
-
-        //    ChieriMotion("ベッドからテーブルへ", 0f, 0);
-        //    yield return null;
-        //    //歩きが終わる直前か、ノベルが指定段階に入ったら黒フェード
-        //    while (true)
-        //    {
-        //        //歩き終わりになったら
-        //        if (girlAnimNomTime >= 0.57f)
-        //        {
-        //            goto 視界眩み;
-        //        }
-        //        //ノベルが16ページになったら
-        //        else if (novelCurrentPageInt > 16)
-        //        {
-        //            goto 視界眩み;
-        //        }
-        //        yield return null;
-        //    }
-        //    視界眩み:
-        //    isGirlAnimReadSystem = false;
-        //    FadeBlack(1, 4, false, Ease.InOutBounce);
-
-        //    while (isNovelSetVisIng) { yield return null; }
-        //    yield return new WaitForSeconds(2);
-        //    NovelSetVis("E4000a060");//そういえば死ぬ前
-        //    while (isNovelSetVisIng) { yield return null; }
-        //    yield return new WaitForSeconds(3);
-
-        //    #endregion
-
-        //}
-        //else if (kisyouTableUnder)
-        //{
-        //    //テーブル下起床の場合
-        //    #region 起きて智恵理台詞と近づき移動
-        //    //プレイヤー ベッドの下位置に
-        //    //ためしに隠れ鬼のデータを参照して配置
-        //    GameObject EV_C_KakureOni
-        //        = Resources.Load("EventSystem/KakureOni/Prefab/EV_C_KakureOni") as GameObject;
-        //    CameraObjectsTrs.localPosition
-        //        = EV_C_KakureOni.transform.Find("KO_KakurePosObjs").Find("06_NightFloor").Find("GrasstableUnderSleepPos").localPosition;
-
-        //    //倒れ角度と高さは別
-        //    GameObject Player01BedUnderKisyouPosObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player01BedUnderKisyouPosObj") as GameObject;
-        //    Vector3 tmpV3 = CameraObjectsTrs.localPosition;
-        //    tmpV3.y = Player01BedUnderKisyouPosObj.transform.localPosition.y;
-
-        //    CameraObjectsTrs.localPosition = tmpV3;
-        //    //CameraObjectsTrs.localEulerAngles = Player01BedUnderKisyouPosObj.transform.localEulerAngles;
-
-
-        //    yield return new WaitForSeconds(2);
-
-        //    Hukidashi("E4000060");//寝てるかな？
-        //    yield return new WaitForSeconds(1);
-        //    NovelSetVis("■E4000b010");//目が覚めたのは声
-        //    while (novelCurrentPageInt < 1) { yield return null; }
-
-        //    //開幕
-        //    FadeBlack(0, 2);
-        //    yield return new WaitForSeconds(2);
-        //    //足ミュート解除
-        //    LFootWindnoiseSoundObj.GetComponent<AudioSource>().mute =
-        //    RFootWindnoiseSoundObj.GetComponent<AudioSource>().mute = false;
-
-        //    NovelSetVis("E4000b020");//ん？　ああ……
-        //    while (isNovelSetVisIng) { yield return null; }
-
-        //    //立ち上がり暗幕
-        //    FadeBlack(1, 0.5f);
-        //    yield return new WaitForSeconds(0.5f);
-
-        //    tmpV3.y = Player05TableUnderKisyouStandRotObj.transform.localPosition.y;
-        //    CameraObjectsTrs.localPosition = tmpV3;
-        //    CameraObjectsTrs.localEulerAngles = Player05TableUnderKisyouStandRotObj.transform.localEulerAngles;
-
-        //    //立ち上がり開幕
-        //    FadeBlack(0, 0.5f);
-        //    yield return new WaitForSeconds(1);
-        //    NovelSetVis("E4000b030");//智恵理もおきてる
-        //    while (isNovelSetVisIng) { yield return null; }
-
-        //    #region 探索とかくれおに移動設置
-        //    //■隠れ鬼移動システムON
-        //    KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
-        //    //ローディング待ち
-        //    while (isKOSystemLoading) { yield return null; }
-        //    //移動場所07オン
-        //    int tmpListInt = 7;
-        //    KO_KakurePosObjsList[tmpListInt].SetActive(true);
-        //    //寝る場所移動ポイント出現 演出
-        //    KO_NewPosPointObjVis
-        //        (KO_KakurePosObjsList[tmpListInt].transform.Find("ChieriHumiPos").gameObject);
-
-        //    //カーペット出るときに台詞用
-        //    EnumCarpet_Area = enumCarpet_Area.起きぬけ脱出前;
-
-        //    #endregion
-        //    yield return new WaitForSeconds(4);
-
-        //    Hukidashi("E4000070");//でも部屋にはいるよね
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //    yield return new WaitForSeconds(4);
-
-        //    Hukidashi("E4000080");//探さない
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000090");//好きにしてて
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000100");//虫として
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000110");//生きてていいよ
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    Hukidashi("E4000120");//気をつけてね
-        //    yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        //    #endregion
-
-        //    #region 時間補正切られ意識混濁 近づきすぎると踏まれるように
-
-        //    yield return new WaitForSeconds(0.5f);
-        //    NovelSetVis("E4000b050");//何言ってんだ・・？　！？
-        //    isKOSystem = false;
-        //    isTansakuSystem = false;
-
-        //    while (novelCurrentPageInt < 2) { yield return null; }
-
-
-        //    //PPEffect_ZikanHosei();
-
-        //    ////体傾き以前の
-        //    //Vector3 tmpKatamukiRotA = CameraObjectsTrs.localEulerAngles;
-        //    //CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotA.x + 14, tmpKatamukiRotA.y, tmpKatamukiRotA.z + 14), 3)
-        //    //    .SetEase(Ease.InOutBack);
-        //    //体傾き
-        //    Vector3 tmpKatamukiRotB = CameraObjectsTrs.localEulerAngles;
-        //    CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotB.x + 14, tmpKatamukiRotB.y, tmpKatamukiRotB.z + 14), 1)
-        //        .OnComplete(() =>
-        //        {
-        //            CameraObjectsTrs.DOLocalRotate(tmpKatamukiRotB
-        //                , 1);
-        //        });
-
-        //    //ゆっくりになりながら立ち上がり
-        //    ChieriMotion("ベッドから立ち上がり", 0f, 0);
-
-        //    DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x, 0.042f, 12f);
-        //    Hukidashi("E4000130");//待ってあげる
-        //    yield return null;
-
-
-        //    //立ち上がるまで待ち
-        //    StartCoroutine(GirlAnimReadSystem());
-        //    while (girlAnimNomTime <= 1f)
-        //    { yield return null; }
-
-
-        //    ChieriMotion("ベッドからテーブルへ", 0f, 0);
-        //    yield return null;
-
-        //    #region ■if カーペットから出てなかったら何も起きずに眩み倒れへ
-        //    if (EnumCarpet_Area == enumCarpet_Area.起きぬけ脱出前)
-        //    {
-        //        EnumCarpet_Area = enumCarpet_Area.終了;
-        //        //歩きが終わる直前か、ノベルが指定段階に入ったら黒フェード
-        //        while (true)
-        //        {
-        //            //歩き終わりになったら
-        //            if (girlAnimNomTime >= 0.57f)
-        //            {
-        //                goto 視界眩み;
-        //            }
-        //            //ノベルが16ページになったら
-        //            else if (novelCurrentPageInt > 17)
-        //            {
-        //                NovelSetVis("E4000b055");//眩んで倒れた
-        //                goto 視界眩み;
-        //            }
-        //            yield return null;
-        //        }
-        //    }
-        //    #endregion
-
-        //    #region ■カーペットから出ていたら 踏まれるかギリギリか
-
-        //    //この場合のみ待ち
-        //    yield return new WaitForSeconds(15);
-        //    NovelSetVis("E4000b050a010");//それ以上に、途轍もない現実にやっと気づく。
-
-
-        //    //踏み潰され判定用コリダー取得
-        //    Collider Tsumasaki_R_coll =
-        //        FixedMoveChieriColliderFollderObj.transform.Find("BoneBip001 R Foot/Tsumasaki_R_coll").GetComponent<Collider>();
-
-        //    //接近量計算用Float（通り過ぎ度計るために）
-        //    float mostNearFloat = Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position);
-
-        //    #region ■ループ 踏まれるか ニアミスか 離れたままか判定
-        //    while (true)
-        //    {
-        //        //単純に当たったら踏み潰され判定
-        //        if (nowVRBlockCollList.Contains(Tsumasaki_R_coll))
-        //        { goto 踏み潰され; }
-
-        //        #region 通り過ぎたら  //足とプレイヤーの距離最近値を更新し続け、0.5f離れたら通り過ぎたと判定する
-
-        //        if (mostNearFloat > Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position))
-        //        { mostNearFloat = Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position); }
-        //        else if (mostNearFloat + 0.5f < Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position))
-        //        { goto 踏まれず通り過ぎ; }
-        //        #endregion
-
-        //        //歩き終わりまで無事なら
-        //        if (girlAnimNomTime >= 0.57f)
-        //        {
-        //            goto 視界眩み;
-        //        }
-
-        //        ////ノベルが16ページになったら
-        //        //else if (novelCurrentPageInt > 16)
-        //        //{
-        //        //    goto 視界眩み;
-        //        //}
-
-        //        yield return null;
-        //    }
-        //    #endregion
-
-        //    踏まれず通り過ぎ:
-        //    #region
-        //    NovelSetVis("E4000b050b010");//息を止め続けた。
-        //    while (true)
-        //    {
-        //        //歩き終わりになったら
-        //        if (girlAnimNomTime >= 0.57f)
-        //        {
-        //            goto 視界眩み;
-        //        }
-        //        //ノベルが8ページになったら
-        //        else if (novelCurrentPageInt > 8)
-        //        {
-        //            goto 視界眩み;
-        //        }
-        //        yield return null;
-        //    }
-        //    #endregion
-
-        //    踏み潰され:
-        //    #region
-        //    NovelSetVis("E4000b050a020");//ここで途絶えた。   
-
-        //    FadeBlack(1, 1f, false, Ease.OutBounce);
-        //    //足ボリューム消し
-        //    LFootWindnoiseSoundObj.GetComponent<AudioSource>().volume =
-        //    RFootWindnoiseSoundObj.GetComponent<AudioSource>().volume = 0;
-
-        //    //足にペアレントしてへばりつき演出
-        //    FixedAction(() =>
-        //    {
-        //        CameraObjectsTrs.SetParent(GirlRFootTrs);
-
-        //        CameraObjectsTrs.DOLocalMove(new Vector3(
-        //            CameraObjectsTrs.localPosition.x + 0.009f,//xが高さ （回転しているので近づく）
-        //            CameraObjectsTrs.localPosition.y,
-        //            CameraObjectsTrs.localPosition.z)
-        //            , 1f).SetEase(Ease.InBounce);
-
-        //        //回転は暗幕後にしても良いかも
-        //        CameraObjectsTrs.DOLocalRotate(new Vector3(0, 90, 0), 0.8f);
-
-        //    });
-
-
-
-        //    SEPlay("pakipoki", 0.4f);
-        //    //赤フラッシュ
-        //    FadeColor(Color.red, 1, 0.05f, false); yield return new WaitForSeconds(0.05f); FadeColor(Color.red, 0, 0.05f, false);
-
-        //    //コンティニューのためにHP取得
-        //    float tmpPlayerHP = DB.playerHPFloat;
-
-        //    //ダメージ
-        //    PlayerHPAddSub(-(DB.playerHPMaxFloat / 2));
-        //    yield return new WaitForSeconds(0.2f);
-
-        //    FadeColor(Color.red, 1, 0.05f, false); yield return new WaitForSeconds(0.05f); FadeColor(Color.red, 0, 0.05f, false);
-        //    yield return new WaitForSeconds(0.5f);
-
-        //    //ダメージ
-        //    PlayerHPAddSub(-(DB.playerHPMaxFloat / 2));
-
-        //    //足離れ判定のためにObj設置
-        //    GameObject tmpCrashCameraPosObj = new GameObject();
-        //    tmpCrashCameraPosObj.name = "tmpCrashCameraPosObj";
-        //    tmpCrashCameraPosObj.transform.position = PlayerTargetTrs.position;
-
-
-
-        //    //歩き去り早める（長いので）
-        //    girlAnim.speed = 0.14f;
-
-        //    //足はなれるまで待機
-        //    while (Vector3.Distance(tmpCrashCameraPosObj.transform.position, Tsumasaki_R_coll.transform.position) < 17)
-        //    {
-        //        //Debug.Log(Vector3.Distance(PlayerTargetTrs.position, Tsumasaki_R_coll.transform.position));
-        //        yield return null;
-        //    }
-        //    FadeBlack(0, 4, false, Ease.OutBounce);
-        //    girlAnim.speed = 0.042f;
-
-
-        //    //ボリューム少し上げ
-        //    LFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.2f, 4);
-        //    RFootWindnoiseSoundObj.GetComponent<AudioSource>().DOFade(0.2f, 4);
-
-
-        //    //足から離れ落ちる演出
-        //    yield return new WaitForSeconds(0.3f);
-        //    FixedAction(() =>
-        //    {
-        //        CameraObjectsTrs.SetParent(GameObjectsTrs);
-        //        //ANの重力設定のみロード
-        //        AN_SetPlayerRigidbody();
-        //        AN_GravitiDragBool = true;//FixedUpdateのやつON
-        //        //rigid監視スタート
-        //        StartCoroutine(RigidReadSystem());
-        //        CameraObjectsTrs.DOLocalRotate(new Vector3(340, 90, 90), 1);
-
-        //    });
-
-        //    //PPEffect_FadeToDef(15);
-
-
-        //    NovelSetVis("E4000b050a030");//虫の最後   
-
-        //    while (isNovelSetVisIng &&
-        //           girlAnimNomTime <= 0.57f)
-        //    { yield return null; }
-
-        //    FadeColor(Color.red, 1, 3f);
-        //    yield return new WaitForSeconds(4);
-        //    FadeBlack(1, 0f);
-        //    yield return null;
-        //    FadeColor(Color.red, 0, 3f);
-
-        //    yield return new WaitForSeconds(4);
-
-
-        //    #region ■コンティニューセレクト
-        //    GameObject ContinueSelectText = Instantiate(Resources.Load("EventSystem/GameSelect/ContinueSelectText") as GameObject, FadeCanvasObj.transform);
-        //    DB.evMoveDelObjList.Add(ContinueSelectText);
-
-        //    DB.playerHPFloat = tmpPlayerHP;
-        //    //PPEffect_FadeToDef(0);
-        //    AN_GravitiDragBool = false;
-        //    isRigidReadSystem = false;
-        //    Destroy(CameraObjectsTrs.GetComponent<Rigidbody>());
-
-        //    while (true)
-        //    {
-        //        if (Input.GetKeyDown(KeyCode.V))
-        //        {
-        //            Destroy(ContinueSelectText);
-
-        //            EventMove("監禁1_床上起床");
-        //            yield break;
-        //        }
-        //        else if (Input.GetKeyDown(KeyCode.B))
-        //        {
-        //            Destroy(ContinueSelectText);
-
-        //            EventMove("タイトル");
-        //            yield break;
-        //        }
-        //        yield return null;
-        //    }
-        //    #endregion
-
-        //    #endregion
-
-        //    視界眩み:
-        //    #region
-        //    isGirlAnimReadSystem = false;
-        //    FadeBlack(1, 4, false, Ease.InOutBounce);
-
-        //    while (isNovelSetVisIng) { yield return null; }
-        //    yield return new WaitForSeconds(2);
-        //    NovelSetVis("E4000a060");//そういえば死ぬ前
-        //    while (isNovelSetVisIng) { yield return null; }
-        //    yield return new WaitForSeconds(2);
-
-        //    #endregion
-
-        //    #endregion
-
-        //    #endregion
-
-        //}
-
-        #region 目覚めて歩き出し
-        FadeBlack(1, 0);
-        girlAnim.speed = 0.042f;
-
-        ChieriMotion("寝そべり足パタループ", 0f, 0);
-        ChieriMotion("f_リラックス01", 0f, 2);
-
-        //タブレット設置
-        GameObject Tablet01ChieriNesoberiPosObj =
-            Instantiate(Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Tablet01ChieriNesoberiPosObj") as GameObject
-            , GameObjectsTrs);
-        DB.evMoveDelObjList.Add(Tablet01ChieriNesoberiPosObj);
-
-        //IKタブレット見る
-        FollowDOMove(IKLookAtEyeTargetTrs, Tablet01ChieriNesoberiPosObj.transform);
-        DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 1);
-        FollowDOMove(IKLookAtHeadTargetTrs, Tablet01ChieriNesoberiPosObj.transform);
-        DOTweenToLAIKSHead(LAIKHeadS, LAIKSHeadDefWeight, 1);
-
-
-        //プレイヤー仰向け 場所そのまま、回転と高さのみ
-        GameObject Player04AomukeRotObj = Resources.Load("_PosObj/D_Henai_Day2/YukaueKisyou01/Player04AomukeRotObj") as GameObject;
-        CameraObjectsTrs.localEulerAngles = Player04AomukeRotObj.transform.localEulerAngles;
-
-        Vector3 tmpAomukeV3 = new Vector3(CameraObjectsTrs.localPosition.x, Player04AomukeRotObj.transform.localPosition.y, CameraObjectsTrs.localPosition.z);
-        CameraObjectsTrs.localPosition = tmpAomukeV3;
-
-        //目覚め
-        FadeBlack(0, 4, false, Ease.InOutBounce);
-        NovelSetVis("E4000a070");//はぁーはぁー
-        while (novelCurrentPageInt < 2) { yield return null; }
-
-        //PPエフェクトフェードアウト
-        //PPEffect_FadeToDef(10);
-
-        while (isNovelSetVisIng) { yield return null; }
-
-        //立ち上がり黒フェード
-        FadeBlack(1, 1f);
-        yield return new WaitForSeconds(1);
-
-        //智恵理腰方向へ向く
-        CameraObjectsTrs.LookAt(Bip001PelvisTrs);
-        CameraObjectsTrs.localEulerAngles = new Vector3(0, CameraObjectsTrs.localEulerAngles.y, 0);
-        Vector3 tmpAomukeStandV3 = new Vector3(CameraObjectsTrs.localPosition.x, Player05TableUnderKisyouStandRotObj.transform.localPosition.y, CameraObjectsTrs.localPosition.z);
-        CameraObjectsTrs.localPosition = tmpAomukeStandV3;
-
-        FadeBlack(0, 1f);
-        yield return new WaitForSeconds(2);
-
-
-        NovelSetVis("E4000a080");//なにやってんだ・・？
-        while (isNovelSetVisIng) { yield return null; }
-
-        yield return new WaitForSeconds(2);
-        NovelSetVis("E4000a082");//とりあえず近づくしかなさそうだ
-        while (isNovelSetVisIng) { yield return null; }
-
-        #region 探索とかくれおに移動設置
-        //■隠れ鬼移動システムON
-        KO_KakurePointSerchCorCoroutine = StartCoroutine(KakureOniSystemLoad());
-        //ローディング待ち
-        while (isKOSystemLoading) { yield return null; }
-        //移動場所07オン
-        int tmpInt = 7;
-        KO_KakurePosObjsList[tmpInt].SetActive(true);
-        //寝る場所移動ポイント出現 演出
-        KO_NewPosPointObjVis
-            (KO_KakurePosObjsList[tmpInt].transform.Find("TableAsiKage").gameObject);
-
-        #endregion
-
-        #endregion
-
-        //テーブル・智恵理横に来るまで待機
-        while (isTableAsiKage_Enter == false) { yield return null; }
-        #region 近づいて呼びかけ
-        KO_isMovePosLock = true;
-
-        NovelSetVis("E4000a085");//おーい起きたぞー！
-        while (isNovelSetVisIng) { yield return null; }
-        yield return new WaitForSeconds(2);
-        NovelSetVis("E4000a090");//聴こえないのか
-        while (isNovelSetVisIng) { yield return null; }
-        NovelSetVis("E4000a100");//仕方ない近づいて…………いいのか？
-        while (isNovelSetVisIng) { yield return null; }
-        //タブレット前 移動ポイント出現 演出
-        KO_NewPosPointObjVis
-            (KO_KakurePosObjsList[tmpInt].transform.Find("TabletYoko").gameObject);
-        KO_isMovePosLock = false;
-
-
-        //テーブル・智恵理横から少し動くまで待機
-        while (isTableAsiKage_Exit == false) { yield return null; }
-
-        KO_isMovePosLock = true;
-        NovelSetVis("E4000a110");//足がピタリと止まる。
-        while (novelCurrentPageInt < 13) { yield return null; }
-
-        //しっかりしろ俺
-        SEPlay("shoulder-touch1");
-        FadeWhite(0.5f, 0.05f); yield return new WaitForSeconds(0.05f); FadeWhite(0, 0.05f);
-        while (isNovelSetVisIng) { yield return null; }
-
-        KO_isMovePosLock = false;
-
-        #endregion
-
-        //タブレット横に来るまで待機
-        while (isTabletYoko_Enter == false) { yield return null; }
-
-        #region タブレット横で話しかけ
-        //探索終了
-        isKOSystem = false;
-        isTansakuSystem = false;
-
-        #region プレイヤー見てタブレット見る
-        NovelSetVis("E4000a200");//おーい
-
-        while (isNovelSetVisIng) { yield return null; }
-        //IKプレイヤー見る
-        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 5);
-        yield return new WaitForSeconds(2);
-
-        FollowDOMove(IKLookAtHeadTargetTrs, PlayerHeadTargetTrs, new Vector3(0, -0.045f, 0), 10);
-        ChieriMotion("f_気づき（明）", 5f, 2);
-        ChieriMotion("寝そべりポーズ", 5f, 0);
-        yield return new WaitForSeconds(5);
-
-        NovelSetVis("E4000a210");//気づいたのか・・？
-        while (isNovelSetVisIng) { yield return null; }
-
-        //タブレットに視線戻す
-        FollowDOMove(IKLookAtEyeTargetTrs, Tablet01ChieriNesoberiPosObj.transform, 5);
-        yield return new WaitForSeconds(2);
-        FollowDOMove(IKLookAtHeadTargetTrs, Tablet01ChieriNesoberiPosObj.transform, 10);
-        ChieriMotion("f_気づき（明）", 5f, 2);
-        ChieriMotion("寝そべり足パタループ", 5f, 0);
-        yield return new WaitForSeconds(5);
-
-
-        NovelSetVis("E4000a220");//あれ 勘違いか？ 
-        #endregion
-
-        while (novelCurrentPageInt < 2) { yield return null; }
-
-        //PPEffect_ZikanHosei();
-
-        ////体傾き以前の
-        //Vector3 tmpKatamukiRot = CameraObjectsTrs.localEulerAngles;
-        //CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRot.x + 14, tmpKatamukiRot.y, tmpKatamukiRot.z + 14), 3)
-        //    .SetEase(Ease.InOutBack);
-        //体傾き
-        Vector3 tmpKatamukiRotC = CameraObjectsTrs.localEulerAngles;
-        CameraObjectsTrs.DOLocalRotate(new Vector3(tmpKatamukiRotC.x + 14, tmpKatamukiRotC.y, tmpKatamukiRotC.z + 14), 1)
-            .OnComplete(() =>
-            {
-                CameraObjectsTrs.DOLocalRotate(tmpKatamukiRotC
-                    , 1);
-            });
-
-        while (novelCurrentPageInt < 5) { yield return null; }
-
-        DOTween.To(() => girlAnim.speed, (x) => girlAnim.speed = x, 0.5f, 12f);
-
-        yield return new WaitForSeconds(6);
-        Hukidashi("E4000200");//おつかれさまー
-
-        //IKプレイヤー見る
-        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs);
-        DOTweenToLAIKSEyes(LAIKEyeS, LAIKSEyesDefWeight, 0.5f);
-        FollowDOMove(IKLookAtHeadTargetTrs, PlayerHeadTargetTrs, new Vector3(0, -0.045f, 0));
-        DOTweenToLAIKSHead(LAIKHeadS, LAIKSHeadDefWeight, 1);
-        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        ChieriMotion("寝そべりポーズ", 5f, 0);
-        yield return new WaitForSeconds(1);
-
-        ChieriMotion("f_気づき（明）目閉じ笑顔", 0.05f, 2);
-        ChieriMotionDelay(1, "f_気づき（明）", 0.1f, 2);
-        Hukidashi("E4000205");//来てくれたんだ
-        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-        ChieriMotion("f_リラックス01", 1f, 2);
-        Hukidashi("E4000210");//大変でしょ
-        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        yield return new WaitForSeconds(2);
-        NovelSetVis("E4000a230");//はぁー・・・！　慣れはあるのか
-        while (novelCurrentPageInt < 1) { yield return null; }
-
-        //PPEffect_FadeToDef(20);
-
-        while (isNovelSetVisIng) { yield return null; }
-        yield return new WaitForSeconds(1);
-
-        Hukidashi("E4000220");//ちいさいままでいられるのって
-        yield return new WaitForSeconds(1); yield return KeyOrWait(3);
-
-        //目タブレット
-        FollowDOMove(IKLookAtEyeTargetTrs, Tablet01ChieriNesoberiPosObj.transform, 0.1f);
-
-        Hukidashi("E4000230");//色々補整されてるんだよ
-        yield return new WaitForSeconds(1);
-
-        //目プレイヤー
-        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 0.1f);
-        yield return KeyOrWait(3);
-
-        yield return new WaitForSeconds(2);
-        NovelSetVis("E4000a240");//言葉が出なかった。
-        while (novelCurrentPageInt < 4) { yield return null; }
-
-        //目顔タブレット 
-        FollowDOMove(IKLookAtEyeTargetTrs, Tablet01ChieriNesoberiPosObj.transform, 0.1f);
-        FollowDOMove(IKLookAtHeadTargetTrs, Tablet01ChieriNesoberiPosObj.transform, 1f);
-        ChieriMotion("寝そべり足パタループ", 1f, 0);
-
-        while (isNovelSetVisIng) { yield return null; }
-        yield return new WaitForSeconds(2);
-        NovelSetVis("E4000a250");//補整って・・。
-        while (novelCurrentPageInt < 4) { yield return null; }
-
-        ChieriMotionDelay(1, "f_気づき（明）", 1f, 2);
-        Hukidashi("E4000240");//おなかペコペコかな？
-        yield return new WaitForSeconds(1);
-        yield return KeyOrWait(3);
-
-        Hukidashi("E4000250");//今ごはんあげるね
-                              //目プレイヤー
-        FollowDOMove(IKLookAtEyeTargetTrs, PlayerEyeTargetTrs, 0.1f);
-        yield return new WaitForSeconds(1);
-        ChieriMotion("f_気づき（明）目閉じ笑顔", 0.05f, 2);
-        ChieriMotionDelay(1, "f_リラックス01", 0.1f, 2);
-        ChieriMotion("寝そべりポーズ", 1f, 0);
-
-        yield return KeyOrWait(3);
-        yield return new WaitForSeconds(1);
-
-        //目タブレット
-        FollowDOMove(IKLookAtEyeTargetTrs, Tablet01ChieriNesoberiPosObj.transform, 0.1f);
-        ChieriMotion("寝そべり足パタループ", 1f, 0);
-        FadeBlack(1, 7f);
-        yield return new WaitForSeconds(2);
-
-        NovelSetVis("E4000a260");//全てがおかしくなっていることを
-        while (isNovelSetVisIng) { yield return null; }
-        yield return new WaitForSeconds(1);
-        FadeBlack(1, 0f);
-        yield return new WaitForSeconds(1);
-        NovelSetVis("E4000a270");//運ばれた
-
-        #endregion
-
-        while (isNovelSetVisIng) { yield return null; }
-        yield return new WaitForSeconds(3);
-
-        EventMove("監禁2_ペットボトル");
         yield break;
     }
     IEnumerator E4100()//監禁2_ペットボトル
@@ -60374,7 +62000,6 @@ public partial class DataCounter
         yield return new WaitForSeconds(1f); yield return KeyOrWait(3);
         yield return new WaitForSeconds(1f);
 
-        Debug.Log("www");
         NovelSetVis("E4100040");//あ、うん
         while (novelCurrentPageInt < 2) { yield return null; }
 
@@ -60799,7 +62424,7 @@ public partial class DataCounter
 
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         KO_KakurePosObjsList[tmpInt].SetActive(true);
         //寝る場所移動ポイント出現 演出
@@ -66343,7 +67968,7 @@ public partial class DataCounter
 
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         #region 
         //GameObject tmpObj = KO_KakurePosObjsList[1].transform.Find("IsuMae01Sphere").gameObject;
@@ -67134,7 +68759,7 @@ public partial class DataCounter
 
         //走りスピードにしてモーションも走りに
         playerMoveSpeed = 4;
-        isPlayerWalk = false;
+        isKO_PlayerWalk = false;
 
         #region 
         //GameObject tmpObj = KO_KakurePosObjsList[1].transform.Find("IsuMae01Sphere").gameObject;

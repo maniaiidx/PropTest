@@ -9,7 +9,7 @@ namespace VeryAnimation
 {
     public class UEditorWindow
     {
-        private Func<bool> dg_get_hasFocus;
+        protected Func<bool> dg_get_hasFocus;
         private Func<int> dg_GetNumTabs;
 
         private FieldInfo fi_m_Parent;
@@ -68,7 +68,7 @@ namespace VeryAnimation
             uDockArea = new UDockArea();
         }
 
-        public bool HasFocus(EditorWindow w)
+        public virtual bool HasFocus(EditorWindow w)
         {
             if (w == null) return false;
             if (dg_get_hasFocus == null || dg_get_hasFocus.Target != (object)w)

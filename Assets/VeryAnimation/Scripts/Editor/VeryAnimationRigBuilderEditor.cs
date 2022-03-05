@@ -15,7 +15,6 @@ namespace VeryAnimation
         {
             //Must be in order before RigBuilder
             var vaRigBuilder = target as VeryAnimationRigBuilder;
-            if (vaRigBuilder == null) return;
             var components = vaRigBuilder.GetComponents<MonoBehaviour>();
             var indexRigBuilder = ArrayUtility.FindIndex(components, x => x.GetType() == typeof(RigBuilder));
             var indexVARigBuilder = ArrayUtility.FindIndex(components, x => x.GetType() == typeof(VeryAnimationRigBuilder));

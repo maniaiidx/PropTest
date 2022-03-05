@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+﻿#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -19,7 +19,7 @@ using UnityEngine.Timeline;
 namespace VeryAnimation
 {
 #if UNITY_2018_1_OR_NEWER
-    public class UAnimationWindow_2018_1 : UAnimationWindow_2017_1    //2018.1 or later
+    public class UAnimationWindow_2018_1 : UAnimationWindow    //2018.1 or later
     {
         protected class UAnimEditor_2018_1 : UAnimEditor
         {
@@ -30,7 +30,7 @@ namespace VeryAnimation
             }
         }
 
-        protected class UAnimationWindowState_2018_1 : UAnimationWindowState_2017_1
+        protected class UAnimationWindowState_2018_1 : UAnimationWindowState
         {
             protected Func<AnimationClip> dg_get_activeAnimationClip;
             protected Action<AnimationClip> dg_set_activeAnimationClip;
@@ -58,6 +58,14 @@ namespace VeryAnimation
         protected UAnimEditor_2018_1 uAnimEditor_2018_1;
         protected UAnimationWindowState_2018_1 uAnimationWindowState_2018_1;
         protected UEditorGUIUtility_2018_1 uEditorGUIUtility_2018_1;
+#if VERYANIMATION_TIMELINE
+#if UNITY_2018_2_OR_NEWER
+        protected UTimelineWindow_2018_2 uTimelineWindow_2018_2;
+#endif
+#if UNITY_2018_3_OR_NEWER
+        protected UTimelineWindow_2018_3 uTimelineWindow_2018_3;
+#endif
+#endif
 
         protected Func<object, object> dg_get_m_LockTracker;
 
@@ -66,7 +74,14 @@ namespace VeryAnimation
             var asmUnityEditor = Assembly.LoadFrom(InternalEditorUtility.GetEditorAssemblyPath());
             var animationWindowType = asmUnityEditor.GetType("UnityEditor.AnimationWindow");
             uAnimEditor = uAnimEditor_2018_1 = new UAnimEditor_2018_1(asmUnityEditor);
-            uAnimationWindowState = uAnimationWindowState_2017_1 = uAnimationWindowState_2018_1 = new UAnimationWindowState_2018_1(asmUnityEditor);
+            uAnimationWindowState = uAnimationWindowState_2018_1 = new UAnimationWindowState_2018_1(asmUnityEditor);
+#if VERYANIMATION_TIMELINE
+#if UNITY_2018_3_OR_NEWER
+            uTimelineWindow = uTimelineWindow_2018_2 = uTimelineWindow_2018_3 = new UTimelineWindow_2018_3();
+#elif UNITY_2018_2_OR_NEWER
+            uTimelineWindow = uTimelineWindow_2018_2 = new UTimelineWindow_2018_2();
+#endif
+#endif
             uEditorGUIUtility_2018_1 = new UEditorGUIUtility_2018_1();
             Assert.IsNotNull(dg_get_m_LockTracker = EditorCommon.CreateGetFieldDelegate<object>(animationWindowType.GetField("m_LockTracker", BindingFlags.NonPublic | BindingFlags.Instance)));
         }
@@ -107,36 +122,82 @@ namespace VeryAnimation
 
 #if VERYANIMATION_TIMELINE
 #if UNITY_2018_3_OR_NEWER
-        public override void GetRootMotionOffsets(Vector3 startPosition, Quaternion startRotation, out Vector3 position, out Quaternion rotation)
+        public override void GetTimelineAnimationTrackInfo(out bool animatesRootTransform, out bool requiresMotionXPlayable, out bool usesAbsoluteMotion)
+        {
+            animatesRootTransform = false;
+            requiresMotionXPlayable = false;
+            usesAbsoluteMotion = false;
+
+            var animtionTrack = GetTimelineAnimationTrack(true);
+            if (animtionTrack == null)
+                return;
+            var go = GetActiveRootGameObject();
+
+            animatesRootTransform = uTimelineWindow_2018_3.uAnimationTrack_2018_3.AnimatesRootTransform(animtionTrack);
+            var mode = uTimelineWindow_2018_3.uAnimationTrack_2018_3.GetOffsetMode(animtionTrack, go, animatesRootTransform);
+            requiresMotionXPlayable = uTimelineWindow_2018_3.uAnimationTrack_2018_3.RequiresMotionXPlayable(animtionTrack, mode, go);
+            usesAbsoluteMotion = uTimelineWindow_2018_3.uAnimationTrack_2018_3.UsesAbsoluteMotion(animtionTrack, mode);
+        }
+        public override bool GetTimelineRootMotionOffsets(out Vector3 position, out Quaternion rotation)
         {
             position = Vector3.zero;
             rotation = Quaternion.identity;
+
+#if !UNITY_2019_1_OR_NEWER
+            var animtionTrack = GetTimelineAnimationTrack(true);
+
             //Track Offsets
             {
-                var animtionTrack = GetAnimationTrack();
-                if (animtionTrack != null)
+                if (animtionTrack == null)
+                    return false;
+
+                var hasRootTransforms = uTimelineWindow_2018_3.uAnimationTrack_2018_3.AnimatesRootTransform(animtionTrack);
+                if (!hasRootTransforms)
+                    return false;
+
+                if (animtionTrack.trackOffset == TrackOffset.Auto || animtionTrack.trackOffset == TrackOffset.ApplyTransformOffsets)
                 {
-                    if (animtionTrack.trackOffset == TrackOffset.Auto || animtionTrack.trackOffset == TrackOffset.ApplyTransformOffsets)
-                    {
-                        position = animtionTrack.position;
-                        rotation = animtionTrack.rotation;
-                    }
-                    else if (animtionTrack.trackOffset == TrackOffset.ApplySceneOffsets)
-                    {
-                        position = startPosition;
-                        rotation = startRotation;
-                    }
+                    position = animtionTrack.position;
+                    rotation = animtionTrack.rotation;
+                }
+                else if (animtionTrack.trackOffset == TrackOffset.ApplySceneOffsets)
+                {
+                    position = uTimelineWindow_2018_3.uAnimationTrack_2018_3.GetSceneOffsetPosition(animtionTrack);
+                    rotation = uTimelineWindow_2018_3.uAnimationTrack_2018_3.GetSceneOffsetRotation(animtionTrack);
                 }
             }
             //Clip Offsets
             {
-                var animationPlayableAsset = GetAnimationPlayableAsset();
+                var animationPlayableAsset = GetTimelineAnimationPlayableAsset();
                 if (animationPlayableAsset != null)
                 {
                     position += rotation * animationPlayableAsset.position;
                     rotation *= animationPlayableAsset.rotation;
                 }
+                else
+                {
+                    position += rotation * animtionTrack.openClipOffsetPosition;
+                    rotation *= animtionTrack.openClipOffsetRotation;
+                }
             }
+#endif
+            return true;
+        }
+        public override bool GetTimelineAnimationRemoveStartOffset()
+        {
+            var animationPlayableAsset = GetTimelineAnimationPlayableAsset();
+            if (animationPlayableAsset != null)
+                return animationPlayableAsset.removeStartOffset;
+            else
+                return false;
+        }
+        public override bool GetTimelineAnimationApplyFootIK()
+        {
+            var animationPlayableAsset = GetTimelineAnimationPlayableAsset();
+            if (animationPlayableAsset != null)
+                return animationPlayableAsset.applyFootIK;
+            else
+                return true;
         }
 #endif
 #endif

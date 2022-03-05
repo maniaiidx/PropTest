@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -551,7 +552,7 @@ namespace VeryAnimation
                             }
                             if (blendShapeSetIconShowName)
                             {
-                                GUI.Label(rect, va.blendShapeSetList[index].poseTemplate.name, guiStyleNameLabel);
+                                EditorGUI.DropShadowLabel(rect, va.blendShapeSetList[index].poseTemplate.name, guiStyleNameLabel);
                             }
                         }
                         EditorGUILayout.EndHorizontal();
@@ -572,7 +573,97 @@ namespace VeryAnimation
                 return;
 
             blendShapeSetListReorderableList = new ReorderableList(va.blendShapeSetList, typeof(PoseTemplate), true, false, true, true);
-            blendShapeSetListReorderableList.elementHeight = 20;
+            blendShapeSetListReorderableList.drawHeaderCallback = (Rect rect) =>
+            {
+                float x = rect.x;
+                {
+                    const float ButtonWidth = 100f;
+                    #region Template
+                    {
+                        var r = rect;
+                        r.width = ButtonWidth;
+                        if (GUI.Button(r, Language.GetContent(Language.Help.BlendShapeTemplate), EditorStyles.toolbarDropDown))
+                        {
+                            Dictionary<string, string> blendShapeTemplates = new Dictionary<string, string>();
+                            {
+                                var guids = AssetDatabase.FindAssets("t:blendshapetemplate");
+                                for (int i = 0; i < guids.Length; i++)
+                                {
+                                    var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                                    var name = path.Remove(0, "Assets/".Length);
+                                    blendShapeTemplates.Add(name, path);
+                                }
+                            }
+
+                            GenericMenu menu = new GenericMenu();
+                            {
+                                var enu = blendShapeTemplates.GetEnumerator();
+                                while (enu.MoveNext())
+                                {
+                                    var value = enu.Current.Value;
+                                    menu.AddItem(new GUIContent(enu.Current.Key), false, () =>
+                                    {
+                                        var blendShapeTemplate = AssetDatabase.LoadAssetAtPath<BlendShapeTemplate>(value);
+                                        if (blendShapeTemplate != null)
+                                        {
+                                            Undo.RecordObject(vae, "Template BlendShape");
+                                            va.blendShapeSetList.Clear();
+                                            foreach (var template in blendShapeTemplate.list)
+                                            {
+                                                var set = new VeryAnimation.BlendShapeSet();
+                                                set.poseTemplate = template.GetPoseTemplate();
+                                                va.blendShapeSetList.Add(set);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                            menu.ShowAsContext();
+                        }
+                    }
+                    #endregion
+                    #region Save as
+                    {
+                        var r = rect;
+                        r.width = ButtonWidth;
+                        r.x = rect.xMax - r.width;
+                        if (GUI.Button(r, Language.GetContent(Language.Help.BlendShapeSaveAs), EditorStyles.toolbarButton))
+                        {
+                            string path = EditorUtility.SaveFilePanel("Save as BlendShape Template", vae.templateSaveDefaultDirectory, string.Format("{0}.asset", vaw.gameObject.name), "asset");
+                            if (!string.IsNullOrEmpty(path))
+                            {
+                                if (!path.StartsWith(Application.dataPath))
+                                {
+                                    EditorCommon.SaveInsideAssetsFolderDisplayDialog();
+                                }
+                                else
+                                {
+                                    vae.templateSaveDefaultDirectory = Path.GetDirectoryName(path);
+                                    path = FileUtil.GetProjectRelativePath(path);
+                                    var blendShapeTemplate = ScriptableObject.CreateInstance<BlendShapeTemplate>();
+                                    {
+                                        foreach (var set in va.blendShapeSetList)
+                                        {
+                                            blendShapeTemplate.Add(set.poseTemplate);
+                                        }
+                                    }
+                                    try
+                                    {
+                                        VeryAnimationWindow.CustomAssetModificationProcessor.Pause();
+                                        AssetDatabase.CreateAsset(blendShapeTemplate, path);
+                                    }
+                                    finally
+                                    {
+                                        VeryAnimationWindow.CustomAssetModificationProcessor.Resume();
+                                    }
+                                    vae.Focus();
+                                }
+                            }
+                        }
+                    }
+                    #endregion
+                }
+            };
             blendShapeSetListReorderableList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
             {
                 if (index >= va.blendShapeSetList.Count)
@@ -664,7 +755,7 @@ namespace VeryAnimation
             va.transformPoseSave.ResetDefaultTransform();
             va.blendShapeWeightSave.ResetDefaultWeight();
 
-            var gameObject = GameObject.Instantiate<GameObject>(va.editGameObject);
+            var gameObject = GameObject.Instantiate<GameObject>(vaw.gameObject);
             gameObject.hideFlags |= HideFlags.HideAndDontSave;
             gameObject.transform.rotation = Quaternion.identity;
             EditorCommon.DisableOtherBehaviors(gameObject);
@@ -823,7 +914,7 @@ namespace VeryAnimation
                 va.editGameObject.SetActive(false);
                 va.editGameObject.SetActive(true);
             }
-            va.SetUpdateResampleAnimation();
+            va.SetUpdateSampleAnimation();
         }
     }
 }

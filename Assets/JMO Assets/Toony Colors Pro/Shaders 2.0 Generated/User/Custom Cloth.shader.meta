@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 6f0e534fcabeec34892f886ec9b3862e
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: USER,FDIFFUSE_TINT,FSPECULAR_STYLIZED,FFRESNEL_STYLIZED,FCULL_OFF,KSHADER_TARGET:3.0,chB8D35F84,cSM:30,cCT:pbs,cCF:TCP2_ShaderTemplate_SurfacePBS
+  assetBundleName: 
+  assetBundleVariant: 

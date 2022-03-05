@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+﻿#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -86,7 +86,7 @@ namespace VeryAnimation
                 public float weight;
 
                 [NonSerialized]
-                public GameObject editBone;
+                public int boneIndex;
                 [NonSerialized]
                 public bool foldout;
             }
@@ -94,95 +94,116 @@ namespace VeryAnimation
 
             public bool isValid { get { return enable && solver != null && solver.isValid; } }
             public bool isUpdate { get { return isValid && updateIKtarget && !synchroIKtarget; } }
-            public GameObject tip { get { return joints != null && joints.Count > 0 ? joints[0].editBone : null; } }
-            public GameObject root { get { return joints != null && joints.Count > 0 ? joints[level - 1].editBone : null; } }
-            public GameObject turn(int l) { return joints != null && level > l ? joints[l].editBone : null; }
+            public GameObject tip { get { return joints != null && joints.Count > 0 && joints[0].boneIndex >= 0 ? va.editBones[joints[0].boneIndex] : null; } }
+            public GameObject root { get { return joints != null && joints.Count > 0 && joints[level - 1].boneIndex >= 0 ? va.editBones[joints[level - 1].boneIndex] : null; } }
 
             public Vector3 worldPosition
             {
                 get
                 {
-                    var getpos = Vector3.zero;
+                    var getpos = position;
                     switch (spaceType)
                     {
-                    case SpaceType.Global: getpos = position; break;
-                    case SpaceType.Local: getpos = root != null && root.transform.parent != null ? root.transform.parent.localToWorldMatrix.MultiplyPoint3x4(position) : position; break;
-                    case SpaceType.Parent: getpos = parent != null ? parent.transform.localToWorldMatrix.MultiplyPoint3x4(position) : position; break;
-                    default: Assert.IsTrue(false); getpos = position; break;
-                    }
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        getpos = va.bones[rootBoneIndex].transform.worldToLocalMatrix.MultiplyPoint3x4(getpos);
-                        getpos = va.editBones[rootBoneIndex].transform.localToWorldMatrix.MultiplyPoint(getpos);
+                    case SpaceType.Global:
+                        break;
+                    case SpaceType.Local:
+                        if (root != null && root.transform.parent != null)
+                            getpos = root.transform.parent.localToWorldMatrix.MultiplyPoint3x4(getpos);
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            getpos = parent.transform.localToWorldMatrix.MultiplyPoint3x4(getpos);
+                        break;
+                    default:
+                        Assert.IsTrue(false); getpos = position;
+                        break;
                     }
                     return getpos;
                 }
                 set
                 {
                     var setpos = value;
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        setpos = va.editBones[rootBoneIndex].transform.worldToLocalMatrix.MultiplyPoint(setpos);
-                        setpos = va.bones[rootBoneIndex].transform.localToWorldMatrix.MultiplyPoint3x4(setpos);
-                    }
                     switch (spaceType)
                     {
-                    case SpaceType.Global: position = setpos; break;
-                    case SpaceType.Local: position = root != null && root.transform.parent != null ? root.transform.parent.worldToLocalMatrix.MultiplyPoint3x4(setpos) : setpos; break;
-                    case SpaceType.Parent: position = parent != null ? parent.transform.worldToLocalMatrix.MultiplyPoint3x4(setpos) : setpos; break;
-                    default: Assert.IsTrue(false); break;
+                    case SpaceType.Global: 
+                        break;
+                    case SpaceType.Local:
+                        if (root != null && root.transform.parent != null)
+                            setpos = root.transform.parent.worldToLocalMatrix.MultiplyPoint3x4(setpos); 
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            setpos = parent.transform.worldToLocalMatrix.MultiplyPoint3x4(setpos); 
+                        break;
+                    default: 
+                        Assert.IsTrue(false); 
+                        break;
                     }
+                    position = setpos;
                 }
             }
             public Quaternion worldRotation
             {
                 get
                 {
-                    var getrot = Quaternion.identity;
+                    var getrot = rotation;
                     switch (spaceType)
                     {
-                    case SpaceType.Global: getrot = rotation; break;
-                    case SpaceType.Local: getrot = root != null && root.transform.parent != null ? root.transform.parent.rotation * rotation : rotation; break;
-                    case SpaceType.Parent: getrot = parent != null ? parent.transform.rotation * rotation : rotation; break;
-                    default: Assert.IsTrue(false); getrot = rotation; break;
-                    }
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        getrot = Quaternion.Inverse(va.bones[rootBoneIndex].transform.rotation) * getrot;
-                        getrot = va.editBones[rootBoneIndex].transform.rotation * getrot;
+                    case SpaceType.Global: 
+                        break;
+                    case SpaceType.Local:
+                        if (root != null && root.transform.parent != null)
+                            getrot = root.transform.parent.rotation * getrot; 
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            getrot = parent.transform.rotation * getrot;
+                        break;
+                    default: 
+                        Assert.IsTrue(false); 
+                        break;
                     }
                     return getrot;
                 }
                 set
                 {
                     var setrot = value;
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        setrot = Quaternion.Inverse(va.editBones[rootBoneIndex].transform.rotation) * setrot;
-                        setrot = va.bones[rootBoneIndex].transform.rotation * setrot;
+                    {   //Handles error -> Quaternion To Matrix conversion failed because input Quaternion is invalid
+                        float angle;
+                        Vector3 axis;
+                        setrot.ToAngleAxis(out angle, out axis);
+                        setrot = Quaternion.AngleAxis(angle, axis);
                     }
                     switch (spaceType)
                     {
-                    case SpaceType.Global: rotation = setrot; break;
-                    case SpaceType.Local: rotation = root != null && root.transform.parent != null ? Quaternion.Inverse(root.transform.parent.rotation) * setrot : setrot; break;
-                    case SpaceType.Parent: rotation = parent != null ? Quaternion.Inverse(parent.transform.rotation) * setrot : setrot; break;
-                    default: Assert.IsTrue(false); break;
+                    case SpaceType.Global: 
+                        break;
+                    case SpaceType.Local:
+                        if (root != null && root.transform.parent != null)
+                            setrot = Quaternion.Inverse(root.transform.parent.rotation) * setrot; 
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            setrot = Quaternion.Inverse(parent.transform.rotation) * setrot; 
+                        break;
+                    default: 
+                        Assert.IsTrue(false); 
+                        break;
                     }
+                    rotation = setrot;
                 }
             }
 
+            [NonSerialized]
+            public int rootBoneIndex;
+            [NonSerialized]
+            public int parentBoneIndex;
             [NonSerialized]
             public bool updateIKtarget;
             [NonSerialized]
             public bool synchroIKtarget;
             [NonSerialized]
             public SolverBase solver;
-            [NonSerialized]
-            public int parentBoneIndex;
         }
         public List<OriginalIKData> ikData;
 
@@ -315,34 +336,6 @@ namespace VeryAnimation
                 }
             }
 
-            protected void StraightAvoidance(Vector3 targetPos)
-            {
-                var vecTarget = targetPos - root.position;
-                var lengthTarget = vecTarget.magnitude;
-                vecTarget.Normalize();
-                if (vecTarget.sqrMagnitude > 0f)
-                {
-                    int count = 0;
-                    float lengthTotal = 0f;
-                    for (int i = boneTransforms.Length - 1; i > 0; i--)
-                    {
-                        var vec = boneTransforms[i - 1].position - boneTransforms[i].position;
-                        var lengthVec = vec.magnitude;
-                        vec.Normalize();
-                        if (vec.sqrMagnitude > 0f)
-                        {
-                            lengthTotal += lengthVec;
-                            var dot = Vector3.Dot(vecTarget, vec);
-                            if (Mathf.Approximately(Mathf.Abs(dot), 1f))
-                                count++;
-                        }
-                    }
-                    if (lengthTarget < lengthTotal && count == boneTransforms.Length - 1)
-                    {
-                        root.rotation *= Quaternion.AngleAxis(1f, GetBasicDir());
-                    }
-                }
-            }
             protected void FixReverseRotation()
             {
                 for (int i = 0; i < boneTransforms.Length; i++)
@@ -381,11 +374,14 @@ namespace VeryAnimation
             {
                 if (!base.Initialize(bones, joints))
                     return false;
+
+                swivel = 0f;
                 {
                     weights = new float[joints.Length];
                     for (int i = 0; i < joints.Length; i++)
                         weights[i] = 1f;
                 }
+
                 return true;
             }
 
@@ -401,7 +397,35 @@ namespace VeryAnimation
                 }
                 #endregion 
 
-                StraightAvoidance(targetPos);
+                #region StraightAvoidance
+                {
+                    var vecTarget = targetPos - root.position;
+                    var lengthTarget = vecTarget.magnitude;
+                    vecTarget.Normalize();
+                    if (vecTarget.sqrMagnitude > 0f)
+                    {
+                        int count = 0;
+                        float lengthTotal = 0f;
+                        for (int i = boneTransforms.Length - 1; i > 0; i--)
+                        {
+                            var vec = boneTransforms[i - 1].position - boneTransforms[i].position;
+                            var lengthVec = vec.magnitude;
+                            vec.Normalize();
+                            if (vec.sqrMagnitude > 0f)
+                            {
+                                lengthTotal += lengthVec;
+                                var dot = Vector3.Dot(vecTarget, vec);
+                                if (Mathf.Approximately(Mathf.Abs(dot), 1f))
+                                    count++;
+                            }
+                        }
+                        if (lengthTarget < lengthTotal && count == boneTransforms.Length - 1)
+                        {
+                            root.rotation *= Quaternion.AngleAxis(1f, GetBasicDir());
+                        }
+                    }
+                }
+                #endregion
 
                 const float ToleranceSq = 0.0001f;
                 for (int i = 0; i < Iteration; i++)
@@ -459,24 +483,31 @@ namespace VeryAnimation
                 if (!isValid || !resetRotations) return 0f;
 
                 float result = 0f;
+
                 #region Save
+                var saveSwivel = swivel;
                 TransformPoseSave.SaveData[] save = new TransformPoseSave.SaveData[boneTransforms.Length];
                 for (int i = 0; i < boneTransforms.Length; i++)
                     save[i] = new TransformPoseSave.SaveData(boneTransforms[i]);
-                var saveSwivel = swivel;
                 #endregion
 
-                var vecAfter = GetBasicDir();
-                swivel = 0f;
-                Update(tip.position, tip.rotation);
-                var vecBefore = GetBasicDir();
-                result = EditorCommon.Vector3SignedAngle(vecBefore, vecAfter, (tip.position - root.position).normalized);
+                try
+                {
+                    var vecAfter = GetBasicDir();
+                    swivel = 0f;
+                    Update(tip.position, tip.rotation);
+                    var vecBefore = GetBasicDir();
+                    result = Vector3.SignedAngle(vecBefore, vecAfter, (tip.position - root.position).normalized);
+                }
+                finally
+                {
+                    swivel = saveSwivel;
 
-                #region Load
-                for (int i = 0; i < boneTransforms.Length; i++)
-                    save[i].LoadLocal(boneTransforms[i]);
-                swivel = saveSwivel;
-                #endregion
+                    #region Load
+                    for (int i = 0; i < boneTransforms.Length; i++)
+                        save[i].LoadLocal(boneTransforms[i]);
+                    #endregion
+                }
 
                 return result;
             }
@@ -503,51 +534,8 @@ namespace VeryAnimation
                 if (!base.Initialize(bones, joints))
                     return false;
 
-                isValid = false;
-
-                swivel = 0f;
                 direction = 0f;
-
-                #region Save
-                TransformPoseSave.SaveData[] saveTransforms = new TransformPoseSave.SaveData[boneTransforms.Length];
-                for (int i = 0; i < boneTransforms.Length; i++)
-                    saveTransforms[i] = new TransformPoseSave.SaveData(boneTransforms[i]);
-                #endregion
-                #region Reset
-                for (int i = boneTransforms.Length - 1; i >= 0; i--)
-                    boneTransforms[i].rotation = va.boneSaveTransforms[boneIndexes[i]].rotation;
-                #endregion
-                {
-                    var vLower = (lower.position - upper.position).normalized;
-                    var lookRot = Quaternion.LookRotation(vLower);
-                    {
-                        linearizationForward = Quaternion.Inverse(lookRot);
-                    }
-                    {
-                        var invRot = Quaternion.Inverse(lower.rotation);
-                        linearizationLower = Quaternion.FromToRotation(invRot * (tip.position - lower.position).normalized, invRot * vLower);
-                    }
-                    {
-                        lowerAxis = lookRot * Vector3.up;
-                        lowerAxis = linearizationForward * lowerAxis;
-                        lowerDirection = Vector3.Cross(Vector3.forward, lowerAxis).normalized;
-                    }
-
-#if false    //Debug
-                    upper.rotation = linearizationForward * upper.rotation;
-                    lower.localRotation *= linearizationLower;
-                    var dotUL = Vector3.Dot((tip.position - upper.position).normalized, Vector3.forward);
-                    Assert.IsTrue(Mathf.Abs(dotUL - 1f) < 0.0001f);
-                    dotUL = Vector3.Dot((lower.position - upper.position).normalized, (tip.position - lower.position).normalized);
-                    Assert.IsTrue(Mathf.Abs(dotUL - 1f) < 0.0001f);
-#endif
-                }
-                #region Load
-                for (int i = 0; i < boneTransforms.Length; i++)
-                    saveTransforms[i].LoadLocal(boneTransforms[i]);
-                #endregion
-
-                isValid = true;
+                swivel = GetSwivel();
 
                 return true;
             }
@@ -569,6 +557,22 @@ namespace VeryAnimation
                 #region Reset
                 for (int i = boneTransforms.Length - 1; i >= 0; i--)
                     boneTransforms[i].rotation = va.boneSaveTransforms[boneIndexes[i]].rotation;
+                {
+                    var vLower = (lower.position - upper.position).normalized;
+                    var lookRot = Quaternion.LookRotation(vLower);
+                    {
+                        linearizationForward = Quaternion.Inverse(lookRot);
+                    }
+                    {
+                        var invRot = Quaternion.Inverse(lower.rotation);
+                        linearizationLower = Quaternion.FromToRotation(invRot * (tip.position - lower.position).normalized, invRot * vLower);
+                    }
+                    {
+                        lowerAxis = lookRot * Vector3.up;
+                        lowerAxis = linearizationForward * lowerAxis;
+                        lowerDirection = Vector3.Cross(Vector3.forward, lowerAxis).normalized;
+                    }
+                }
                 #endregion
 
                 upper.rotation = linearizationForward * upper.rotation;
@@ -665,42 +669,33 @@ namespace VeryAnimation
             {
                 if (!isValid) return 0f;
 
+                float result = 0f;
+
                 #region Save
-                TransformPoseSave.SaveData[] saveTransforms = new TransformPoseSave.SaveData[boneTransforms.Length];
-                for (int i = 0; i < boneTransforms.Length; i++)
-                    saveTransforms[i] = new TransformPoseSave.SaveData(boneTransforms[i]);
                 var saveSwivel = swivel;
-                var saveBasicDir = GetBasicDir();
+                TransformPoseSave.SaveData[] save = new TransformPoseSave.SaveData[boneTransforms.Length];
+                for (int i = 0; i < boneTransforms.Length; i++)
+                    save[i] = new TransformPoseSave.SaveData(boneTransforms[i]);
                 #endregion
 
-                swivel = 0f;
-                Update(tip.position, tip.rotation);
-
-                float result = 0f;
+                try
                 {
-                    var basicDir = GetBasicDir();
-                    var offsetRot = Quaternion.FromToRotation(basicDir, saveBasicDir);
-                    {
-                        Vector3 tmpAxis;
-                        offsetRot.ToAngleAxis(out result, out tmpAxis);
-                        var axis = tip.position - upper.position;
-                        if (Vector3.Dot(axis, tmpAxis) < 0f)
-                            result = -result;
-                        while (result < -180f || result > 180f)
-                        {
-                            if (result > 180f)
-                                result -= 360f;
-                            else if (result < -180f)
-                                result += 360f;
-                        }
-                    }
+                    var vecAfter = GetBasicDir();
+                    swivel = 0f;
+                    Update(tip.position, tip.rotation);
+                    var vecBefore = GetBasicDir();
+                    result = Vector3.SignedAngle(vecBefore, vecAfter, (tip.position - root.position).normalized);
+                }
+                finally
+                {
+                    swivel = saveSwivel;
+
+                    #region Load
+                    for (int i = 0; i < boneTransforms.Length; i++)
+                        save[i].LoadLocal(boneTransforms[i]);
+                    #endregion
                 }
 
-                #region Load
-                for (int i = 0; i < boneTransforms.Length; i++)
-                    saveTransforms[i].LoadLocal(boneTransforms[i]);
-                swivel = saveSwivel;
-                #endregion
                 return result;
             }
 
@@ -733,13 +728,7 @@ namespace VeryAnimation
                     offsetRot.ToAngleAxis(out result, out tmpAxis);
                     if (Vector3.Dot(vFw, tmpAxis) < 0f)
                         result = -result;
-                    while (result < -180f || result > 180f)
-                    {
-                        if (result > 180f)
-                            result -= 360f;
-                        else if (result < -180f)
-                            result += 360f;
-                    }
+                    result = Mathf.Repeat(result + 180f, 360f) - 180f;
                 }
                 return result;
             }
@@ -790,13 +779,12 @@ namespace VeryAnimation
             ikReorderableList = null;
         }
 
-        public void LoadIKSaveSettings(VeryAnimationSaveSettings saveSettings)
+        public void LoadIKSaveSettings(VeryAnimationSaveSettings.OriginalIKData[] saveIkData)
         {
-            if (saveSettings == null) return;
-            if (saveSettings.originalIkData != null)
+            if (saveIkData != null)
             {
                 ikData.Clear();
-                foreach (var d in saveSettings.originalIkData)
+                foreach (var d in saveIkData)
                 {
                     if (d.level < SolverLevelMin || d.joints.Count < SolverLevelMin)
                         continue;
@@ -833,10 +821,10 @@ namespace VeryAnimation
                 }
             }
         }
-        public void SaveIKSaveSettings(VeryAnimationSaveSettings saveSettings)
+        public VeryAnimationSaveSettings.OriginalIKData[] SaveIKSaveSettings()
         {
             if (va.originalIK == null || ikData == null)
-                return;
+                return null;
             List<VeryAnimationSaveSettings.OriginalIKData> saveIkData = new List<VeryAnimationSaveSettings.OriginalIKData>();
             foreach (var d in ikData)
             {
@@ -866,7 +854,7 @@ namespace VeryAnimation
                 }
                 saveIkData.Add(data);
             }
-            saveSettings.originalIkData = saveIkData.ToArray();
+            return saveIkData.ToArray();
         }
 
         private int CreateIKData(GameObject jointTip)
@@ -998,14 +986,7 @@ namespace VeryAnimation
                 break;
             case SolverType.LimbIK:
                 {
-                    ikData[target].limbDirection += add;
-                    while (ikData[target].limbDirection < -180f || ikData[target].limbDirection > 180f)
-                    {
-                        if (ikData[target].limbDirection > 180f)
-                            ikData[target].limbDirection -= 360f;
-                        else if (ikData[target].limbDirection < -180f)
-                            ikData[target].limbDirection += 360f;
-                    }
+                    ikData[target].limbDirection = Mathf.Repeat(ikData[target].limbDirection + add + 180f, 360f) - 180f;
                 }
                 break;
             default:
@@ -1033,40 +1014,57 @@ namespace VeryAnimation
             ikReorderableList = null;
             if (ikData == null) return;
             ikReorderableList = new ReorderableList(ikData, typeof(OriginalIKData), true, true, true, true);
-            ikReorderableList.elementHeight = 20;
             ikReorderableList.drawHeaderCallback = (Rect rect) =>
             {
                 float x = rect.x;
                 {
-                    const float Rate = 0.2f;
-                    var r = rect;
-                    r.x = x;
-                    r.y -= 1;
-                    r.width = rect.width * Rate;
-                    x += r.width;
-
-                    bool flag = true;
-                    foreach (var data in ikData)
+                    const float ButtonWidth = 100f;
                     {
-                        if (!data.enable)
+                        var r = rect;
+                        r.x = x;
+                        r.y -= 1;
+                        r.width = ButtonWidth;
+                        x += r.width;
+
+                        bool flag = true;
+                        foreach (var data in ikData)
                         {
-                            flag = false;
-                            break;
+                            if (!data.enable)
+                            {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        EditorGUI.BeginChangeCheck();
+                        flag = GUI.Toggle(r, flag, Language.GetContent(Language.Help.OriginalIKChangeAll), EditorStyles.toolbarButton);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            Undo.RecordObject(vaw, "Change Original IK Data");
+                            for (int target = 0; target < ikData.Count; target++)
+                            {
+                                ikData[target].enable = flag;
+                                if (ikData[target].enable)
+                                {
+                                    UpdateSolver(target);
+                                    SynchroSet(target);
+                                }
+                            }
                         }
                     }
-                    EditorGUI.BeginChangeCheck();
-                    flag = GUI.Toggle(r, flag, Language.GetContent(Language.Help.OriginalIKAll), EditorStyles.toolbarButton);
-                    if (EditorGUI.EndChangeCheck())
                     {
-                        Undo.RecordObject(vaw, "Change Original IK Data");
-                        for (int target = 0; target < ikData.Count; target++)
+                        var r = rect;
+                        r.y -= 1;
+                        r.width = ButtonWidth;
+                        r.x = rect.xMax - r.width;
+                        if (GUI.Button(r, Language.GetContent(Language.Help.OriginalIKSelectAll), EditorStyles.toolbarButton))
                         {
-                            ikData[target].enable = flag;
-                            if (ikData[target].enable)
+                            var list = new List<int>();
+                            for (int target = 0; target < ikData.Count; target++)
                             {
-                                UpdateSolver(target);
-                                SynchroSet(target);
+                                if (ikData[target].enable)
+                                    list.Add(target);
                             }
+                            va.SelectIKTargets(null, list.ToArray());
                         }
                     }
                 }
@@ -1138,14 +1136,12 @@ namespace VeryAnimation
                     advancedFoldout = EditorGUI.Foldout(r, advancedFoldout, new GUIContent("", "Advanced"), true);
                 }
             };
-#if UNITY_2017_1_OR_NEWER
             ikReorderableList.onCanAddCallback = (ReorderableList list) =>
             {
                 if (va.selectionActiveBone < 0) return false;
                 if (va.isHuman && va.humanoidConflict[va.selectionActiveBone]) return false;
                 return ikData.FindIndex((data) => data.tip == va.editBones[va.selectionActiveBone]) < 0;
             };
-#endif
             ikReorderableList.onAddCallback = (ReorderableList list) =>
             {
                 va.originalIK.ChangeSelectionIK();
@@ -1185,8 +1181,8 @@ namespace VeryAnimation
             for (int i = 0; i < ikData[target].level; i++)
             {
                 var boneIndex = va.BonesIndexOf(ikData[target].joints[i].bone);
-                ikData[target].joints[i].editBone = boneIndex >= 0 ? va.editBones[boneIndex] : null;
-                joints[i] = ikData[target].joints[i].editBone;
+                ikData[target].joints[i].boneIndex = boneIndex;
+                joints[i] = boneIndex >= 0 ? va.editBones[boneIndex] : null;
             }
             switch (ikData[target].solverType)
             {
@@ -1210,35 +1206,26 @@ namespace VeryAnimation
 
         private bool IsErrorJoint(int target, int index)
         {
-            if (target < 0 || target >= ikData.Count || ikData[target].joints == null) return true;
-            if (ikData[target].solver == null || !ikData[target].solver.isValid)
+            var data = ikData[target];
+            if (target < 0 || target >= ikData.Count || data.joints == null) 
+                return true;
+            if (index < 0 || index >= data.level || data.joints[index].bone == null)
+                return true;
             {
-                if (index < 0 || index >= ikData[target].level)
-                    return true;
-                if (va.BonesIndexOf(ikData[target].joints[index].bone) < 0)
-                    return true;
+                var indexBone = data.joints[index].bone.transform;
+                var t = data.joints[0].bone.transform;
+                int level = -1;
+                while (t != null)
                 {
-                    int count = 0;
-                    int level = 0;
-                    var t = ikData[target].tip.transform;
-                    while (t != null)
-                    {
-                        if (ikData[target].joints[level].editBone != null && t == ikData[target].joints[level].editBone.transform)
-                        {
-                            count++;
-                            level++;
-                        }
-                        if (t.gameObject == ikData[target].root)
-                            break;
-                        if (t.gameObject == ikData[target].joints[index].editBone)
-                            break;
-                        if (va.EditBonesIndexOf(t.gameObject) < 0)
-                            break;
-                        t = t.parent;
-                    }
-                    if (count != index + 1)
-                        return true;
+                    level = data.joints.FindIndex(x => x.bone == t.gameObject);
+                    if (t == indexBone)
+                        break;
+                    if (level > index)
+                        break;
+                    t = t.parent;
                 }
+                if (level != index)
+                    return true;
             }
             return false;
         }
@@ -1307,21 +1294,27 @@ namespace VeryAnimation
             if (target < 0 || target >= ikData.Count) return;
             var data = ikData[target];
             if (data.solver == null || !data.solver.isValid) return;
-            var t = va.editBones[data.solver.boneIndexes[0]].transform;
 
+            data.rootBoneIndex = data.joints.Count > 0 ? data.joints[data.level - 1].boneIndex : -1;
+            data.parentBoneIndex = va.BonesIndexOf(data.parent);
+            foreach (var joint in data.joints)
+            {
+                joint.boneIndex = va.BonesIndexOf(joint.bone);
+            }
+
+            var t = va.editBones[data.solver.boneIndexes[0]].transform;
             switch (data.spaceType)
             {
             case OriginalIKData.SpaceType.Global:
             case OriginalIKData.SpaceType.Local:
                 data.worldPosition = t.position;
                 data.worldRotation = t.rotation;
+                data.swivel = data.solver.GetSwivel();
                 break;
             case OriginalIKData.SpaceType.Parent:
                 //not update
                 break;
             }
-            data.swivel = data.solver.GetSwivel();
-            data.parentBoneIndex = va.BonesIndexOf(data.parent);
         }
 
         private void SetSolverParam(int target)
@@ -1357,8 +1350,6 @@ namespace VeryAnimation
         {
             if (!GetUpdateIKtargetAll()) return;
 
-            var time = va.currentTime;
-
             for (int boneIndex = 0; boneIndex < updateRotations.Length; boneIndex++)
             {
                 if (updateRotations[boneIndex] == null) continue;
@@ -1381,16 +1372,7 @@ namespace VeryAnimation
             }
             for (int loop = 0; loop < loopCount; loop++)
             {
-#if VERYANIMATION_TIMELINE
-                if (va.uAw_2017_1.GetLinkedWithTimeline())
-                {
-                    va.PlayableDirectorEvaluate(time);
-                }
-                else
-#endif
-                {
-                    va.ResampleAnimation(time, VeryAnimation.ResampleAnimationFlag.Base);
-                }
+                va.SampleAnimation(va.currentTime, VeryAnimation.EditObjectFlag.Edit);
 
                 #region Update
                 {
@@ -1427,7 +1409,7 @@ namespace VeryAnimation
                             {
                                 updateRotations[boneIndex] = new List<UpdateData>();
                             }
-                            updateRotations[boneIndex].Add(new UpdateData() { time = time, rotation = data.solver.boneTransforms[i].localRotation });
+                            updateRotations[boneIndex].Add(new UpdateData() { time = va.currentTime, rotation = data.solver.boneTransforms[i].localRotation });
                         }
                     }
                 }
@@ -1530,14 +1512,7 @@ namespace VeryAnimation
                                 foreach (var ikTarget in ikTargetSelect)
                                 {
                                     int target = (int)ikTarget;
-                                    ikData[target].swivel -= rotDist;
-                                    while (ikData[target].swivel < -180f || ikData[target].swivel > 180f)
-                                    {
-                                        if (ikData[target].swivel > 180f)
-                                            ikData[target].swivel -= 360f;
-                                        else if (ikData[target].swivel < -180f)
-                                            ikData[target].swivel += 360f;
-                                    }
+                                    ikData[target].swivel = Mathf.Repeat(ikData[target].swivel - rotDist  + 180f, 360f) - 180f;
                                     SetUpdateIKtargetOriginalIK(target);
                                 }
                             }
@@ -1649,17 +1624,6 @@ namespace VeryAnimation
                             var boneIndex = ikData[target].solver.boneIndexes[ikData[target].solver.boneIndexes.Length - 1];
                             var worldPosition2 = va.editBones[boneIndex].transform.position;
                             Handles.DrawLine(worldPosition, worldPosition2);
-                            if (va.dummyObject != null && ikData[target].spaceType == OriginalIKData.SpaceType.Parent)
-                            {
-                                Func<Vector3, Vector3> DummySpace2OriginalSpace = (pos) =>
-                                {
-                                    pos = va.editBones[boneIndex].transform.worldToLocalMatrix.MultiplyPoint(pos);
-                                    return va.bones[boneIndex].transform.localToWorldMatrix.MultiplyPoint3x4(pos);
-                                };
-                                var dummyWorldPosition = DummySpace2OriginalSpace(worldPosition);
-                                var dummyWorldPosition2 = DummySpace2OriginalSpace(worldPosition2);
-                                Handles.DrawLine(dummyWorldPosition, dummyWorldPosition2);
-                            }
                         }
                         Handles.color = vaw.editorSettings.settingIKTargetActiveColor;
                         if (ikData[target].solverType == SolverType.LookAt)
@@ -1759,7 +1723,7 @@ namespace VeryAnimation
             #region SpaceType
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Space", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Space", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 var spaceType = (OriginalIKData.SpaceType)GUILayout.Toolbar((int)activeData.spaceType, IKSpaceTypeStrings, EditorStyles.miniButton);
                 if (EditorGUI.EndChangeCheck())
@@ -1778,7 +1742,7 @@ namespace VeryAnimation
             if (activeData.spaceType == OriginalIKData.SpaceType.Local || activeData.spaceType == OriginalIKData.SpaceType.Parent)
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Parent", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Parent", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 if (activeData.spaceType == OriginalIKData.SpaceType.Local)
                 {
@@ -1800,7 +1764,7 @@ namespace VeryAnimation
                             data.parent = parent;
                             data.worldPosition = worldPosition;
                             data.worldRotation = worldRotation;
-                            va.SetUpdateIKtargetOriginalIK(target);
+                            va.SetSynchroIKtargetOriginalIK(target);
                         }
                     }
                 }
@@ -1810,7 +1774,7 @@ namespace VeryAnimation
             #region Position
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Position", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Position", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 var position = EditorGUILayout.Vector3Field("", activeData.position);
                 if (EditorGUI.EndChangeCheck())
@@ -1845,7 +1809,7 @@ namespace VeryAnimation
                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
                     {
                         EditorGUI.BeginChangeCheck();
-                        var autoRotation = !GUILayout.Toggle(!activeData.autoRotation, "Rotation", EditorStyles.toolbarButton, GUILayout.Width(54));
+                        var autoRotation = !GUILayout.Toggle(!activeData.autoRotation, "Rotation", EditorStyles.toolbarButton, GUILayout.Width(63));
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(vaw, "Change IK Rotation");
@@ -1898,7 +1862,7 @@ namespace VeryAnimation
                 #region Swivel
                 {
                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                    EditorGUILayout.LabelField("Swivel", GUILayout.Width(50));
+                    EditorGUILayout.LabelField("Swivel", GUILayout.Width(60));
                     EditorGUI.BeginChangeCheck();
                     var swivel = EditorGUILayout.Slider(activeData.swivel, -180f, 180f);
                     if (EditorGUI.EndChangeCheck())
@@ -1907,14 +1871,7 @@ namespace VeryAnimation
                         var move = swivel - activeData.swivel;
                         foreach (var target in ikTargetSelect)
                         {
-                            ikData[target].swivel += move;
-                            while (ikData[target].swivel < -180f || ikData[target].swivel > 180f)
-                            {
-                                if (ikData[target].swivel > 180f)
-                                    ikData[target].swivel -= 360f;
-                                else if (ikData[target].swivel < -180f)
-                                    ikData[target].swivel += 360f;
-                            }
+                            ikData[target].swivel = Mathf.Repeat(ikData[target].swivel + move + 180f, 360f) - 180f;
                             SetUpdateIKtargetOriginalIK(target);
                         }
                     }
@@ -2159,7 +2116,6 @@ namespace VeryAnimation
             data.spaceType = spaceType;
             data.worldPosition = position;
             data.worldRotation = rotation;
-            data.synchroIKtarget = true;
         }
 
         public int IsIKBone(HumanBodyBones humanoidIndex)
@@ -2322,12 +2278,20 @@ namespace VeryAnimation
                 }
             }
         }
-        public void SetUpdateIKtargetAll(bool flag)
+        public void ResetUpdateIKtargetAll()
         {
             if (ikData == null) return;
             foreach (var data in ikData)
             {
-                data.updateIKtarget = flag;
+                data.updateIKtarget = false;
+            }
+        }
+        public void SetUpdateIKtargetAll()
+        {
+            if (ikData == null) return;
+            foreach (var data in ikData)
+            {
+                data.updateIKtarget = true;
             }
         }
         public bool GetUpdateIKtargetAll()

@@ -231,23 +231,6 @@ namespace VeryAnimation
             return Mathf.Abs(result - 360f) < 0.001f;
         }
 
-        public static float Vector3SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
-        {
-            //It is better to use Vector3.SignedAngle after Unity2017.1
-            var lockAxis = Vector3.Cross(from, to);
-            var deg = Mathf.Atan2(lockAxis.magnitude, Vector3.Dot(from, to)) * Mathf.Rad2Deg;
-            if (Vector3.Dot(lockAxis, axis) < 0f)
-                deg = -deg;
-            while (deg < -180f || deg > 180f)
-            {
-                if (deg > 180f)
-                    deg -= 360f;
-                else if (deg < -180f)
-                    deg += 360f;
-            }
-            return deg;
-        }
-
         public static void GetTRS(Matrix4x4 mat, out Vector3 position, out Quaternion rotation, out Vector3 scale)
         {
             position = mat.GetColumn(3);

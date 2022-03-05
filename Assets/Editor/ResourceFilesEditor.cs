@@ -13,74 +13,17 @@ using RootMotion.FinalIK;//FinalIK
 
 /*NonResourcesというクラスを使ってロードしている。
 http://kan-kikuchi.hatenablog.com/entry/NonResources
-//単体ロード(Assets直下にあるimgという画像ファイルをロード)
+
+    //単体ロード(Assets直下にあるimgという画像ファイルをロード)
 Object obj = NonResources.Load("Assets/img.png");//Objectで取得
 Texture texture = NonResources.Load<Texture>("Assets/img.png");//Textureで取得
 
 //複数ロード(Assets直下にあるImageというディレクトリ内にある全ファイルをロード)
 List<Object> objList = NonResources.LoadAll("Assets/Image");//全Objectを取得
 List<Texture> textureList = NonResources.LoadAll<Texture>("Assets/Image");//全Textureを取得
-*/
-public static class NonResources
-{
-    /// Resourcesディレクトリ以外のオブジェクトにアクセスすることができる。実はResourcesディレクトリのオブジェクトにもアクセスできる
 
-    //=================================================================================
-    //単体ロード
-    //=================================================================================
-
-    /// ファイルのパス(Assetsから、拡張子も含める)と型を設定し、Objectを読み込む。存在しない場合はNullを返す
-
-    public static T Load<T>(string path) where T : Object
-    {
-        return AssetDatabase.LoadAssetAtPath<T>(path);
-    }
-
-    /// <summary>
-    /// ファイルのパス(Assetsから、拡張子も含める)を設定し、Objectを読み込む。存在しない場合はNullを返す
-    /// </summary>
-    public static Object Load(string path)
-    {
-        return Load<Object>(path);
-    }
-
-    //=================================================================================
-    //複数ロード
-    //=================================================================================
-
-    /// ディレクトリのパス(Assetsから)と型を設定し、Objectを読み込む。存在しない場合は空のListを返す
-
-    public static List<T> LoadAll<T>(string directoryPath) where T : Object
-    {
-        List<T> assetList = new List<T>();
-
-        //指定したディレクトリに入っている全ファイルを取得(子ディレクトリも含む)
-        //string[] filePathArray = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
-        //指定したディレクトリに入っている全ファイルを取得(子ディレクトリ含まない)
-        string[] filePathArray = Directory.GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly);
-
-        //取得したファイルの中からアセットだけリストに追加する
-        foreach (string filePath in filePathArray)
-        {
-            T asset = Load<T>(filePath);
-            if (asset != null)
-            {
-                assetList.Add(asset);
-            }
-        }
-
-        return assetList;
-    }
-
-    /// ディレクトリのパス(Assetsから)を設定し、Objectを読み込む。存在しない場合は空のListを返す
-
-    public static List<Object> LoadAll(string directoryPath)
-    {
-        return LoadAll<Object>(directoryPath);
-    }
-
-}
-/*エディタ拡張を使わないと以下のような指定方法（これを簡略化している）
+    
+エディタ拡張を使わないと以下のような指定方法（NonResoucesでこれを簡略化している）
 SliderEnmSet = UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/_MJ/ResourceFiles/homework/SliderEnmSet.prefab", typeof(GameObject)) as GameObject; 
 
 //指定したディレクトリに入っている全ファイルを取得(子ディレクトリも含まない)
@@ -108,7 +51,35 @@ public class ResourceFilesEditor : EditorWindow
         DataCounter DC = GameObject.Find("Server").GetComponent<DataCounter>();
         ResourceFiles ResourceFiles = GameObject.Find("ResourceFiles").GetComponent<ResourceFiles>();
 
+        #region ドリル用テクスチャ読み込みをResorces読み込みから退避（宿題システム起動時に読み込んでいたもの）
+        //宿題テクスチャ取得
+        DC.drillTexturesList.Clear();
+        DC.drillTexturesList
+            = NonResources.LoadAll<Texture>("Assets/Resources_Moved/EventSystem/Homework/DrillTextures/StagesTex");
+
+        #endregion
+
+        #region EV_C_系PrefabなどをResouces読み込みから退避（それぞれのシステム起動時に読み込んでいたもの）
+        ResourceFiles.EV_C_KaijuBattle
+            = NonResources.Load<GameObject>("Assets/Resources_Moved/EventSystem/KaijuBattle/Prefab/EV_C_KaijuBattle.prefab");
+        ResourceFiles.EV_C_KakureOni
+            = NonResources.Load<GameObject>("Assets/Resources_Moved/EventSystem/KakureOni/Prefab/EV_C_KakureOni.prefab");
+        ResourceFiles.KO_SimplePointObj
+            = NonResources.Load<GameObject>("Assets/Resources_Moved/EventSystem/KakureOni/Prefab/KO_SimplePointObj.prefab");
+        ResourceFiles.MenuFolder
+            = NonResources.Load<GameObject>("Assets/Resources_Moved/EventSystem/Menu/Prefab/MenuFolder.prefab");
+        ResourceFiles.yd_loadClothsWindowCanvas
+            = NonResources.Load<GameObject>("Assets/Resources_Moved/EventSystem/Menu/Prefab/yd_loadClothsWindowCanvas.prefab");
+
+        #endregion
+
+
+
         #region SE_BGM
+        ResourceFiles.audioMixer
+            = NonResources.Load<UnityEngine.Audio.AudioMixer>("Assets/_MJ/ResourceFiles/BGM/AudioMixer.mixer");
+
+
         #region//一生懸命Dictionaryで読み込んだが、インスペクタに表示されない=事前にデータを持っておけないっぽい（シリアライズ？できない）ので一旦ListにしておいてからAwakeでDictionaryに入れる。
         /*
                 #region//SE_BGM(ファイル名をキー名に指定して取得するのでNonResources使わず手動で)

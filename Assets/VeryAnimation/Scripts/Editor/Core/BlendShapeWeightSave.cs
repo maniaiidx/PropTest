@@ -108,13 +108,15 @@ namespace VeryAnimation
             foreach (var pair in originalValues)
             {
                 if (pair.Key == null || pair.Key.sharedMesh == null) continue;
+                var renderer = pair.Key;
+                var mesh = renderer.sharedMesh;
                 foreach (var valuePair in pair.Value.values)
                 {
-                    var index = pair.Key.sharedMesh.GetBlendShapeIndex(valuePair.Key);
-                    if (index < 0 || index >= pair.Key.sharedMesh.blendShapeCount) continue;
-                    if (pair.Key.GetBlendShapeWeight(index) != valuePair.Value)
+                    var index = mesh.GetBlendShapeIndex(valuePair.Key);
+                    if (index < 0 || index >= mesh.blendShapeCount) continue;
+                    if (renderer.GetBlendShapeWeight(index) != valuePair.Value)
                     {
-                        pair.Key.SetBlendShapeWeight(index, valuePair.Value);
+                        renderer.SetBlendShapeWeight(index, valuePair.Value);
                     }
                 }
             }

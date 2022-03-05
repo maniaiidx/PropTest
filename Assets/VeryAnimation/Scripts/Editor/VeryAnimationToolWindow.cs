@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+﻿#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -72,6 +72,7 @@ namespace VeryAnimation
             TemplatePose,
             RemoveSaveSettings,
             ReplaceReference,
+            AnimationRigging,
         }
         public ToolMode toolMode;
         public bool toolsHelp = true;
@@ -79,11 +80,29 @@ namespace VeryAnimation
         public AnimationClip toolReplaceReference_OldClip;
         public AnimationClip toolReplaceReference_NewClip;
 
+#if VERYANIMATION_ANIMATIONRIGGING
+        public enum AnimationRiggingMode
+        {
+            Humanoid,
+            CopyFromOtherSource,
+        }
+        private static string[] AnimationRiggingModeStrings =
+        {
+            "Humanoid",
+            "Copy From Other Source",
+        };
+        public AnimationRiggingMode toolAnimationRigging_Mode;
+        public bool[] toolAnimationRigging_HumanoidTargets;
+        public VeryAnimationSaveSettings toolAnimationRigging_Source;
+#endif
+
         private GameObject activeRootObject;
 
         private void OnEnable()
         {
             instance = this;
+
+            AssemblyDefinitionChanger.Refresh();
 
             uEditorGUI = new UEditorGUI();
 
@@ -91,6 +110,14 @@ namespace VeryAnimation
 
             titleContent = new GUIContent("VA Tools");
             minSize = new Vector2(320, minSize.y);
+
+            #region Initialize
+            {
+#if VERYANIMATION_ANIMATIONRIGGING
+                toolAnimationRigging_HumanoidTargets = new bool[(int)AnimatorIKCore.IKTarget.Total];
+#endif
+            }
+            #endregion
 
             OnSelectionChange();
 
@@ -319,6 +346,99 @@ namespace VeryAnimation
                         EditorGUILayout.Space();
                         EditorGUILayout.EndHorizontal();
                     }
+                    #endregion
+                }
+                else if (toolMode == ToolMode.AnimationRigging)
+                {
+                    #region AnimationRigging
+#if VERYANIMATION_ANIMATIONRIGGING
+                    Animator animator = activeRootObject != null ? activeRootObject.GetComponent<Animator>() : null;
+                    {
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUILayout.ObjectField("Animator", animator, typeof(Animator), false);
+                        EditorGUI.EndDisabledGroup();
+                    }
+                    {
+                        EditorGUI.BeginChangeCheck();
+                        var mode = (AnimationRiggingMode)GUILayout.Toolbar((int)toolAnimationRigging_Mode, AnimationRiggingModeStrings, EditorStyles.miniButton);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            Undo.RecordObject(this, "Change Mode");
+                            toolAnimationRigging_Mode = mode;
+                        }
+                    }
+                    if (toolAnimationRigging_Mode == AnimationRiggingMode.Humanoid)
+                    {
+                        bool disable = true;
+                        EditorGUI.BeginDisabledGroup(animator == null || !animator.isHuman);
+                        for (int i = 0; i < toolAnimationRigging_HumanoidTargets.Length; i++)
+                        {
+                            EditorGUI.BeginChangeCheck();
+                            var flag = EditorGUILayout.Toggle(AnimatorIKCore.IKTargetStrings[i], toolAnimationRigging_HumanoidTargets[i]);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(this, "Change Flag");
+                                toolAnimationRigging_HumanoidTargets[i] = flag;
+                            }
+                            if (toolAnimationRigging_HumanoidTargets[i])
+                                disable = false;
+                        }
+                        {
+                            EditorGUI.BeginDisabledGroup(animator == null);
+                            EditorGUILayout.BeginHorizontal();
+                            EditorGUILayout.Space();
+                            if (GUILayout.Button("Delete All"))
+                            {
+                                ToolsAnimationRiggingDeleteAll();
+                            }
+                            EditorGUILayout.Space();
+                            EditorGUI.BeginDisabledGroup(disable);
+                            if (GUILayout.Button("Create"))
+                            {
+                                ToolsAnimationRiggingHumanoidCrete();
+                            }
+                            EditorGUI.EndDisabledGroup();
+                            EditorGUILayout.Space();
+                            EditorGUILayout.EndHorizontal();
+                            EditorGUI.EndDisabledGroup();
+                        }
+                        EditorGUI.EndDisabledGroup();
+                    }
+                    else if (toolAnimationRigging_Mode == AnimationRiggingMode.CopyFromOtherSource)
+                    {
+                        bool disable = true;
+                        {
+                            EditorGUI.BeginChangeCheck();
+                            var source = EditorGUILayout.ObjectField("Source", toolAnimationRigging_Source, typeof(VeryAnimationSaveSettings), true);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(this, "Change Source");
+                                toolAnimationRigging_Source = source as VeryAnimationSaveSettings;
+                            }
+                            if (toolAnimationRigging_Source != null)
+                                disable = false;
+                        }
+                        {
+                            EditorGUI.BeginDisabledGroup(animator == null);
+                            EditorGUILayout.BeginHorizontal();
+                            EditorGUILayout.Space();
+                            if (GUILayout.Button("Delete All"))
+                            {
+                                ToolsAnimationRiggingDeleteAll();
+                            }
+                            EditorGUILayout.Space();
+                            EditorGUI.BeginDisabledGroup(disable);
+                            if (GUILayout.Button("Create"))
+                            {
+                                ToolsAnimationRiggingSourceCreate();
+                            }
+                            EditorGUI.EndDisabledGroup();
+                            EditorGUILayout.Space();
+                            EditorGUILayout.EndHorizontal();
+                            EditorGUI.EndDisabledGroup();
+                        }
+                    }
+#endif
                     #endregion
                 }
                 EditorGUI.indentLevel--;
@@ -777,6 +897,62 @@ namespace VeryAnimation
                 EditorUtility.ClearProgressBar();
                 InternalEditorUtility.RepaintAllViews();
             }
+        }
+        private void ToolsAnimationRiggingHumanoidCrete()
+        {
+#if VERYANIMATION_ANIMATIONRIGGING
+            AnimationRigging.Create(activeRootObject);
+
+            var newObjects = new List<GameObject>();
+            for (int i = 0; i < toolAnimationRigging_HumanoidTargets.Length; i++)
+            {
+                if (!toolAnimationRigging_HumanoidTargets[i])
+                    continue;
+                var target = (AnimatorIKCore.IKTarget)i;
+                var go = AnimatorIKCore.GetAnimationRiggingConstraint(activeRootObject, target);
+                if (go != null)
+                    continue;
+                go = AnimatorIKCore.AddAnimationRiggingConstraint(activeRootObject, target);
+                if (go != null)
+                    newObjects.Add(go);
+            }
+            if (newObjects.Count > 0)
+            {
+                Selection.objects = newObjects.ToArray();
+            }
+#endif
+        }
+        private void ToolsAnimationRiggingSourceCreate()
+        {
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (toolAnimationRigging_Source == null)
+                return;
+
+            ToolsAnimationRiggingDeleteAll();
+            AnimationRigging.Create(activeRootObject);
+
+            var newObjects = new List<GameObject>();
+            for (int i = 0; i < toolAnimationRigging_HumanoidTargets.Length; i++)
+            {
+                var target = (AnimatorIKCore.IKTarget)i;
+                var go = AnimatorIKCore.GetAnimationRiggingConstraint(toolAnimationRigging_Source.gameObject, target);
+                if (go == null)
+                    continue;
+                go = AnimatorIKCore.AddAnimationRiggingConstraint(activeRootObject, target);
+                if (go != null)
+                    newObjects.Add(go);
+            }
+            if (newObjects.Count > 0)
+            {
+                Selection.objects = newObjects.ToArray();
+            }
+#endif
+        }
+        private void ToolsAnimationRiggingDeleteAll()
+        {
+#if VERYANIMATION_ANIMATIONRIGGING
+            AnimationRigging.Delete(activeRootObject);
+#endif
         }
 
         private void SaveActiveScenes(out string activeScenePath, out string[] addScenesPath)

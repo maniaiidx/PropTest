@@ -4,7 +4,7 @@ using System.Collections;//IENumeratorを使う用
 using System.Collections.Generic; //Listに必要
 using Pixeye.Unity;
 
-public class DataBridging : MonoBehaviour
+public partial class DataBridging : MonoBehaviour
 {
 
     //シングルトンのこのクラスに、シーン間で橋渡ししたいデータを渡す。
@@ -22,7 +22,14 @@ public class DataBridging : MonoBehaviour
     #endregion
 
     #region データベース（関数名一覧など）
+    public List<string> RMEMethodNameList;
     public List<string> TansakuMethodNameList;
+    #endregion
+
+    #region シーンを跨ぐ共有変数群（風圧音のスクリプトリストなど）
+
+    public List<WindnoiseSound> nowRun_WindNoiseList = new List<WindnoiseSound>();
+
     #endregion
 
     #region 環境設定群
@@ -38,7 +45,7 @@ public class DataBridging : MonoBehaviour
     public PlayerVRController playerController;
     public OrderedDictionary<string, string> inputDict = new OrderedDictionary<string, string>();
     public bool isPlayerControllerEnvironment = false;//初回起動時の環境設定を行ったかどうか
-
+    
     //酔い対策の刻み角度変更用 角度（この数値角度ごとに回転）
     public float angleJagFloat = 25;
 
@@ -63,7 +70,9 @@ public class DataBridging : MonoBehaviour
 
     //智恵理ゼロ位置固定bool
     public bool isChieriPosLock = true;
+
     public bool isScreenShotVkey = false;
+    public bool isScenarioLogOutput = false;
     #endregion
 
     #region TimeLine
@@ -100,7 +109,7 @@ public class DataBridging : MonoBehaviour
         kiSentakuSerihuKeyList = new List<string>(),
         kidokuNovelKeyList = new List<string>();
 
-
+    
     //イベントを跨ぐ変数群
     public bool
         isBunki_Day1_SleepBedPos;
@@ -135,6 +144,7 @@ public class DataBridging : MonoBehaviour
         cameraObjectsResetLocalEul = Vector3.zero,
         cameraAnchorResetLocalPos = new Vector3(0, 1.55f, 0f),
         cameraAnchorResetLocalRot = Vector3.zero,
+        cameraUserResetLocalEul = Vector3.zero,
         //した二つは書き換えない
         cameraSitAnchorDefLocalPos = new Vector3(0, 0.65f, 0f),
         cameraStandAnchorDefLocalPos = new Vector3(0, 1.55f, 0f),
@@ -250,9 +260,12 @@ public class DataBridging : MonoBehaviour
         adjustFieldOfViewMaxFloat;
 
     public bool
-        isUserClothsBarefoot,
-        isUserClothsTankTop,
-        isUserClothsBikini,
+        isUserPSControllerFix = false;//PS4コン繋ぐと上選択おしっぱになるのを防ぐ（その代わりSteamVRで右スティックで選択操作できない）
+    
+    public bool //210711廃止ユーザー固定設定以外 
+                //isUserClothsBarefoot,
+                //isUserClothsTankTop,
+                //isUserClothsBikini,
         isUserFixityOutfit;
 
 

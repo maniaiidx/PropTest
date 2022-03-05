@@ -988,7 +988,8 @@ public class ControllerAutoInitializeSystem : MonoBehaviour
             DB.inputDict.Add("カメラ切り替え", "XboxY");
             DB.inputDict.Add("ノベルログ", "XboxX");
             DB.inputDict.Add("メニュー・ポーズ", "XboxSTART");
-            DB.inputDict.Add("メニュー・ポーズ2", "_noData");
+            if (DB.isUserPSControllerFix) { DB.inputDict.Add("メニュー・ポーズ2", "_noData"); }
+            else { DB.inputDict.Add("メニュー・ポーズ2", "XboxRStickButton"); }//210515SteamVRで動かす用
             DB.inputDict.Add("セレクト", "XboxBACK");
             DB.inputDict.Add("右手", "XboxRB");
             DB.inputDict.Add("左手", "XboxLB");
@@ -999,7 +1000,8 @@ public class ControllerAutoInitializeSystem : MonoBehaviour
             DB.inputDict.Add("選択左右", "XboxPadXAxis");
             //DB.inputDict.Add("選択上下", "XboxLStickYAxis");
             DB.inputDict.Add("選択上下", "XboxPadYAxis");
-            DB.inputDict.Add("選択上下2", "_noData");
+            if (DB.isUserPSControllerFix) { DB.inputDict.Add("選択上下2", "_noData"); }
+            else { DB.inputDict.Add("選択上下2", "XboxRStickYAxis"); }//210515SteamVRで動かす用
             DB.inputDict.Add("カメラスティック回転X", "XboxLStickXAxis");
             DB.inputDict.Add("カメラスティック回転X2", "_noData");
             DB.inputDict.Add("カメラスティック回転Y", "XboxLStickYAxis");

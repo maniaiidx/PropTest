@@ -35,6 +35,7 @@ namespace VeryAnimation
             }
         }
 
+        [SerializeField]
         public List<BlendShapeData> list;
 
         public void Add(PoseTemplate srcPoseTemplate)

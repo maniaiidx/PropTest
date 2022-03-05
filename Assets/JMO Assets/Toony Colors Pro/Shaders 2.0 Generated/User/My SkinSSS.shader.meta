@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 4a27c2175f050e541ac2822bab8819b5
+timeCreated: 1497918221
+licenseType: Free
+ShaderImporter:
+  defaultTextures: []
+  userData: USER,FSS_MASK,FSUBSURFACE_COLOR,FSUBSURFACE_AMB_COLOR,KSHADER_TARGET:3.0,KSS_MASK:mask1,KSS_MASK_CHANNEL:.a,ch52F41BAB,cSM:30,cCT:pbs,cCF:TCP2_ShaderTemplate_PBS
+  assetBundleName: 
+  assetBundleVariant: 

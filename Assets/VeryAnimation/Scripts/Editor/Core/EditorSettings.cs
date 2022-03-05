@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+﻿#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -40,29 +40,12 @@ namespace VeryAnimation
             SkeletonType.Lines.ToString(),
             SkeletonType.Mesh.ToString(),
         };
-        public enum DummyObjectMode
-        {
-            Original,
-            Color,
-            Transparent,
-        }
-#if VERYANIMATION_TIMELINE
-        private GUIContent[] DummyObjectModeString = null;
-#endif
-        public enum DummyPositionType
-        {
-            ScenePosition,
-            TimelinePosition,
-        }
-#if VERYANIMATION_TIMELINE
-        private static readonly GUIContent[] DummyPositionTypeString =
-        {
-            new GUIContent("Scene", "Scene Position"),
-            new GUIContent("Timeline", "Timeline Position"),
-        };
-#endif
-        public SkeletonType settingsSkeletonType { get; private set; }
-        public Color settingSkeletonColor { get; private set; }
+
+        public SkeletonType settingsSkeletonFKType { get; private set; }
+        public Color settingSkeletonFKColor { get; private set; }
+        public SkeletonType settingsSkeletonIKType { get; private set; }
+        public Color settingSkeletonIKColor { get; private set; }
+        public Color settingRootMotionColor { get; private set; }
         public float settingIKTargetSize { get; private set; }
         public Color settingIKTargetNormalColor { get; private set; }
         public Color settingIKTargetActiveColor { get; private set; }
@@ -94,10 +77,6 @@ namespace VeryAnimation
         public string settingGenericMirrorNameIgnoreCharacterString { get; private set; }
         public bool settingBlendShapeMirrorName { get; private set; }
         public string settingBlendShapeMirrorNameDifferentCharacters { get; private set; }
-        public DummyObjectMode settingDummyObjectMode { get; private set; }
-        public Color settingDummyObjectColor { get; private set; }
-        public DummyPositionType settingDummyPositionType { get; private set; }
-        public Vector3 settingDummyObjectPosition { get; private set; }
         public bool settingExtraSynchronizeAnimation { get; private set; }
         public bool settingExtraOnionSkin { get; private set; }
         public enum OnionSkinMode
@@ -137,9 +116,6 @@ namespace VeryAnimation
         private bool animationWindowFoldout;
         private bool mirrorFoldout;
         private bool mirrorAutomapFoldout;
-#if VERYANIMATION_TIMELINE
-        private bool dummyObjectFoldout;
-#endif
         private bool extraFoldout;
         private bool extraOnionSkinningFoldout;
         private bool extraRootTrailFoldout;
@@ -156,12 +132,15 @@ namespace VeryAnimation
             settingBoneNormalColor = GetEditorPrefsColor("VeryAnimation_BoneNormalColor", Color.white);
             settingBoneActiveColor = GetEditorPrefsColor("VeryAnimation_BoneActiveColor", Color.yellow);
             settingBoneMuscleLimit = EditorPrefs.GetBool("VeryAnimation_BoneMuscleLimit", true);
-            settingsSkeletonType = (SkeletonType)EditorPrefs.GetInt("VeryAnimation_SkeletonType", (int)SkeletonType.Lines);
-            settingSkeletonColor = GetEditorPrefsColor("VeryAnimation_SkeletonColor", Color.green);
+            settingsSkeletonFKType = (SkeletonType)EditorPrefs.GetInt("VeryAnimation_SkeletonType", (int)SkeletonType.Lines);
+            settingSkeletonFKColor = GetEditorPrefsColor("VeryAnimation_SkeletonColor", Color.green);
+            settingsSkeletonIKType = (SkeletonType)EditorPrefs.GetInt("VeryAnimation_SkeletonIKType", (int)SkeletonType.Line);
+            settingSkeletonIKColor = GetEditorPrefsColor("VeryAnimation_SkeletonIKColor", Color.magenta);
+            settingRootMotionColor = GetEditorPrefsColor("VeryAnimation_RootMotionColor", Color.cyan);
             settingIKTargetSize = EditorPrefs.GetFloat("VeryAnimation_IKTargetSize", 0.15f);
             settingIKTargetNormalColor = GetEditorPrefsColor("VeryAnimation_IKTargetNormalColor", new Color(1f, 1f, 1f, 0.5f));
             settingIKTargetActiveColor = GetEditorPrefsColor("VeryAnimation_IKTargetActiveColor", new Color(1f, 0.92f, 0.016f, 0.5f));
-            settingEditorWindowStyle = (EditorWindowStyle)EditorPrefs.GetInt("VeryAnimation_EditorWindowStyle", 0);
+            settingEditorWindowStyle = (EditorWindowStyle)EditorPrefs.GetInt("VeryAnimation_EditorWindowStyle", (int)EditorWindowStyle.Docking);
             settingEditorNameFieldWidth = EditorPrefs.GetFloat("VeryAnimation_EditorNameFieldWidth", 180f);
             settingHierarchyExpandSelectObject = EditorPrefs.GetBool("VeryAnimation_HierarchyExpandSelectObject", true);
             settingPropertyStyle = (PropertyStyle)EditorPrefs.GetInt("VeryAnimation_PropertyStyle", 2);
@@ -172,10 +151,6 @@ namespace VeryAnimation
             settingGenericMirrorNameIgnoreCharacterString = EditorPrefs.GetString("VeryAnimation_GenericMirrorNameIgnoreCharacterString", ".");
             settingBlendShapeMirrorName = EditorPrefs.GetBool("VeryAnimation_BlendShapeMirrorName", true);
             settingBlendShapeMirrorNameDifferentCharacters = EditorPrefs.GetString("VeryAnimation_BlendShapeMirrorNameDifferentCharacters", "Left,Right,Hidari,Migi,L,R");
-            settingDummyObjectMode = (DummyObjectMode)EditorPrefs.GetInt("VeryAnimation_DummyObjectMode", (int)DummyObjectMode.Transparent);
-            settingDummyObjectColor = GetEditorPrefsColor("VeryAnimation_DummyObjectColor", Color.white);
-            settingDummyPositionType = (DummyPositionType)EditorPrefs.GetInt("VeryAnimation_DummyPositionType", (int)DummyPositionType.TimelinePosition);
-            settingDummyObjectPosition = GetEditorPrefsVector3("VeryAnimation_DummyObjectPosition", Vector3.zero);
             settingExtraSynchronizeAnimation = EditorPrefs.GetBool("VeryAnimation_ExtraSynchronizeAnimation", false);
             settingExtraOnionSkin = EditorPrefs.GetBool("VeryAnimation_ExtraOnionSkin", false);
             settingExtraOnionSkinMode = (OnionSkinMode)EditorPrefs.GetInt("VeryAnimation_ExtraOnionSkinMode", 0);
@@ -199,12 +174,15 @@ namespace VeryAnimation
             SetEditorPrefsColor("VeryAnimation_BoneNormalColor", settingBoneNormalColor = Color.white);
             SetEditorPrefsColor("VeryAnimation_BoneActiveColor", settingBoneActiveColor = Color.yellow);
             EditorPrefs.SetBool("VeryAnimation_BoneMuscleLimit", settingBoneMuscleLimit = true);
-            EditorPrefs.SetInt("VeryAnimation_SkeletonType", (int)(settingsSkeletonType = SkeletonType.Lines));
-            SetEditorPrefsColor("VeryAnimation_SkeletonColor", settingSkeletonColor = Color.green);
+            EditorPrefs.SetInt("VeryAnimation_SkeletonType", (int)(settingsSkeletonFKType = SkeletonType.Lines));
+            SetEditorPrefsColor("VeryAnimation_SkeletonColor", settingSkeletonFKColor = Color.green);
+            EditorPrefs.SetInt("VeryAnimation_SkeletonIKType", (int)(settingsSkeletonIKType = SkeletonType.Line));
+            SetEditorPrefsColor("VeryAnimation_SkeletonIKColor", settingSkeletonIKColor = Color.magenta);
+            SetEditorPrefsColor("VeryAnimation_RootMotionColor", settingRootMotionColor = Color.cyan);
             EditorPrefs.SetFloat("VeryAnimation_IKTargetSize", settingIKTargetSize = 0.15f);
             SetEditorPrefsColor("VeryAnimation_IKTargetNormalColor", settingIKTargetNormalColor = new Color(1f, 1f, 1f, 0.5f));
             SetEditorPrefsColor("VeryAnimation_IKTargetActiveColor", settingIKTargetActiveColor = new Color(1f, 0.92f, 0.016f, 0.5f));
-            EditorPrefs.SetInt("VeryAnimation_EditorWindowStyle", (int)(settingEditorWindowStyle = (EditorWindowStyle)0));
+            EditorPrefs.SetInt("VeryAnimation_EditorWindowStyle", (int)(settingEditorWindowStyle = EditorWindowStyle.Docking));
             EditorPrefs.SetFloat("VeryAnimation_EditorNameFieldWidth", settingEditorNameFieldWidth = 180f);
             EditorPrefs.SetBool("VeryAnimation_HierarchyExpandSelectObject", settingHierarchyExpandSelectObject = true);
             EditorPrefs.SetInt("VeryAnimation_PropertyStyle", (int)(settingPropertyStyle = (PropertyStyle)2));
@@ -215,10 +193,6 @@ namespace VeryAnimation
             EditorPrefs.SetString("VeryAnimation_GenericMirrorNameIgnoreCharacterString", settingGenericMirrorNameIgnoreCharacterString = ".");
             EditorPrefs.SetBool("VeryAnimation_BlendShapeMirrorName", settingBlendShapeMirrorName = true);
             EditorPrefs.SetString("VeryAnimation_BlendShapeMirrorNameDifferentCharacters", settingBlendShapeMirrorNameDifferentCharacters = "Left,Right,Hidari,Migi,L,R");
-            EditorPrefs.SetInt("VeryAnimation_DummyObjectMode", (int)(settingDummyObjectMode = DummyObjectMode.Transparent));
-            SetEditorPrefsColor("VeryAnimation_DummyObjectColor", settingDummyObjectColor = Color.white);
-            EditorPrefs.SetInt("VeryAnimation_DummyPositionType", (int)(settingDummyPositionType = DummyPositionType.TimelinePosition));
-            SetEditorPrefsVector3("VeryAnimation_DummyObjectPosition", settingDummyObjectPosition = Vector3.zero);
             EditorPrefs.SetBool("VeryAnimation_ExtraSynchronizeAnimation", settingExtraSynchronizeAnimation = false);
             EditorPrefs.SetBool("VeryAnimation_ExtraOnionSkin", settingExtraOnionSkin = false);
             EditorPrefs.SetInt("VeryAnimation_ExtraOnionSkinMode", (int)(settingExtraOnionSkinMode = (OnionSkinMode)0));
@@ -233,8 +207,7 @@ namespace VeryAnimation
             SetEditorPrefsColor("VeryAnimation_ExtraRootTrailColor", settingExtraRootTrailColor = DefaultRootTrailColor);
 
             Language.SetLanguage(settingLanguageType);
-            va.SetUpdateResampleAnimation();
-            SetDummyObjectRenderingMode();
+            va.SetUpdateSampleAnimation();
             va.onionSkin.Update();
             va.SetSynchronizeAnimation(settingExtraSynchronizeAnimation);
             va.SetAnimationWindowSynchroSelection();
@@ -261,14 +234,6 @@ namespace VeryAnimation
 
         private void UpdateGUIContentStrings()
         {
-#if VERYANIMATION_TIMELINE
-            DummyObjectModeString = new GUIContent[]
-            {
-                Language.GetContent(Language.Help.SettingsDummyObjectMode_Clone),
-                Language.GetContent(Language.Help.SettingsDummyObjectMode_Color),
-                Language.GetContent(Language.Help.SettingsDummyObjectMode_Transparent),
-            };
-#endif
             PropertyStyleString = new GUIContent[]
             {
                 Language.GetContent(Language.Help.SettingsPropertyStyle_Default),
@@ -374,29 +339,84 @@ namespace VeryAnimation
                         {
                             EditorGUI.indentLevel++;
                             {
-                                #region SkeletonType
+                                #region FK
+                                EditorGUILayout.LabelField("FK");
                                 {
-                                    EditorGUILayout.BeginHorizontal();
-                                    EditorGUI.BeginChangeCheck();
-                                    EditorGUILayout.PrefixLabel("Preview Type");
-                                    settingsSkeletonType = (SkeletonType)GUILayout.Toolbar((int)settingsSkeletonType, SkeletonTypeString, EditorStyles.miniButton);
-                                    if (EditorGUI.EndChangeCheck())
+                                    EditorGUI.indentLevel++;
+                                    #region SkeletonType
                                     {
-                                        EditorPrefs.SetInt("VeryAnimation_SkeletonType", (int)settingsSkeletonType);
-                                        InternalEditorUtility.RepaintAllViews();
+                                        EditorGUILayout.BeginHorizontal();
+                                        EditorGUI.BeginChangeCheck();
+                                        EditorGUILayout.PrefixLabel("Preview Type");
+                                        settingsSkeletonFKType = (SkeletonType)GUILayout.Toolbar((int)settingsSkeletonFKType, SkeletonTypeString, EditorStyles.miniButton);
+                                        if (EditorGUI.EndChangeCheck())
+                                        {
+                                            EditorPrefs.SetInt("VeryAnimation_SkeletonType", (int)settingsSkeletonFKType);
+                                            InternalEditorUtility.RepaintAllViews();
+                                        }
+                                        EditorGUILayout.EndHorizontal();
                                     }
-                                    EditorGUILayout.EndHorizontal();
+                                    #endregion
+                                    #region Skeleton Color
+                                    {
+                                        EditorGUI.BeginChangeCheck();
+                                        settingSkeletonFKColor = EditorGUILayout.ColorField("Preview Color", settingSkeletonFKColor);
+                                        if (EditorGUI.EndChangeCheck())
+                                        {
+                                            SetEditorPrefsColor("VeryAnimation_SkeletonColor", settingSkeletonFKColor);
+                                            InternalEditorUtility.RepaintAllViews();
+                                        }
+                                    }
+                                    #endregion
+                                    EditorGUI.indentLevel--;
                                 }
                                 #endregion
-                                #region Skeleton Color
+                                #region IK
+                                EditorGUILayout.LabelField(new GUIContent("IK", "Foot IK and Animation Rigging"));
                                 {
-                                    EditorGUI.BeginChangeCheck();
-                                    settingSkeletonColor = EditorGUILayout.ColorField("Preview Color", settingSkeletonColor);
-                                    if (EditorGUI.EndChangeCheck())
+                                    EditorGUI.indentLevel++;
+                                    #region SkeletonType
                                     {
-                                        SetEditorPrefsColor("VeryAnimation_SkeletonColor", settingSkeletonColor);
-                                        InternalEditorUtility.RepaintAllViews();
+                                        EditorGUILayout.BeginHorizontal();
+                                        EditorGUI.BeginChangeCheck();
+                                        EditorGUILayout.PrefixLabel("Preview Type");
+                                        settingsSkeletonIKType = (SkeletonType)GUILayout.Toolbar((int)settingsSkeletonIKType, SkeletonTypeString, EditorStyles.miniButton);
+                                        if (EditorGUI.EndChangeCheck())
+                                        {
+                                            EditorPrefs.SetInt("VeryAnimation_SkeletonIKType", (int)settingsSkeletonIKType);
+                                            InternalEditorUtility.RepaintAllViews();
+                                        }
+                                        EditorGUILayout.EndHorizontal();
                                     }
+                                    #endregion
+                                    #region Skeleton Color
+                                    {
+                                        EditorGUI.BeginChangeCheck();
+                                        settingSkeletonIKColor = EditorGUILayout.ColorField("Preview Color", settingSkeletonIKColor);
+                                        if (EditorGUI.EndChangeCheck())
+                                        {
+                                            SetEditorPrefsColor("VeryAnimation_SkeletonIKColor", settingSkeletonIKColor);
+                                            InternalEditorUtility.RepaintAllViews();
+                                        }
+                                    }
+                                    #endregion
+                                    EditorGUI.indentLevel--;
+                                }
+                                #endregion
+                                #region RootMotion Color
+                                EditorGUILayout.LabelField("Root Motion");
+                                {
+                                    EditorGUI.indentLevel++;
+                                    {
+                                        EditorGUI.BeginChangeCheck();
+                                        settingRootMotionColor = EditorGUILayout.ColorField("Preview Color", settingRootMotionColor);
+                                        if (EditorGUI.EndChangeCheck())
+                                        {
+                                            SetEditorPrefsColor("VeryAnimation_RootMotionColor", settingRootMotionColor);
+                                            InternalEditorUtility.RepaintAllViews();
+                                        }
+                                    }
+                                    EditorGUI.indentLevel--;
                                 }
                                 #endregion
                             }
@@ -633,84 +653,6 @@ namespace VeryAnimation
 
                     EditorGUI.indentLevel--;
                 }
-#if VERYANIMATION_TIMELINE
-                if (va.dummyObject != null)
-                {
-                    dummyObjectFoldout = EditorGUILayout.Foldout(dummyObjectFoldout, "Dummy Object", true);
-                    if (dummyObjectFoldout)
-                    {
-                        EditorGUI.indentLevel++;
-                        {
-                            #region ChangeColor
-                            {
-                                EditorGUILayout.BeginHorizontal();
-                                EditorGUILayout.PrefixLabel("Rendering Mode");
-                                EditorGUI.BeginChangeCheck();
-                                settingDummyObjectMode = (DummyObjectMode)GUILayout.Toolbar((int)settingDummyObjectMode, DummyObjectModeString, EditorStyles.miniButton);
-                                if (EditorGUI.EndChangeCheck())
-                                {
-                                    EditorPrefs.SetInt("VeryAnimation_DummyObjectMode", (int)settingDummyObjectMode);
-                                    SetDummyObjectRenderingMode();
-                                    InternalEditorUtility.RepaintAllViews();
-                                }
-                                EditorGUILayout.EndHorizontal();
-                            }
-                            #endregion
-                            #region Color
-                            EditorGUI.indentLevel++;
-                            if (settingDummyObjectMode == DummyObjectMode.Color || settingDummyObjectMode == DummyObjectMode.Transparent)
-                            {
-                                EditorGUI.BeginChangeCheck();
-                                settingDummyObjectColor = EditorGUILayout.ColorField("Color", settingDummyObjectColor);
-                                if (EditorGUI.EndChangeCheck())
-                                {
-                                    SetEditorPrefsColor("VeryAnimation_DummyObjectColor", settingDummyObjectColor);
-                                    SetDummyObjectRenderingMode();
-                                    InternalEditorUtility.RepaintAllViews();
-                                }
-                            }
-                            EditorGUI.indentLevel--;
-                            #endregion
-                        }
-                        if (va.uAw_2017_1.GetLinkedWithTimeline())
-                        {
-                            #region settingDummyPositionType
-                            {
-                                EditorGUILayout.BeginHorizontal();
-                                EditorGUILayout.PrefixLabel("Position Type");
-                                EditorGUI.BeginChangeCheck();
-                                settingDummyPositionType = (DummyPositionType)GUILayout.Toolbar((int)settingDummyPositionType, DummyPositionTypeString, EditorStyles.miniButton);
-                                if (EditorGUI.EndChangeCheck())
-                                {
-                                    EditorPrefs.SetInt("VeryAnimation_DummyPositionType", (int)settingDummyPositionType);
-                                    va.SetUpdateResampleAnimation();
-                                    va.SetSynchroIKtargetAll();
-                                    InternalEditorUtility.RepaintAllViews();
-                                }
-                                EditorGUILayout.EndHorizontal();
-                            }
-                            #endregion
-                            EditorGUI.indentLevel++;
-                            {
-                                #region Position
-                                {
-                                    EditorGUI.BeginChangeCheck();
-                                    settingDummyObjectPosition = EditorGUILayout.Vector3Field(new GUIContent("Offset Position", "This is used to prevent objects from overlapping."), settingDummyObjectPosition);
-                                    if (EditorGUI.EndChangeCheck())
-                                    {
-                                        SetEditorPrefsVector3("VeryAnimation_DummyObjectPosition", settingDummyObjectPosition);
-                                        va.SetUpdateResampleAnimation();
-                                        InternalEditorUtility.RepaintAllViews();
-                                    }
-                                }
-                                #endregion
-                            }
-                            EditorGUI.indentLevel--;
-                        }
-                        EditorGUI.indentLevel--;
-                    }
-                }
-#endif
                 extraFoldout = EditorGUILayout.Foldout(extraFoldout, "Extra functions", true);
                 if (extraFoldout)
                 {
@@ -718,11 +660,7 @@ namespace VeryAnimation
                     {
                         #region SynchronizeAnimation
                         {
-#if VERYANIMATION_TIMELINE
-                            var enable = !EditorApplication.isPlaying && !va.uAw_2017_1.GetLinkedWithTimeline();
-#else
-                            var enable = !EditorApplication.isPlaying;
-#endif
+                            var enable = !EditorApplication.isPlaying && !va.uAw.GetLinkedWithTimeline();
                             EditorGUI.BeginDisabledGroup(!enable);
                             EditorGUI.BeginChangeCheck();
                             settingExtraSynchronizeAnimation = EditorGUILayout.ToggleLeft(Language.GetContent(Language.Help.SettingsSynchronizeAnimation), settingExtraSynchronizeAnimation);
@@ -747,7 +685,6 @@ namespace VeryAnimation
                                         va.onionSkin.Update();
                                     }
                                 }
-                                EditorGUI.BeginDisabledGroup(va.prefabMode);
                                 {
                                     var saveLevel = EditorGUI.indentLevel;
                                     EditorGUI.indentLevel = 0;
@@ -756,9 +693,9 @@ namespace VeryAnimation
                                     if (!settingExtraOnionSkin)
                                         extraOnionSkinningFoldout = false;
                                 }
-                                EditorGUILayout.EndHorizontal();
                             }
-                            if (settingExtraOnionSkin && extraOnionSkinningFoldout && !va.prefabMode)
+                            EditorGUILayout.EndHorizontal();
+                            if (settingExtraOnionSkin && extraOnionSkinningFoldout)
                             {
                                 EditorGUI.indentLevel++;
                                 #region settingExtraOnionSkinMode
@@ -864,7 +801,6 @@ namespace VeryAnimation
                                 #endregion
                                 EditorGUI.indentLevel--;
                             }
-                            EditorGUI.EndDisabledGroup();
                         }
                         #endregion
                         #region RootTrail
@@ -961,30 +897,6 @@ namespace VeryAnimation
             EditorPrefs.SetFloat(name + "_x", vec.x);
             EditorPrefs.SetFloat(name + "_y", vec.y);
             EditorPrefs.SetFloat(name + "_z", vec.z);
-        }
-
-        public void SetDummyObjectRenderingMode()
-        {
-            if (va.dummyObject != null)
-            {
-                switch (settingDummyObjectMode)
-                {
-                case DummyObjectMode.Original:
-                    va.dummyObject.RevertTransparent();
-                    va.dummyObject.ResetColor();
-                    break;
-                case DummyObjectMode.Color:
-                    va.dummyObject.RevertTransparent();
-                    va.dummyObject.SetColor(settingDummyObjectColor);
-                    break;
-                case DummyObjectMode.Transparent:
-                    va.dummyObject.ChangeTransparent();
-                    va.dummyObject.SetColor(settingDummyObjectColor);
-                    break;
-                default:
-                    break;
-                }
-            }
         }
     }
 }

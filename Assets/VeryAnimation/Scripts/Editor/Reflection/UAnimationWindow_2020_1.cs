@@ -20,13 +20,6 @@ namespace VeryAnimation
         {
             var asmUnityEditor = Assembly.LoadFrom(InternalEditorUtility.GetEditorAssemblyPath());
             var animationWindowType = asmUnityEditor.GetType("UnityEditor.AnimationWindow");
-
-            //Unity2020.2
-            if (mi_OnSelectionChange == null)
-                Assert.IsNotNull(mi_OnSelectionChange = animationWindowType.GetMethod("OnSelectionChange", BindingFlags.NonPublic | BindingFlags.Instance));
-            if (mi_EditSequencerClip == null)
-                Assert.IsNotNull(mi_EditSequencerClip = animationWindowType.GetMethod("EditSequencerClip", BindingFlags.NonPublic | BindingFlags.Instance));
-
             uEditorWindow = uEditorWindow_2020_1 = new UEditorWindow_2020_1();
         }
     }

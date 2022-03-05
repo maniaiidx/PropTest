@@ -356,7 +356,8 @@ namespace VeryAnimation
                 for (int i = 0; i < pSkeletonPose.arraySize; i++)
                 {
                     var pData = pSkeletonPose.GetArrayElementAtIndex(i);
-                    if (pData == null) continue;
+                    if (pData == null) 
+                        continue;
                     var position = new Vector3(pData.FindPropertyRelative("t.x").floatValue,
                                                 pData.FindPropertyRelative("t.y").floatValue,
                                                 pData.FindPropertyRelative("t.z").floatValue);
@@ -368,6 +369,8 @@ namespace VeryAnimation
                                                 pData.FindPropertyRelative("s.y").floatValue,
                                                 pData.FindPropertyRelative("s.z").floatValue);
                     string path = idPath[pID.GetArrayElementAtIndex(i).longValue];
+                    if (list.ContainsKey(path))
+                        continue;
                     list.Add(path, new Transform()
                     {
                         position = position,

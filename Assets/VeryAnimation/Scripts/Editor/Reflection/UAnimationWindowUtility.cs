@@ -10,6 +10,7 @@ namespace VeryAnimation
 {
     public class UAnimationWindowUtility
     {
+        private Func<EditorCurveBinding, bool> dg_ShouldShowAnimationWindowCurve;
         private MethodInfo mi_IsNodeLeftOverCurve;
         private MethodInfo mi_CreateNewClipAtPath;
         private MethodInfo mi_GetNextKeyframeTime;
@@ -19,10 +20,16 @@ namespace VeryAnimation
         {
             var asmUnityEditor = Assembly.LoadFrom(InternalEditorUtility.GetEditorAssemblyPath());
             var animationWindowUtilityType = asmUnityEditor.GetType("UnityEditorInternal.AnimationWindowUtility");
+            Assert.IsNotNull(dg_ShouldShowAnimationWindowCurve = (Func<EditorCurveBinding, bool>)Delegate.CreateDelegate(typeof(Func<EditorCurveBinding, bool>), null, animationWindowUtilityType.GetMethod("ShouldShowAnimationWindowCurve", BindingFlags.Public | BindingFlags.Static)));
             Assert.IsNotNull(mi_IsNodeLeftOverCurve = animationWindowUtilityType.GetMethod("IsNodeLeftOverCurve", BindingFlags.Public | BindingFlags.Static));
             Assert.IsNotNull(mi_CreateNewClipAtPath = animationWindowUtilityType.GetMethod("CreateNewClipAtPath", BindingFlags.NonPublic | BindingFlags.Static));
             Assert.IsNotNull(mi_GetNextKeyframeTime = animationWindowUtilityType.GetMethod("GetNextKeyframeTime", BindingFlags.Public | BindingFlags.Static));
             Assert.IsNotNull(mi_GetPreviousKeyframeTime = animationWindowUtilityType.GetMethod("GetPreviousKeyframeTime", BindingFlags.Public | BindingFlags.Static));
+        }
+
+        public bool ShouldShowAnimationWindowCurve(EditorCurveBinding binding)
+        {
+            return dg_ShouldShowAnimationWindowCurve(binding);
         }
 
         public bool IsNodeLeftOverCurve(object node)

@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿#if !UNITY_2019_1_OR_NEWER
+#define VERYANIMATION_TIMELINE
+#endif
+
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEditor;
 using UnityEditorInternal;
@@ -9,18 +13,24 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
+#if VERYANIMATION_TIMELINE
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
+#endif
+
 namespace VeryAnimation
 {
-    public class UAnimationWindow //560
+    public class UAnimationWindow //2017.4 or later
     {
         protected VeryAnimationWindow vaw { get { return VeryAnimationWindow.instance; } }
         protected VeryAnimation va { get { return VeryAnimation.instance; } }
-        
+
         protected Func<object, IList> dg_get_s_AnimationWindows;
         protected Func<object, object> dg_get_m_AnimEditor;
         protected Func<object, bool> dg_get_m_Locked;
         protected Action<object, bool> dg_set_m_Locked;
         protected MethodInfo mi_OnSelectionChange;
+        protected MethodInfo mi_EditSequencerClip;
 
         protected class UAnimEditor
         {
@@ -132,9 +142,12 @@ namespace VeryAnimation
             protected MethodInfo mi_StopRecording;
             protected MethodInfo mi_StartPlayback;
             protected MethodInfo mi_StopPlayback;
+            protected MethodInfo mi_StartPreview;
+            protected MethodInfo mi_StopPreview;
             protected Func<object, bool> dg_get_showCurveEditor;
             protected Func<object, TreeViewState> dg_get_hierarchyState;
             protected Func<object, object> dg_get_hierarchyData;
+            protected Func<object, bool> dg_get_linkedWithSequencer;
             protected Func<object, IList> dg_get_m_ActiveCurvesCache;
             protected Action<object, IList> dg_set_m_ActiveCurvesCache;
             protected Func<object, IList> dg_get_m_dopelinesCache;
@@ -145,6 +158,8 @@ namespace VeryAnimation
             protected Func<Component> dg_get_activeAnimationPlayer;
             protected Func<bool> dg_get_playing;
             protected Func<bool> dg_get_recording;
+            protected Func<bool> dg_get_previewing;
+            protected Func<bool> dg_get_canPreview;
             protected Func<int> dg_get_currentFrame;
             protected Action<int> dg_set_currentFrame;
             protected Func<float> dg_get_currentTime;
@@ -156,6 +171,7 @@ namespace VeryAnimation
             protected Action<AnimationClip, EditorCurveBinding, AnimationUtility.CurveModifiedType> dg_CurveWasModified;
             protected Func<float, float, float> dg_SnapToFrame;
             protected Func<float, int> dg_TimeToFrameRound;
+
 
             public UAnimationWindowState(Assembly asmUnityEditor)
             {
@@ -174,9 +190,12 @@ namespace VeryAnimation
                 Assert.IsNotNull(mi_StopRecording = animationWindowStateType.GetMethod("StopRecording"));
                 Assert.IsNotNull(mi_StartPlayback = animationWindowStateType.GetMethod("StartPlayback"));
                 Assert.IsNotNull(mi_StopPlayback = animationWindowStateType.GetMethod("StopPlayback"));
+                Assert.IsNotNull(mi_StartPreview = animationWindowStateType.GetMethod("StartPreview"));
+                Assert.IsNotNull(mi_StopPreview = animationWindowStateType.GetMethod("StopPreview"));
                 Assert.IsNotNull(dg_get_showCurveEditor = EditorCommon.CreateGetFieldDelegate<bool>(animationWindowStateType.GetField("showCurveEditor")));
                 Assert.IsNotNull(dg_get_hierarchyState = EditorCommon.CreateGetFieldDelegate<TreeViewState>(animationWindowStateType.GetField("hierarchyState")));
                 Assert.IsNotNull(dg_get_hierarchyData = EditorCommon.CreateGetFieldDelegate<object>(animationWindowStateType.GetField("hierarchyData")));
+                Assert.IsNotNull(dg_get_linkedWithSequencer = EditorCommon.CreateGetFieldDelegate<bool>(animationWindowStateType.GetField("linkedWithSequencer")));
                 Assert.IsNotNull(dg_get_m_ActiveCurvesCache = EditorCommon.CreateGetFieldDelegate<IList>(animationWindowStateType.GetField("m_ActiveCurvesCache", BindingFlags.NonPublic | BindingFlags.Instance)));
                 Assert.IsNotNull(dg_set_m_ActiveCurvesCache = EditorCommon.CreateSetFieldDelegate<IList>(animationWindowStateType.GetField("m_ActiveCurvesCache", BindingFlags.NonPublic | BindingFlags.Instance)));
                 Assert.IsNotNull(dg_get_m_dopelinesCache = EditorCommon.CreateGetFieldDelegate<IList>(animationWindowStateType.GetField("m_dopelinesCache", BindingFlags.NonPublic | BindingFlags.Instance)));
@@ -205,6 +224,11 @@ namespace VeryAnimation
             {
                 if (instance == null) return null;
                 return dg_get_hierarchyData(instance);
+            }
+            public bool GetLinkedWithSequencer(object instance)
+            {
+                if (instance == null) return false;
+                return dg_get_linkedWithSequencer(instance);
             }
             public object GetControlInterface(object instance)
             {
@@ -381,25 +405,98 @@ namespace VeryAnimation
                 return dg_TimeToFrameRound(time);
             }
 
-            public void StartRecording(object instance)
+            public bool StartRecording(object instance)
             {
-                if (instance == null) return;
-                mi_StartRecording.Invoke(instance, null);
+                if (instance == null) return false;
+                try
+                {
+                    mi_StartRecording.Invoke(instance, null);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
             }
-            public virtual void StopRecording(object instance)
+            public bool StopRecording(object instance)
             {
-                if (instance == null) return;
-                mi_StopRecording.Invoke(instance, null);
+                if (instance == null) return false;
+                try
+                {
+                    mi_StopRecording.Invoke(instance, null);
+                    mi_StopPreview.Invoke(instance, null);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
             }
-            public void StartPlayback(object instance)
+            public bool StartPlayback(object instance)
             {
-                if (instance == null) return;
-                mi_StartPlayback.Invoke(instance, null);
+                if (instance == null) return false;
+                try
+                {
+                    mi_StartPlayback.Invoke(instance, null);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
             }
-            public void StopPlayback(object instance)
+            public bool StopPlayback(object instance)
             {
-                if (instance == null) return;
-                mi_StopPlayback.Invoke(instance, null);
+                if (instance == null) return false;
+                try
+                {
+                    mi_StopPlayback.Invoke(instance, null);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
+            }
+            public bool StartPreview(object instance)
+            {
+                if (instance == null) return false;
+                try
+                {
+                    mi_StartPreview.Invoke(instance, null);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
+            }
+            public bool StopPreview(object instance)
+            {
+                if (instance == null) return false;
+                try
+                {
+                    mi_StopPreview.Invoke(instance, null);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
+            }
+            public bool GetPreviewing(object instance)
+            {
+                if (instance == null) return false;
+                if (dg_get_previewing == null || dg_get_previewing.Target != instance)
+                    dg_get_previewing = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), instance, instance.GetType().GetProperty("previewing").GetGetMethod());
+                return dg_get_previewing();
+            }
+            public bool GetCanPreview(object instance)
+            {
+                if (instance == null) return false;
+                if (dg_get_canPreview == null || dg_get_canPreview.Target != instance)
+                    dg_get_canPreview = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), instance, instance.GetType().GetProperty("canPreview").GetGetMethod());
+                return dg_get_canPreview();
             }
         }
         protected class UAnimationWindowControl
@@ -410,14 +507,18 @@ namespace VeryAnimation
             protected MethodInfo mi_GoToLastKeyframe;
             protected Func<bool> dg_get_canRecord;
             protected Action dg_ResampleAnimation;
+            protected FieldInfo fi_m_Time;
 
             public UAnimationWindowControl(Assembly asmUnityEditor)
             {
-                var animationWindowControlType = asmUnityEditor.GetType("UnityEditorInternal.IAnimationWindowControl");
-                Assert.IsNotNull(mi_GoToNextKeyframe = animationWindowControlType.GetMethod("GoToNextKeyframe", new Type[] { }));
-                Assert.IsNotNull(mi_GoToPreviousKeyframe = animationWindowControlType.GetMethod("GoToPreviousKeyframe", new Type[] { }));
-                Assert.IsNotNull(mi_GoToFirstKeyframe = animationWindowControlType.GetMethod("GoToFirstKeyframe", new Type[] { }));
-                Assert.IsNotNull(mi_GoToLastKeyframe = animationWindowControlType.GetMethod("GoToLastKeyframe", new Type[] { }));
+                var iAnimationWindowControlType = asmUnityEditor.GetType("UnityEditorInternal.IAnimationWindowControl");
+                Assert.IsNotNull(mi_GoToNextKeyframe = iAnimationWindowControlType.GetMethod("GoToNextKeyframe", new Type[] { }));
+                Assert.IsNotNull(mi_GoToPreviousKeyframe = iAnimationWindowControlType.GetMethod("GoToPreviousKeyframe", new Type[] { }));
+                Assert.IsNotNull(mi_GoToFirstKeyframe = iAnimationWindowControlType.GetMethod("GoToFirstKeyframe", new Type[] { }));
+                Assert.IsNotNull(mi_GoToLastKeyframe = iAnimationWindowControlType.GetMethod("GoToLastKeyframe", new Type[] { }));
+
+                var animationWindowControlType = asmUnityEditor.GetType("UnityEditorInternal.AnimationWindowControl");
+                Assert.IsNotNull(fi_m_Time = animationWindowControlType.GetField("m_Time", BindingFlags.NonPublic | BindingFlags.Instance));
             }
 
             public virtual bool GetCanRecord(object instance)
@@ -427,7 +528,7 @@ namespace VeryAnimation
                     dg_get_canRecord = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), instance, instance.GetType().GetProperty("canRecord").GetGetMethod());
                 return dg_get_canRecord();
             }
-            public void ResampleAnimation(object instance)
+            public virtual void ResampleAnimation(object instance)
             {
                 if (instance == null) return;
                 if (dg_ResampleAnimation == null || dg_ResampleAnimation.Target != instance)
@@ -454,6 +555,12 @@ namespace VeryAnimation
                 if (instance == null) return;
                 mi_GoToLastKeyframe.Invoke(instance, null);
             }
+
+            public void SetTime(object instance, object time)
+            {
+                if (instance == null) return;
+                fi_m_Time.SetValue(instance, time);
+            }
         }
         protected class UAnimationKeyTime
         {
@@ -461,7 +568,7 @@ namespace VeryAnimation
 
             public UAnimationKeyTime(Assembly asmUnityEditor)
             {
-                var animationKeyTimeType  = asmUnityEditor.GetType("UnityEditorInternal.AnimationKeyTime");
+                var animationKeyTimeType = asmUnityEditor.GetType("UnityEditorInternal.AnimationKeyTime");
                 mi_Time = animationKeyTimeType.GetMethod("Time", BindingFlags.Public | BindingFlags.Static);
             }
             public object Time(float time, float frameRate)
@@ -473,7 +580,9 @@ namespace VeryAnimation
         {
             public Type animationWindowCurveType { get; private set; }
             private Func<object, EditorCurveBinding> dg_get_m_Binding;
+            private PropertyInfo pi_selectionBinding;
             private MethodInfo mi_GetHashCode;
+            private MethodInfo mi_CompareTo;
             private MethodInfo mi_FindKeyAtTime;
 
             public UAnimationWindowCurve(Assembly asmUnityEditor)
@@ -481,7 +590,9 @@ namespace VeryAnimation
                 animationWindowCurveType = asmUnityEditor.GetType("UnityEditorInternal.AnimationWindowCurve");
 
                 Assert.IsNotNull(dg_get_m_Binding = EditorCommon.CreateGetFieldDelegate<EditorCurveBinding>(animationWindowCurveType.GetField("m_Binding", BindingFlags.NonPublic | BindingFlags.Instance)));
+                Assert.IsNotNull(pi_selectionBinding = animationWindowCurveType.GetProperty("selectionBinding"));
                 Assert.IsNotNull(mi_GetHashCode = animationWindowCurveType.GetMethod("GetHashCode"));
+                Assert.IsNotNull(mi_CompareTo = animationWindowCurveType.GetMethod("CompareTo"));
                 Assert.IsNotNull(mi_FindKeyAtTime = animationWindowCurveType.GetMethod("FindKeyAtTime"));
             }
 
@@ -489,6 +600,16 @@ namespace VeryAnimation
             {
                 if (instance == null) return new EditorCurveBinding();
                 return dg_get_m_Binding(instance);
+            }
+            public int CompareTo(object instance, object other)
+            {
+                if (instance == null) return 0;
+                return (int)mi_CompareTo.Invoke(instance, new object[] { other });
+            }
+            public void SetSelectionBinding(object instance, object selectionItem)
+            {
+                if (instance == null) return;
+                pi_selectionBinding.SetValue(instance, selectionItem, null);
             }
             public int GetHashCode(object instance)
             {
@@ -534,12 +655,15 @@ namespace VeryAnimation
             private Func<AnimationClip> dg_get_animationClip;
             private Func<IList> dg_get_curves;
             private Action<object, IList> dg_set_m_CurvesCache;
+            private Func<object, IList> dg_get_m_CurvesCache;
             private Action dg_ClearCache;
+            private Func<EditorCurveBinding, Type> dg_GetEditorCurveValueType;
 
             public UAnimationWindowSelectionItem(Assembly asmUnityEditor)
             {
                 var animationWindowSelectionItemType = asmUnityEditor.GetType("UnityEditorInternal.AnimationWindowSelectionItem");
                 Assert.IsNotNull(dg_set_m_CurvesCache = EditorCommon.CreateSetFieldDelegate<IList>(animationWindowSelectionItemType.GetField("m_CurvesCache", BindingFlags.NonPublic | BindingFlags.Instance)));
+                Assert.IsNotNull(dg_get_m_CurvesCache = EditorCommon.CreateGetFieldDelegate<IList>(animationWindowSelectionItemType.GetField("m_CurvesCache", BindingFlags.NonPublic | BindingFlags.Instance)));
             }
 
             public GameObject GetGameObject(object instance)
@@ -577,12 +701,24 @@ namespace VeryAnimation
                 if (instance == null) return;
                 dg_set_m_CurvesCache(instance, curves);
             }
+            public IList GetCurvesCache(object instance)
+            {
+                if (instance == null) return null;
+                return dg_get_m_CurvesCache(instance);
+            }
             public void ClearCurvesCache(object instance)
             {
                 if (instance == null) return;
                 if (dg_ClearCache == null || dg_ClearCache.Target != instance)
                     dg_ClearCache = (Action)Delegate.CreateDelegate(typeof(Action), instance, instance.GetType().GetMethod("ClearCache"));
                 dg_ClearCache();
+            }
+            public Type GetEditorCurveValueType(object instance, EditorCurveBinding binding)
+            {
+                if (instance == null) return null;
+                if (dg_GetEditorCurveValueType == null || dg_GetEditorCurveValueType.Target != instance)
+                    dg_GetEditorCurveValueType = (Func<EditorCurveBinding, Type>)Delegate.CreateDelegate(typeof(Func<EditorCurveBinding, Type>), instance, instance.GetType().GetMethod("GetEditorCurveValueType"));
+                return dg_GetEditorCurveValueType(binding);
             }
         }
         protected class UAnimationWindowHierarchyDataSource
@@ -669,6 +805,19 @@ namespace VeryAnimation
         protected UAnimationWindowHierarchyDataSource uAnimationWindowHierarchyDataSource;
         protected UAnimationWindowHierarchyNode uAnimationWindowHierarchyNode;
         protected UDopeLine uDopeLine;
+#if VERYANIMATION_TIMELINE
+        public UTimelineWindow uTimelineWindow { get; protected set; }
+        protected object animationTimeWindowControlInstance
+        {
+            get
+            {
+                var awc = animationWindowControlInstance;
+                if (awc != null && awc.GetType() == uTimelineWindow.uTimelineWindowTimeControl.timelineWindowTimeControlType)
+                    return awc;
+                return null;
+            }
+        }
+#endif
 
         protected object animEditorInstance
         {
@@ -703,7 +852,10 @@ namespace VeryAnimation
                 if (si == null)
                 {
                     if (!HasFocus())
-                        instance.Focus();
+                    {
+                        if (instance != null)
+                            instance.Focus();
+                    }
                     si = uAnimEditor.GetSelection(ae);
                     if (si == null)
                         return null;
@@ -720,7 +872,10 @@ namespace VeryAnimation
                 if (si == null)
                 {
                     if (!HasFocus())
-                        instance.Focus();
+                    {
+                        if (instance != null)
+                            instance.Focus();
+                    }
                     si = uAnimEditor.GetSelectedItem(ae);
                     if (si == null)
                         return null;
@@ -745,6 +900,7 @@ namespace VeryAnimation
                 }
             }
             Assert.IsNotNull(mi_OnSelectionChange = animationWindowType.GetMethod("OnSelectionChange", BindingFlags.Instance | BindingFlags.Public));
+            Assert.IsNotNull(mi_EditSequencerClip = animationWindowType.GetMethod("EditSequencerClip", BindingFlags.Public | BindingFlags.Instance));
 
             uEditorWindow = new UEditorWindow();
             uAnimationWindowUtility = new UAnimationWindowUtility();
@@ -759,6 +915,9 @@ namespace VeryAnimation
             uAnimationWindowHierarchyDataSource = new UAnimationWindowHierarchyDataSource(asmUnityEditor);
             uAnimationWindowHierarchyNode = new UAnimationWindowHierarchyNode(asmUnityEditor);
             uDopeLine = new UDopeLine(asmUnityEditor);
+#if VERYANIMATION_TIMELINE
+            uTimelineWindow = new UTimelineWindow();
+#endif
         }
 
         public EditorWindow instance
@@ -775,13 +934,67 @@ namespace VeryAnimation
             }
         }
 
-        public virtual GameObject GetActiveRootGameObject()
+        public GameObject GetActiveRootGameObject()
         {
-            return uAnimationWindowState.GetActiveRootGameObject(animationWindowStateInstance);
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+#if VERYANIMATION_TIMELINE
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var bindingObject = uTimelineWindow.uTimelineWindowTimeControl.GetGenericBinding(atwc);
+                    if (bindingObject != null)
+                    {
+                        if (bindingObject is GameObject)
+                        {
+                            return bindingObject as GameObject;
+                        }
+                        else if (bindingObject is Animator)
+                        {
+                            var animator = bindingObject as Animator;
+                            return animator.gameObject;
+                        }
+                    }
+                }
+#endif
+                return null;
+            }
+            else
+            {
+                return uAnimationWindowState.GetActiveRootGameObject(aws);
+            }
         }
-        public virtual Component GetActiveAnimationPlayer()
+        public Component GetActiveAnimationPlayer()
         {
-            return uAnimationWindowState.GetActiveAnimationPlayer(animationWindowStateInstance);
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+#if VERYANIMATION_TIMELINE
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var bindingObject = uTimelineWindow.uTimelineWindowTimeControl.GetGenericBinding(atwc);
+                    if (bindingObject != null)
+                    {
+                        if (bindingObject is GameObject)
+                        {
+                            var gameObject = bindingObject as GameObject;
+                            return gameObject.GetComponent<Animator>();
+                        }
+                        else if (bindingObject is Animator)
+                        {
+                            return bindingObject as Animator;
+                        }
+                    }
+                }
+#endif
+                return null;
+            }
+            else
+            {
+                return uAnimationWindowState.GetActiveAnimationPlayer(aws);
+            }
         }
 
         public virtual AnimationClip GetSelectionAnimationClip()
@@ -811,22 +1024,38 @@ namespace VeryAnimation
             ForceRefresh();
         }
 
-        public virtual void RecordingDisable()
+        public void StopRecording()
         {
             var aws = animationWindowStateInstance;
-            if (!uAnimationWindowState.GetRecording(aws))
-                return;
-            uAnimationWindowState.StopRecording(aws);
-        }
-        public void RecordingChange()
-        {
-            var aws = animationWindowStateInstance;
-            var recording = uAnimationWindowState.GetRecording(aws);
-            recording = !recording;
-            if (recording)
-                uAnimationWindowState.StartRecording(aws);
-            else
+            if (uAnimationWindowState.GetRecording(aws))
+            {
                 uAnimationWindowState.StopRecording(aws);
+            }
+            else if (uAnimationWindowState.GetPreviewing(aws))
+            {
+                uAnimationWindowState.StopPreview(aws);
+            }
+        }
+        public bool StartRecording()
+        {
+            var aws = animationWindowStateInstance;
+            if (GetCanRecord())
+            {
+                if (!uAnimationWindowState.GetRecording(aws))
+                {
+                    if (!uAnimationWindowState.StartRecording(aws))
+                        return false;
+                }
+            }
+            else if (GetCanPreview())
+            {
+                if (!uAnimationWindowState.GetPreviewing(aws))
+                {
+                    if (!uAnimationWindowState.StartPreview(aws))
+                        return false;
+                }
+            }
+            return true;
         }
         public bool GetCanRecord()
         {
@@ -836,7 +1065,29 @@ namespace VeryAnimation
         {
             return uAnimationWindowState.GetRecording(animationWindowStateInstance);
         }
-        
+        public void StartPreviewing()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetPreviewing(aws))
+                return;
+            uAnimationWindowState.StartPreview(aws);
+        }
+        public void StopPreviewing()
+        {
+            var aws = animationWindowStateInstance;
+            if (!uAnimationWindowState.GetPreviewing(aws))
+                return;
+            uAnimationWindowState.StopPreview(aws);
+        }
+        public bool GetCanPreview()
+        {
+            return uAnimationWindowState.GetCanPreview(animationWindowStateInstance);
+        }
+        public bool GetPreviewing()
+        {
+            return uAnimationWindowState.GetPreviewing(animationWindowStateInstance);
+        }
+
         public void PlayingChange()
         {
             var aws = animationWindowStateInstance;
@@ -898,6 +1149,11 @@ namespace VeryAnimation
             uAnimationWindowState.SetCurrentTime(animationWindowStateInstance, time);
             Repaint();
         }
+        public void SetCurrentTimeOnly(float time)
+        {
+            var animationKeyTime = uAnimationKeyTime.Time(time, GetSelectionAnimationClip().frameRate);
+            uAnimationWindowControl.SetTime(animationWindowControlInstance, animationKeyTime);
+        }
 
         public float SnapToFrame(float time, float fps)
         {
@@ -908,15 +1164,49 @@ namespace VeryAnimation
             return uAnimationWindowState.TimeToFrameRound(animationWindowStateInstance, time);
         }
 
-        public virtual void MoveToNextFrame()
+        public void MoveToNextFrame()
         {
-            MoveFrame(1);
-            Repaint();
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+#if VERYANIMATION_TIMELINE
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var state = uTimelineWindow.uTimelineWindowTimeControl.GetTimelineState(atwc);
+                    var frame = uTimelineWindow.uTimelineState.GetFrame(state);
+                    uTimelineWindow.uTimelineState.SetFrame(state, ++frame);
+                    Repaint();
+                }
+#endif
+            }
+            else
+            {
+                MoveFrame(1);
+                Repaint();
+            }
         }
-        public virtual void MoveToPrevFrame()
+        public void MoveToPrevFrame()
         {
-            MoveFrame(-1);
-            Repaint();
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+#if VERYANIMATION_TIMELINE
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var state = uTimelineWindow.uTimelineWindowTimeControl.GetTimelineState(atwc);
+                    var frame = uTimelineWindow.uTimelineState.GetFrame(state);
+                    uTimelineWindow.uTimelineState.SetFrame(state, --frame);
+                    Repaint();
+                }
+#endif
+            }
+            else
+            {
+                MoveFrame(-1);
+                Repaint();
+            }
         }
         public void MoveToNextKeyframe()
         {
@@ -941,7 +1231,9 @@ namespace VeryAnimation
 
         public void SwitchBetweenCurvesAndDopesheet()
         {
-            uAnimEditor.SwitchBetweenCurvesAndDopesheet(animEditorInstance);
+            var ae = animEditorInstance;
+            uAnimEditor.SwitchBetweenCurvesAndDopesheet(ae);
+            uAnimEditor.SetTriggerFraming(ae);
             Repaint();
         }
         public bool IsShowCurveEditor()
@@ -986,8 +1278,12 @@ namespace VeryAnimation
         {
             return uAnimationWindowState.GetHierarchyState(animationWindowStateInstance);
         }
+
+        private IList m_myPropertySortOrFilterByBindingsSetCurvesCache = null;
         public void PropertySortOrFilterByBindings(List<EditorCurveBinding> bindings, bool filter)
         {
+            m_myPropertySortOrFilterByBindingsSetCurvesCache = null;
+
             var aws = animationWindowStateInstance;
             var sl = selection;
             var si = selectedItem;
@@ -997,48 +1293,54 @@ namespace VeryAnimation
             if (hierarchyData == null)
                 return;
 
-            if (bindings.Count > 0)
+            if (bindings != null && bindings.Count > 0)
             {
                 uAnimationWindowSelectionItem.ClearCurvesCache(si);
                 uAnimationWindowState.ClearCache(aws);
-                var curves = uAnimationWindowSelectionItem.GetCurves(si);
-                if (curves.Count > 0)
+                IList curves;
                 {
-                    Dictionary<EditorCurveBinding, int> cbindingsCache = new Dictionary<EditorCurveBinding, int>(curves.Count);
+                    var clip = uAnimationWindowSelectionItem.GetAnimationClip(si);
+                    var allBindings = AnimationUtility.GetCurveBindings(clip).ToList();
+                    allBindings.AddRange(AnimationUtility.GetObjectReferenceCurveBindings(clip));
+                    curves = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(uAnimationWindowCurve.animationWindowCurveType));
+                    foreach (var binding in bindings)
                     {
-                        for (int i = 0; i < curves.Count; i++)
-                            cbindingsCache.Add(uAnimationWindowCurve.GetBinding(curves[i]), i);
-                    }
-                    List<int> list = new List<int>(bindings.Count);
-                    {
-                        foreach (var binding in bindings)
-                        {
-                            int index;
-                            if (!cbindingsCache.TryGetValue(binding, out index))
-                                continue;
-                            if (index < 0)
-                                continue;
-                            list.Add(index);
-                        }
-                    }
-                    var saveCurves = Array.CreateInstance(curves[0].GetType(), curves.Count);
-                    {
-                        curves.CopyTo(saveCurves, 0);
-                    }
-                    {
-                        curves.Clear();
-                        foreach (var index in list)
-                            curves.Add(saveCurves.GetValue(index));
-                    }
+                        if (!allBindings.Contains(binding))
+                            continue;
+                        if (!uAnimationWindowUtility.ShouldShowAnimationWindowCurve(binding))
+                            continue;
 
-                    if (!filter)
+                        var type = uAnimationWindowSelectionItem.GetEditorCurveValueType(si, binding);
+                        var awc = Activator.CreateInstance(uAnimationWindowCurve.animationWindowCurveType, new object[] { clip, binding, type });
+                        uAnimationWindowCurve.SetSelectionBinding(awc, si);
+                        curves.Add(awc);
+                    }
                     {
-                        foreach (var curve in saveCurves)
+                        var addCurves = new List<object>();
+                        foreach (var binding in allBindings)
                         {
-                            if (!curves.Contains(curve))
+                            if (bindings.Contains(binding))
+                                continue;
+                            if (!uAnimationWindowUtility.ShouldShowAnimationWindowCurve(binding))
+                                continue;
+
+                            if (filter)
                             {
-                                curves.Add(curve);
+                                if (!bindings.Any(x => x.path == binding.path))
+                                    continue;
+                                if (binding.path == "" && binding.type == typeof(Animator)) //ignore
+                                    continue;
                             }
+
+                            var type = uAnimationWindowSelectionItem.GetEditorCurveValueType(si, binding);
+                            var awc = Activator.CreateInstance(uAnimationWindowCurve.animationWindowCurveType, new object[] { clip, binding, type });
+                            uAnimationWindowCurve.SetSelectionBinding(awc, si);
+                            addCurves.Add(awc);
+                        }
+                        addCurves.Sort((a, b) => uAnimationWindowCurve.CompareTo(a, b));
+                        foreach (var curve in addCurves)
+                        {
+                            curves.Add(curve);
                         }
                     }
                 }
@@ -1047,32 +1349,27 @@ namespace VeryAnimation
                     uAnimationWindowSelection.ClearCurvesCache(sl);
                 uAnimationWindowHierarchyDataSource.UpdateData(hierarchyData);
 
-                Repaint();
+                m_myPropertySortOrFilterByBindingsSetCurvesCache = curves;
             }
             else
             {
-                ForceRefresh();
+                uAnimationWindowSelectionItem.ClearCurvesCache(si);
+                uAnimationWindowState.ClearCache(aws);
+                uAnimationWindowHierarchyDataSource.UpdateData(hierarchyData);
             }
+
+            Repaint();
         }
-        public bool IsSelectedItemCurvesEqual(List<EditorCurveBinding> bindings)
+        public bool IsChangeMyPropertySortOrFilterByBindings()
         {
             var aws = animationWindowStateInstance;
             var si = selectedItem;
             if (aws == null || si == null)
                 return false;
-
-            var curves = uAnimationWindowSelectionItem.GetCurves(si);
-            if (curves.Count != bindings.Count)
+            if (m_myPropertySortOrFilterByBindingsSetCurvesCache == null)
                 return false;
 
-            for (int i = 0; i < bindings.Count; i++)
-            {
-                var cbinding = uAnimationWindowCurve.GetBinding(curves[i]);
-                if (cbinding != bindings[i])
-                    return false;
-            }
-
-            return true;
+            return uAnimationWindowSelectionItem.GetCurvesCache(si) != m_myPropertySortOrFilterByBindingsSetCurvesCache;
         }
         public List<EditorCurveBinding> GetSelectedItemCurves()
         {
@@ -1134,7 +1431,7 @@ namespace VeryAnimation
 
             Repaint();
         }
-        
+
         public List<EditorCurveBinding> GetCurveSelection()
         {
             var list = new List<EditorCurveBinding>();
@@ -1179,9 +1476,7 @@ namespace VeryAnimation
             var aws = animationWindowStateInstance;
             Array curves = null;
             {
-                var list = uAnimationWindowState.GetActiveCurves(aws);
-                if (!uAnimationWindowState.GetShowCurveEditor(aws) || list.Count == 0)
-                    list = uAnimationWindowState.GetAllCurves(aws);
+                var list = uAnimationWindowState.GetAllCurves(aws);
                 curves = Array.CreateInstance(uAnimationWindowCurve.animationWindowCurveType, list.Count);
                 list.CopyTo(curves, 0);
             }
@@ -1222,7 +1517,7 @@ namespace VeryAnimation
             uAnimationWindowState.ForceRefresh(animationWindowStateInstance);
             Repaint();
         }
-        
+
         public void CurveWasModified(AnimationClip clip, EditorCurveBinding binding, AnimationUtility.CurveModifiedType type)
         {
             var aws = animationWindowStateInstance;
@@ -1280,6 +1575,12 @@ namespace VeryAnimation
             return uEditorWindow.HasFocus(instance);
         }
 
+        public void Close()
+        {
+            if (instance != null)
+                instance.Close();
+        }
+
         public virtual bool GetLock(EditorWindow aw)
         {
             return dg_get_m_Locked(aw);
@@ -1301,5 +1602,243 @@ namespace VeryAnimation
         {
             mi_OnSelectionChange.Invoke(instance, null);
         }
+
+        public bool GetRemoveStartOffset()
+        {
+#if VERYANIMATION_TIMELINE
+            if (GetLinkedWithTimeline())
+                return GetTimelineAnimationRemoveStartOffset();
+#endif
+            return false;
+        }
+
+        public bool GetLinkedWithTimeline()
+        {
+#if VERYANIMATION_TIMELINE
+            return uAnimationWindowState.GetLinkedWithSequencer(animationWindowStateInstance);
+#else
+            return false;
+#endif
+        }
+#if VERYANIMATION_TIMELINE
+        public bool GetTimelineTrackAssetEditable()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var trackAsset = uTimelineWindow.uTimelineWindowTimeControl.GetTrackAsset(atwc);
+                    if (trackAsset != null && !trackAsset.muted)
+                    {
+                        var locked = uTimelineWindow.uTrackAsset.GetLocked(trackAsset);
+                        if (!locked)
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool GetTimelineRecording()
+        {
+            return uTimelineWindow.GetRecording();
+        }
+        public void SetTimelineRecording(bool enable)
+        {
+            uTimelineWindow.SetRecording(enable);
+        }
+
+        public bool GetTimelinePreviewMode()
+        {
+            return uTimelineWindow.GetPreviewMode();
+        }
+        public void SetTimelinePreviewMode(bool enable)
+        {
+            uTimelineWindow.SetPreviewMode(enable);
+        }
+
+        public AnimationClip GetTimelineAnimationClip()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    return uTimelineWindow.uTimelineWindowTimeControl.GetAnimationClip(atwc);
+                }
+            }
+            return null;
+        }
+        public void SetTimelineAnimationClip(AnimationClip clip, string undoName = null)
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    uTimelineWindow.uTimelineWindowTimeControl.SetAnimationClip(atwc, clip, undoName);
+                }
+            }
+        }
+
+        public virtual void GetTimelineAnimationTrackInfo(out bool animatesRootTransform, out bool requiresMotionXPlayable, out bool usesAbsoluteMotion)
+        {
+            animatesRootTransform = false;
+            requiresMotionXPlayable = false;
+            usesAbsoluteMotion = false;
+
+            var animator = GetActiveAnimationPlayer() as Animator;
+            if (animator != null)
+            {
+                animatesRootTransform = animator.applyRootMotion;
+                requiresMotionXPlayable = animatesRootTransform;
+                usesAbsoluteMotion = animatesRootTransform;
+            }
+        }
+        public virtual bool GetTimelineRootMotionOffsets(out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+
+#if !UNITY_2018_3_OR_NEWER
+            var animtionTrack = GetTimelineAnimationTrack(true);
+            if (animtionTrack == null)
+                return false;
+
+            //Track Offsets
+            if (animtionTrack.applyOffsets)
+            {
+                position = animtionTrack.position;
+                rotation = animtionTrack.rotation;
+            }
+            //Clip Offsets
+            {
+                var animationPlayableAsset = GetTimelineAnimationPlayableAsset();
+                if (animationPlayableAsset != null)
+                {
+                    position += rotation * animationPlayableAsset.position;
+                    rotation *= animationPlayableAsset.rotation;
+                }
+                else
+                {
+                    position += rotation * animtionTrack.openClipOffsetPosition;
+                    rotation *= animtionTrack.openClipOffsetRotation;
+                }
+            }
+#endif
+            return true;
+        }
+
+        public float GetTimelineFrameRate()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var state = uTimelineWindow.uTimelineWindowTimeControl.GetTimelineState(atwc);
+                    return uTimelineWindow.uTimelineState.GetFrameRate(state);
+                }
+            }
+            return 0f;
+        }
+
+        public bool IsTimelineArmedForRecord()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var awc = animationWindowControlInstance;
+                if (awc != null && awc.GetType() == uTimelineWindow.uTimelineWindowTimeControl.timelineWindowTimeControlType)
+                {
+                    return uTimelineWindow.uTimelineWindowTimeControl.IsArmedForRecord(awc);
+                }
+            }
+            return false;
+        }
+
+        public bool EditSequencerClip(TimelineClip timelineClip)
+        {
+            var sourceObject = GetActiveRootGameObject();
+            object controlInterface = uTimelineWindow.uTimelineAnimationUtilities.CreateTimeController(uTimelineWindow.state, timelineClip);
+            return (bool)mi_EditSequencerClip.Invoke(instance, new object[] { timelineClip.animationClip != null ? timelineClip.animationClip : timelineClip.curves, sourceObject, controlInterface });
+        }
+
+        public PlayableDirector GetTimelineCurrentDirector()
+        {
+            return uTimelineWindow.GetCurrentDirector();
+        }
+
+        public AnimationTrack GetTimelineAnimationTrack(bool top = false)
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    var animtionTrack = uTimelineWindow.uTimelineWindowTimeControl.GetTrackAsset(atwc) as AnimationTrack;
+                    if (animtionTrack != null && top)
+                    {
+                        while (animtionTrack.parent is AnimationTrack)
+                        {
+                            var track = animtionTrack.parent as AnimationTrack;
+                            if (track == null)
+                                break;
+                            animtionTrack = track;
+                        }
+                    }
+                    return animtionTrack;
+                }
+            }
+            return null;
+        }
+        public TimelineClip GetTimelineClip()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    return uTimelineWindow.uTimelineWindowTimeControl.GetTimelineClip(atwc);
+                }
+            }
+            return null;
+        }
+        public AnimationPlayableAsset GetTimelineAnimationPlayableAsset()
+        {
+            var aws = animationWindowStateInstance;
+            if (uAnimationWindowState.GetLinkedWithSequencer(aws))
+            {
+                var atwc = animationTimeWindowControlInstance;
+                if (atwc != null)
+                {
+                    return uTimelineWindow.uTimelineWindowTimeControl.GetPlayableAsset(atwc) as AnimationPlayableAsset;
+                }
+            }
+            return null;
+        }
+        public bool GetTimelineAnimationPlayableAssetHasRootTransforms()
+        {
+            var animationPlayableAsset = GetTimelineAnimationPlayableAsset();
+            if (animationPlayableAsset == null)
+                return false;
+            return uTimelineWindow.uAnimationPlayableAsset.GetHasRootTransforms(animationPlayableAsset);
+        }
+        public virtual bool GetTimelineAnimationRemoveStartOffset()
+        {
+            return false;
+        }
+        public virtual bool GetTimelineAnimationApplyFootIK()
+        {
+            return true;
+        }
+#endif
     }
 }

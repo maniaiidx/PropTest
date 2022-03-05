@@ -138,9 +138,21 @@ namespace VeryAnimation
                         if (nextAnimatorStateInfo[i].fullPathHash != 0)
                             animator.CrossFade(nextAnimatorStateInfo[i].fullPathHash, 1f - currentAnimatorStateInfo[i].normalizedTime, i, nextAnimatorStateInfo[i].normalizedTime);
                     }
-                    animator.Update(0f);
-                    gameObjectTransform.LoadLocal(animator.gameObject.transform);
                 }
+                animator.Update(0f);
+                gameObjectTransform.LoadLocal(animator.gameObject.transform);
+                #region RendererForceUpdate
+                if (animator.gameObject != null) //Is there a bug that will not be updated while pausing? Therefore, it forcibly updates it.
+                {
+                    foreach (var renderer in animator.gameObject.GetComponentsInChildren<Renderer>(true))
+                    {
+                        if (renderer == null || !renderer.gameObject.activeInHierarchy || !renderer.enabled)
+                            continue;
+                        renderer.enabled = !renderer.enabled;
+                        renderer.enabled = !renderer.enabled;
+                    }
+                }
+                #endregion
             }
         }
     }

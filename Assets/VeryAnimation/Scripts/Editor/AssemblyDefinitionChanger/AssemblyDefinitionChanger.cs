@@ -1,5 +1,4 @@
-﻿#if UNITY_2017_3_OR_NEWER
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEditor;
 using System;
@@ -13,9 +12,26 @@ namespace VeryAnimation
     {
         public override void OnImportAsset(AssetImportContext ctx)
         {
-            var checkNameStartWith = "AloneSoft." + typeof(AssemblyDefinitionChanger).Namespace;
+            ImportAsset(ctx.assetPath);
+        }
 
-            var path = ctx.assetPath.Remove(ctx.assetPath.Length - Path.GetExtension(ctx.assetPath).Length);
+        public static void Refresh()
+        {
+            foreach (var guid in AssetDatabase.FindAssets(checkNameStartWith))
+            {
+                var assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetExtension(assetPath) == ".asmdefChanger")
+                {
+                    ImportAsset(assetPath);
+                }
+            }
+        }
+
+        private static string checkNameStartWith { get { return "AloneSoft." + typeof(AssemblyDefinitionChanger).Namespace; } }
+
+        private static void ImportAsset(string importAssetPath)
+        {
+            var path = importAssetPath.Remove(importAssetPath.Length - Path.GetExtension(importAssetPath).Length);
             var name = Path.GetFileNameWithoutExtension(path);
             if (!name.StartsWith(checkNameStartWith))
                 return;
@@ -30,9 +46,9 @@ namespace VeryAnimation
 
                 List<int> versions = new List<int>();
                 {
-                    var fullPath = Application.dataPath + ctx.assetPath.Remove(0, "Assets".Length);
+                    var fullPath = Application.dataPath + importAssetPath.Remove(0, "Assets".Length);
                     var directoryPath = Path.GetDirectoryName(fullPath);
-                    var dllNameWithoutExt = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(ctx.assetPath));
+                    var dllNameWithoutExt = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(importAssetPath));
                     foreach (var p in Directory.GetFiles(directoryPath, "*.asmdefChanger"))
                     {
                         var subDllNameWithoutExt = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(p));
@@ -69,24 +85,32 @@ namespace VeryAnimation
             #endregion
 
             #region Change
-            var nameExt = name + ".asmdef";
-            foreach (var guid in AssetDatabase.FindAssets(name))
+            var originalAssetPath = importAssetPath;
+            EditorApplication.delayCall += () =>
             {
-                var assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                if (Path.GetFileName(assetPath) != nameExt)
-                    continue;
-
-                FileUtil.DeleteFileOrDirectory(assetPath);
-                FileUtil.CopyFileOrDirectory(ctx.assetPath, assetPath);
-
-                EditorApplication.delayCall += () =>
+                var nameExt = name + ".asmdef";
+                foreach (var guid in AssetDatabase.FindAssets(name))
                 {
-                    AssetDatabase.Refresh();
-                };
-                break;
-            }
+                    var assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                    if (Path.GetFileName(assetPath) != nameExt)
+                        continue;
+
+                    var originalFullPath = Application.dataPath + originalAssetPath.Remove(0, "Assets".Length);
+                    var fullPath = Application.dataPath + assetPath.Remove(0, "Assets".Length);
+                    if (File.GetLastWriteTime(originalFullPath) != File.GetLastWriteTime(fullPath))
+                    {
+                        FileUtil.DeleteFileOrDirectory(assetPath);
+                        FileUtil.CopyFileOrDirectory(originalAssetPath, assetPath);
+
+                        var importer = AssetImporter.GetAtPath(assetPath);
+                        if (importer != null)
+                            importer.SaveAndReimport();
+                        AssetDatabase.Refresh();
+                    }
+                    break;
+                }
+            };
             #endregion
         }
     }
 }
-#endif

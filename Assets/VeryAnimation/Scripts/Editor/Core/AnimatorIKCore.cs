@@ -8,6 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+#if VERYANIMATION_ANIMATIONRIGGING
+using UnityEngine.Animations.Rigging;
+using UnityEditor.Animations.Rigging;
+#endif
 
 namespace VeryAnimation
 {
@@ -137,99 +141,129 @@ namespace VeryAnimation
             public float eyesWeight = 0f;
             //Swivel
             public float swivelRotation;
-            public Vector3 swivelPosition;
 
             public Vector3 worldPosition
             {
                 get
                 {
-                    var getpos = Vector3.zero;
+                    var getpos = position;
                     switch (spaceType)
                     {
-                    case SpaceType.Global: getpos = position; break;
-                    case SpaceType.Local: getpos = root != null && root.transform.parent != null ? root.transform.parent.localToWorldMatrix.MultiplyPoint3x4(position) : position; break;
-                    case SpaceType.Parent: getpos = parent != null ? parent.transform.localToWorldMatrix.MultiplyPoint3x4(position) : position; break;
-                    default: Assert.IsTrue(false); break;
-                    }
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        getpos = va.bones[rootBoneIndex].transform.worldToLocalMatrix.MultiplyPoint3x4(getpos);
-                        getpos = va.editBones[rootBoneIndex].transform.localToWorldMatrix.MultiplyPoint(getpos);
+                    case SpaceType.Global:
+                        break;
+                    case SpaceType.Local:
+                        if (rootBoneIndex >= 0 && va.bones[rootBoneIndex] != null && va.bones[rootBoneIndex].transform.parent != null)
+                            getpos = va.bones[rootBoneIndex].transform.parent.localToWorldMatrix.MultiplyPoint3x4(getpos);
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            getpos = parent.transform.localToWorldMatrix.MultiplyPoint3x4(getpos);
+                        break;
+                    default:
+                        Assert.IsTrue(false);
+                        break;
                     }
                     return getpos;
                 }
                 set
                 {
                     var setpos = value;
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        setpos = va.editBones[rootBoneIndex].transform.worldToLocalMatrix.MultiplyPoint(setpos);
-                        setpos = va.bones[rootBoneIndex].transform.localToWorldMatrix.MultiplyPoint3x4(setpos);
-                    }
                     switch (spaceType)
                     {
-                    case SpaceType.Global: position = setpos; break;
-                    case SpaceType.Local: position = root != null && root.transform.parent != null ? root.transform.parent.worldToLocalMatrix.MultiplyPoint3x4(setpos) : setpos; break;
-                    case SpaceType.Parent: position = parent != null ? parent.transform.worldToLocalMatrix.MultiplyPoint3x4(setpos) : setpos; break;
-                    default: Assert.IsTrue(false); break;
+                    case SpaceType.Global:
+                        break;
+                    case SpaceType.Local:
+                        if (rootBoneIndex >= 0 && va.bones[rootBoneIndex] != null && va.bones[rootBoneIndex].transform.parent != null)
+                            setpos = va.bones[rootBoneIndex].transform.parent.worldToLocalMatrix.MultiplyPoint3x4(setpos);
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            setpos = parent.transform.worldToLocalMatrix.MultiplyPoint3x4(setpos);
+                        break;
+                    default:
+                        Assert.IsTrue(false);
+                        break;
                     }
+                    position = setpos;
                 }
             }
             public Quaternion worldRotation
             {
                 get
                 {
-                    var getrot = Quaternion.identity;
+                    var getrot = rotation;
                     switch (spaceType)
                     {
-                    case SpaceType.Global: getrot = rotation; break;
-                    case SpaceType.Local: getrot = root != null && root.transform.parent != null ? root.transform.parent.rotation * rotation : rotation; break;
-                    case SpaceType.Parent: getrot = parent != null ? parent.transform.rotation * rotation : rotation; break;
-                    default: Assert.IsTrue(false); getrot = rotation; break;
-                    }
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        getrot = Quaternion.Inverse(va.bones[rootBoneIndex].transform.rotation) * getrot;
-                        getrot = va.editBones[rootBoneIndex].transform.rotation * getrot;
+                    case SpaceType.Global: 
+                        break;
+                    case SpaceType.Local:
+                        if (rootBoneIndex >= 0 && va.bones[rootBoneIndex] != null && va.bones[rootBoneIndex].transform.parent != null)
+                            getrot = va.bones[rootBoneIndex].transform.parent.rotation * getrot; 
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            getrot = parent.transform.rotation * getrot;
+                        break;
+                    default: 
+                        Assert.IsTrue(false); 
+                        break;
                     }
                     return getrot;
                 }
                 set
                 {
                     var setrot = value;
-                    if (va.dummyObject != null && spaceType == SpaceType.Parent)
-                    {
-                        var rootBoneIndex = va.EditBonesIndexOf(root);
-                        setrot = Quaternion.Inverse(va.editBones[rootBoneIndex].transform.rotation) * setrot;
-                        setrot = va.bones[rootBoneIndex].transform.rotation * setrot;
+                    {   //Handles error -> Quaternion To Matrix conversion failed because input Quaternion is invalid
+                        float angle;
+                        Vector3 axis;
+                        setrot.ToAngleAxis(out angle, out axis);
+                        setrot = Quaternion.AngleAxis(angle, axis);
                     }
                     switch (spaceType)
                     {
-                    case SpaceType.Global: rotation = setrot; break;
-                    case SpaceType.Local: rotation = root != null && root.transform.parent != null ? Quaternion.Inverse(root.transform.parent.rotation) * setrot : setrot; break;
-                    case SpaceType.Parent: rotation = parent != null ? Quaternion.Inverse(parent.transform.rotation) * setrot : setrot; break;
-                    default: Assert.IsTrue(false); break;
+                    case SpaceType.Global: 
+                        break;
+                    case SpaceType.Local:
+                        if (rootBoneIndex >= 0 && va.bones[rootBoneIndex] != null && va.bones[rootBoneIndex].transform.parent != null)
+                            setrot = Quaternion.Inverse(va.bones[rootBoneIndex].transform.parent.rotation) * setrot; 
+                        break;
+                    case SpaceType.Parent:
+                        if (parent != null)
+                            setrot = Quaternion.Inverse(parent.transform.rotation) * setrot; 
+                        break;
+                    default: 
+                        Assert.IsTrue(false); 
+                        break;
                     }
+                    rotation = setrot;
                 }
             }
 
             public bool isUpdate { get { return enable && updateIKtarget && !synchroIKtarget; } }
 
             [NonSerialized]
-            public GameObject root;
+            public int rootBoneIndex;
+            [NonSerialized]
+            public int parentBoneIndex;
             [NonSerialized]
             public bool updateIKtarget;
             [NonSerialized]
             public bool synchroIKtarget;
             [NonSerialized]
+            public Vector3 swivelPosition;
+            [NonSerialized]
             public Vector3 optionPosition;
             [NonSerialized]
             public Quaternion optionRotation;
+
+#if VERYANIMATION_ANIMATIONRIGGING
             [NonSerialized]
-            public int parentBoneIndex;
+            public MonoBehaviour rigConstraint;
+            [NonSerialized]
+            public GUIContent rigConstraintGUIContent;
+            [NonSerialized]
+            public EditorCurveBinding rigConstraintWeight;
+#endif
         }
         public AnimatorIKData[] ikData;
 
@@ -250,11 +284,10 @@ namespace VeryAnimation
         private ReorderableList ikReorderableList;
         private bool advancedFoldout;
 
-        private float ikSwivelWeight;
-        private Quaternion ikSaveWorldToLocalRotation;
-        private Matrix4x4 ikSaveWorldToLocalMatrix;
-        private Vector3 ikSaveRootT;
-        private Quaternion ikSaveRootQ;
+#if !UNITY_2018_3_OR_NEWER
+        private Vector3 ikSaveBodyPosition;
+        private Quaternion ikSaveBodyRotation;
+#endif
 
         public Avatar avatarClone { get; private set; }
 
@@ -266,14 +299,17 @@ namespace VeryAnimation
             for (int i = 0; i < ikData.Length; i++)
             {
                 ikData[i] = new AnimatorIKData();
+#if VERYANIMATION_ANIMATIONRIGGING
+                UpdateAnimationRiggingConstraint((IKTarget)i);
+#endif
             }
             ikTargetSelect = null;
-            
+
             rootTCurves = new AnimationCurve[3];
             rootQCurves = new AnimationCurve[4];
             muscleCurves = new AnimationCurve[HumanTrait.MuscleCount];
             muscleCurvesUpdated = new List<int>();
-            
+
             neckMuscleIndexes = new int[3];
             for (int i = 0; i < neckMuscleIndexes.Length; i++)
                 neckMuscleIndexes[i] = HumanTrait.MuscleFromBone((int)HumanBodyBones.Neck, i);
@@ -303,7 +339,7 @@ namespace VeryAnimation
             ikTargetSelect = null;
             rootTCurves = null;
             rootQCurves = null;
-            muscleCurves =null;
+            muscleCurves = null;
             muscleCurvesUpdated = null;
             neckMuscleIndexes = null;
             headMuscleIndexes = null;
@@ -312,16 +348,15 @@ namespace VeryAnimation
             ikReorderableList = null;
         }
 
-        public void LoadIKSaveSettings(VeryAnimationSaveSettings saveSettings)
+        public void LoadIKSaveSettings(VeryAnimationSaveSettings.AnimatorIKData[] saveIkData)
         {
-            if (saveSettings == null) return;
             if (va.isHuman)
             {
-                if (saveSettings.animatorIkData != null && saveSettings.animatorIkData.Length == ikData.Length)
+                if (saveIkData != null && saveIkData.Length == ikData.Length)
                 {
-                    for (int i = 0; i < saveSettings.animatorIkData.Length; i++)
+                    for (int i = 0; i < saveIkData.Length; i++)
                     {
-                        var src = saveSettings.animatorIkData[i];
+                        var src = saveIkData[i];
                         var dst = ikData[i];
                         dst.enable = src.enable;
                         dst.autoRotation = src.autoRotation;
@@ -332,12 +367,11 @@ namespace VeryAnimation
                         dst.headWeight = src.headWeight;
                         dst.eyesWeight = src.eyesWeight;
                         dst.swivelRotation = src.swivelRotation;
-                        dst.swivelPosition = src.swivelPosition;
                     }
                 }
             }
         }
-        public void SaveIKSaveSettings(VeryAnimationSaveSettings saveSettings)
+        public VeryAnimationSaveSettings.AnimatorIKData[] SaveIKSaveSettings()
         {
             if (va.isHuman)
             {
@@ -357,15 +391,14 @@ namespace VeryAnimation
                             headWeight = d.headWeight,
                             eyesWeight = d.eyesWeight,
                             swivelRotation = d.swivelRotation,
-                            swivelPosition = d.swivelPosition,
                         });
                     }
                 }
-                saveSettings.animatorIkData = saveIkData.ToArray();
+                return saveIkData.ToArray();
             }
             else
             {
-                saveSettings.animatorIkData = null;
+                return null;
             }
         }
 
@@ -374,36 +407,56 @@ namespace VeryAnimation
             ikReorderableList = null;
             if (ikData == null) return;
             ikReorderableList = new ReorderableList(ikData, typeof(AnimatorIKData), false, true, false, false);
-            ikReorderableList.elementHeight = 20;
             ikReorderableList.drawHeaderCallback = (Rect rect) =>
             {
                 float x = rect.x;
                 {
-                    const float Rate = 0.2f;
-                    var r = rect;
-                    r.x = x;
-                    r.y -= 1;
-                    r.width = rect.width * Rate;
-                    x += r.width;
-
-                    bool flag = true;
-                    foreach (var data in ikData)
+                    const float ButtonWidth = 100f;
                     {
-                        if (!data.enable)
+                        var r = rect;
+                        r.x = x;
+                        r.y -= 1;
+                        r.width = ButtonWidth;
+                        x += r.width;
+
+                        bool flag = true;
+                        foreach (var data in ikData)
                         {
-                            flag = false;
-                            break;
+                            if (!data.enable)
+                            {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        EditorGUI.BeginChangeCheck();
+                        flag = GUI.Toggle(r, flag, Language.GetContent(Language.Help.AnimatorIKChangeAll), EditorStyles.toolbarButton);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            Undo.RecordObject(vaw, "Change Animator IK Data");
+                            for (int target = 0; target < ikData.Length; target++)
+                            {
+                                ikData[target].enable = flag;
+                                if (ikData[target].enable)
+                                {
+                                    SynchroSet((IKTarget)target);
+                                }
+                            }
                         }
                     }
-                    EditorGUI.BeginChangeCheck();
-                    flag = GUI.Toggle(r, flag, Language.GetContent(Language.Help.AnimatorIKAll), EditorStyles.toolbarButton);
-                    if (EditorGUI.EndChangeCheck())
                     {
-                        Undo.RecordObject(vaw, "Change Animator IK Data");
-                        for (int target = 0; target < ikData.Length; target++)
+                        var r = rect;
+                        r.y -= 1;
+                        r.width = ButtonWidth;
+                        r.x = rect.xMax - r.width;
+                        if (GUI.Button(r, Language.GetContent(Language.Help.AnimatorIKSelectAll), EditorStyles.toolbarButton))
                         {
-                            ikData[target].enable = flag;
-                            SynchroSet((IKTarget)target);
+                            var list = new List<IKTarget>();
+                            for (int target = 0; target < ikData.Length; target++)
+                            {
+                                if (ikData[target].enable)
+                                    list.Add((IKTarget)target);
+                            }
+                            va.SelectIKTargets(list.ToArray(), null);
                         }
                     }
                 }
@@ -431,7 +484,6 @@ namespace VeryAnimation
                 }
 
                 EditorGUI.BeginDisabledGroup(!ikData[index].enable);
-
                 {
                     const float Rate = 1f;
                     var r = rect;
@@ -443,15 +495,37 @@ namespace VeryAnimation
                     r.width -= 4;
                     GUI.Label(r, IKTargetStrings[index]);
                 }
+                EditorGUI.EndDisabledGroup();
 
                 if (!IsValid((IKTarget)index))
                 {
                     var tex = vaw.uEditorGUIUtility.GetHelpIcon(MessageType.Warning);
                     var r = rect;
                     r.width = tex.width;
-                    r.x = rect.xMax - r.width - 80;
+                    r.x = 20;
                     GUI.DrawTexture(r, tex, ScaleMode.ScaleToFit);
                 }
+
+#if VERYANIMATION_ANIMATIONRIGGING
+                if (ikData[index].rigConstraint != null)
+                {
+                    var r = rect;
+                    r.width = 140f;
+                    r.x = rect.xMax - r.width - 80f;
+                    if (GUI.Button(r, ikData[index].rigConstraintGUIContent))
+                    {
+                        va.SelectGameObject(ikData[index].rigConstraint.gameObject);
+                        {
+                            var list = new List<EditorCurveBinding>();
+                            {
+                                list.AddRange(GetAnimationRiggingConstraintBindings((IKTarget)index));
+                                list.Add(ikData[index].rigConstraintWeight);
+                            }
+                            va.SetAnimationWindowSynchroSelection(list.ToArray());
+                        }
+                    }
+                }
+#endif
 
                 {
                     var r = rect;
@@ -460,16 +534,18 @@ namespace VeryAnimation
                     EditorGUI.LabelField(r, IKSpaceTypeStrings[(int)ikData[index].spaceType], vaw.guiStyleMiddleRightGreyMiniLabel);
                 }
 
-                EditorGUI.EndDisabledGroup();
-
+#if VERYANIMATION_ANIMATIONRIGGING
+                if (ikReorderableList.index == index)
+#else
                 if (ikReorderableList.index == index && (IKTarget)index == IKTarget.Head)
+#endif
                 {
                     var r = rect;
                     r.y += 2;
                     r.height -= 2;
-                    r.width = 12;
-                    r.x = rect.xMax - r.width;
-                    advancedFoldout = EditorGUI.Foldout(r, advancedFoldout, new GUIContent("", "Advanced"), true);
+                    r.width = 24;
+                    r.x = rect.xMax - 12;
+                    advancedFoldout = EditorGUI.Foldout(r, advancedFoldout, new GUIContent(" ", "Advanced"), true);
                 }
             };
             ikReorderableList.onChangedCallback = (ReorderableList list) =>
@@ -524,12 +600,6 @@ namespace VeryAnimation
             }
             #endregion
 
-            for (int target = 0; target < ikData.Length; target++)
-            {
-                var hiStart = GetStartHumanoidIndex((IKTarget)target);
-                ikData[target].root = va.editHumanoidBones[(int)hiStart];
-            }
-
             va.calcObject.vaEdit.onAnimatorIK -= AnimatorOnAnimatorIK;
             va.calcObject.vaEdit.onAnimatorIK += AnimatorOnAnimatorIK;
         }
@@ -560,41 +630,88 @@ namespace VeryAnimation
                 ikData[i].synchroIKtarget = false;
             }
         }
-        public void SynchroSet(IKTarget target)
+        [Flags]
+        public enum SynchroSetFlags : UInt32
+        {
+            None = 0,
+            AnimationRigging = (1 << 0),
+            HandIK = (1 << 1),
+            FootIK = (1 << 2),
+            Default = 0xFFFFFFFF,
+        }
+        public void SynchroSet(IKTarget target, SynchroSetFlags syncFlags = SynchroSetFlags.Default)
         {
             if (!va.isHuman) return;
 
-            const float DotThreshold = 0.99f;
+            if (syncFlags == SynchroSetFlags.Default)
+            {
+                syncFlags = SynchroSetFlags.None;
+                if (va.IsEnableUpdateHumanoidFootIK()) syncFlags |= AnimatorIKCore.SynchroSetFlags.FootIK;
+#if VERYANIMATION_ANIMATIONRIGGING
+                if (va.animationRigging.isValid) syncFlags |= AnimatorIKCore.SynchroSetFlags.AnimationRigging;
+#endif
+            }
 
             var data = ikData[(int)target];
+
+            data.rootBoneIndex = va.humanoidIndex2boneIndex[(int)GetStartHumanoidIndex(target)];
+            data.parentBoneIndex = va.BonesIndexOf(data.parent);
+
             Vector3 position = Vector3.zero;
             Quaternion rotation = Quaternion.identity;
+            float swivelRotation = 0f;
+            Vector3? swivelPosition = null;
+            bool done = false;
             switch (target)
             {
             case IKTarget.Head:
+                if (!done)
                 {
-                    Func<HumanBodyBones, Vector3, Vector3> CommonizationVector = (humanoidIndex, vec) =>
+#if VERYANIMATION_ANIMATIONRIGGING
+                    #region AnimationRigging
+                    if (!done && (syncFlags & SynchroSetFlags.AnimationRigging) != 0)
                     {
-                        var t = va.editHumanoidBones[(int)humanoidIndex].transform;
-                        return (t.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)humanoidIndex)) * vec;
-                    };
+                        var constraint = data.rigConstraint as MultiAimConstraint;
+                        if (constraint != null && constraint.data.sourceObjects.Count > 0)
+                        {
+                            var targetBoneIndex = va.BonesIndexOf(constraint.data.sourceObjects[0].transform.gameObject);
+                            if (targetBoneIndex >= 0 && va.IsHaveAnimationCurveTransformPosition(targetBoneIndex))
+                            {
+                                var parent = va.editBones[targetBoneIndex].transform.parent;
+                                position = parent.localToWorldMatrix.MultiplyPoint3x4(va.GetAnimationValueTransformPosition(targetBoneIndex));
+                                rotation = Quaternion.identity;
+                                done = true;
+                            }
+                        }
+                    }
+                    #endregion
+#endif
+                    if (!done)
+                    {
+                        Func<HumanBodyBones, Vector3, Vector3> CommonizationVector = (humanoidIndex, vec) =>
+                        {
+                            var t = va.editHumanoidBones[(int)humanoidIndex].transform;
+                            return (t.rotation * va.GetAvatarPostRotation(humanoidIndex)) * vec;
+                        };
 
-                    if (va.editHumanoidBones[(int)HumanBodyBones.LeftEye] != null && va.editHumanoidBones[(int)HumanBodyBones.RightEye])
-                    {
-                        var tL = va.editHumanoidBones[(int)HumanBodyBones.LeftEye].transform;
-                        var tR = va.editHumanoidBones[(int)HumanBodyBones.RightEye].transform;
-                        position = Vector3.Lerp(tL.position, tR.position, 0.5f) + CommonizationVector(HumanBodyBones.LeftEye, Vector3.right);
+                        if (va.editHumanoidBones[(int)HumanBodyBones.LeftEye] != null && va.editHumanoidBones[(int)HumanBodyBones.RightEye])
+                        {
+                            var tL = va.editHumanoidBones[(int)HumanBodyBones.LeftEye].transform;
+                            var tR = va.editHumanoidBones[(int)HumanBodyBones.RightEye].transform;
+                            position = Vector3.Lerp(tL.position, tR.position, 0.5f) + CommonizationVector(HumanBodyBones.LeftEye, Vector3.right);
+                        }
+                        else if (va.editHumanoidBones[(int)HumanBodyBones.Head] != null)
+                        {
+                            var t = va.editHumanoidBones[(int)HumanBodyBones.Head].transform;
+                            position = t.position + CommonizationVector(HumanBodyBones.Head, Vector3.down);
+                        }
+                        rotation = Quaternion.identity;
+                        done = true;
                     }
-                    else if (va.editHumanoidBones[(int)HumanBodyBones.Head] != null)
-                    {
-                        var t = va.editHumanoidBones[(int)HumanBodyBones.Head].transform;
-                        position = t.position + CommonizationVector(HumanBodyBones.Head, Vector3.down);
-                    }
-                    rotation = Quaternion.identity;
 
                     {
                         var hp = new HumanPose();
-                        va.GetHumanPose(ref hp);
+                        va.GetEditGameObjectHumanPose(ref hp);
 
                         float angleNeck, angleHead;
                         {
@@ -607,123 +724,127 @@ namespace VeryAnimation
                             float angle = (va.humanoidMuscleLimit[(int)HumanBodyBones.Head].max.y - va.humanoidMuscleLimit[(int)HumanBodyBones.Head].min.y) / 2f;
                             angleHead = (-angle * muscle);
                         }
-                        data.swivelRotation = angleNeck + angleHead;
+                        swivelRotation = angleNeck + angleHead;
                     }
                 }
                 break;
             case IKTarget.LeftHand:
-                if (va.editHumanoidBones[(int)HumanBodyBones.LeftUpperArm] != null && va.editHumanoidBones[(int)HumanBodyBones.LeftHand] != null)
-                {
-                    var tA = va.editHumanoidBones[(int)HumanBodyBones.LeftUpperArm].transform;
-                    var tB = va.editHumanoidBones[(int)HumanBodyBones.LeftHand].transform;
-                    var tC = va.editHumanoidBones[(int)HumanBodyBones.LeftLowerArm].transform;
-                    position = tB.position;
-                    rotation = tB.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)HumanBodyBones.LeftHand) * IKTargetSyncRotation[(int)IKTarget.LeftHand];
-                    var axis = tB.position - tA.position;
-                    var dot = Vector3.Dot((tC.position - tA.position).normalized, (tB.position - tC.position).normalized);
-                    axis.Normalize();
-                    if (axis.sqrMagnitude > 0f && Mathf.Abs(dot) < DotThreshold)
-                    {
-                        var worldToLocalMatrix = Matrix4x4.TRS(va.GetHumanWorldRootPosition(), va.GetHumanWorldRootRotation(), Vector3.one).inverse;
-                        axis = worldToLocalMatrix.MultiplyVector(axis);
-                        var posA = worldToLocalMatrix.MultiplyPoint3x4(tA.position);
-                        var posC = worldToLocalMatrix.MultiplyPoint3x4(tC.position);
-                        var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                        var vec = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.forward, axis)) * (posC - posP).normalized;
-                        var rot = Quaternion.FromToRotation(Vector3.up, vec);
-                        data.swivelRotation = rot.eulerAngles.z;
-                    }
-                    else
-                    {
-                        data.swivelRotation = 0f;
-                    }
-                }
-                break;
             case IKTarget.RightHand:
-                if (va.editHumanoidBones[(int)HumanBodyBones.RightUpperArm] != null && va.editHumanoidBones[(int)HumanBodyBones.RightHand] != null)
-                {
-                    var tA = va.editHumanoidBones[(int)HumanBodyBones.RightUpperArm].transform;
-                    var tB = va.editHumanoidBones[(int)HumanBodyBones.RightHand].transform;
-                    var tC = va.editHumanoidBones[(int)HumanBodyBones.RightLowerArm].transform;
-                    position = tB.position;
-                    rotation = tB.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)HumanBodyBones.RightHand) * IKTargetSyncRotation[(int)IKTarget.RightHand];
-                    var axis = tB.position - tA.position;
-                    var dot = Vector3.Dot((tC.position - tA.position).normalized, (tB.position - tC.position).normalized);
-                    axis.Normalize();
-                    if (axis.sqrMagnitude > 0f && Mathf.Abs(dot) < DotThreshold)
-                    {
-                        var worldToLocalMatrix = Matrix4x4.TRS(va.GetHumanWorldRootPosition(), va.GetHumanWorldRootRotation(), Vector3.one).inverse;
-                        axis = worldToLocalMatrix.MultiplyVector(axis);
-                        var posA = worldToLocalMatrix.MultiplyPoint3x4(tA.position);
-                        var posC = worldToLocalMatrix.MultiplyPoint3x4(tC.position);
-                        var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                        var vec = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.forward, axis)) * (posC - posP).normalized;
-                        var rot = Quaternion.FromToRotation(Vector3.up, vec);
-                        data.swivelRotation = rot.eulerAngles.z;
-                    }
-                    else
-                    {
-                        data.swivelRotation = 0f;
-                    }
-                }
-                break;
             case IKTarget.LeftFoot:
-                if (va.editHumanoidBones[(int)HumanBodyBones.LeftUpperLeg] != null && va.editHumanoidBones[(int)HumanBodyBones.LeftFoot] != null)
+            case IKTarget.RightFoot:
+                var hiA = (int)GetStartHumanoidIndex(target);
+                var hiB = (int)GetEndHumanoidIndex(target);
+                var hiC = (int)GetCenterHumanoidIndex(target);
+                var tA = va.editHumanoidBones[hiA].transform;
+                var tB = va.editHumanoidBones[hiB].transform;
+                var tC = va.editHumanoidBones[hiC].transform;
+#if VERYANIMATION_ANIMATIONRIGGING
+                #region AnimationRigging
+                if (!done && (syncFlags & SynchroSetFlags.AnimationRigging) != 0)
                 {
-                    var tA = va.editHumanoidBones[(int)HumanBodyBones.LeftUpperLeg].transform;
-                    var tB = va.editHumanoidBones[(int)HumanBodyBones.LeftFoot].transform;
-                    var tC = va.editHumanoidBones[(int)HumanBodyBones.LeftLowerLeg].transform;
-                    position = tB.position;
-                    rotation = tB.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)HumanBodyBones.LeftFoot) * IKTargetSyncRotation[(int)IKTarget.LeftFoot];
-                    var axis = tB.position - tA.position;
-                    var dot = Vector3.Dot((tC.position - tA.position).normalized, (tB.position - tC.position).normalized);
-                    axis.Normalize();
-                    if (axis.sqrMagnitude > 0f && Mathf.Abs(dot) < DotThreshold)
+                    var constraint = data.rigConstraint as TwoBoneIKConstraint;
+                    if (constraint != null && constraint.data.target != null && constraint.data.hint != null)
                     {
-                        var worldToLocalMatrix = Matrix4x4.TRS(va.GetHumanWorldRootPosition(), va.GetHumanWorldRootRotation(), Vector3.one).inverse;
-                        axis = worldToLocalMatrix.MultiplyVector(axis);
-                        var posA = worldToLocalMatrix.MultiplyPoint3x4(tA.position);
-                        var posC = worldToLocalMatrix.MultiplyPoint3x4(tC.position);
-                        var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                        var vec = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.forward, axis)) * (posC - posP).normalized;
-                        var rot = Quaternion.FromToRotation(Vector3.up, vec);
-                        data.swivelRotation = rot.eulerAngles.z;
-                    }
-                    else
-                    {
-                        data.swivelRotation = 0f;
+                        var targetBoneIndex = va.BonesIndexOf(constraint.data.target.gameObject);
+                        var hintBoneIndex = va.BonesIndexOf(constraint.data.hint.gameObject);
+                        if (targetBoneIndex >= 0 && va.IsHaveAnimationCurveTransformPosition(targetBoneIndex) &&
+                            va.IsHaveAnimationCurveTransformRotation(targetBoneIndex) != URotationCurveInterpolation.Mode.Undefined &&
+                            hintBoneIndex >= 0 && va.IsHaveAnimationCurveTransformPosition(hintBoneIndex))
+                        {
+                            {
+                                var parent = va.editBones[targetBoneIndex].transform.parent;
+                                position = parent.localToWorldMatrix.MultiplyPoint3x4(va.GetAnimationValueTransformPosition(targetBoneIndex));
+                                rotation = parent.rotation * va.GetAnimationValueTransformRotation(targetBoneIndex);
+                                #region FeetBottomHeight
+                                switch (target)
+                                {
+                                case IKTarget.LeftFoot: position += new Vector3(0f, va.editAnimator.leftFeetBottomHeight, 0f); break;
+                                case IKTarget.RightFoot: position += new Vector3(0f, va.editAnimator.rightFeetBottomHeight, 0f); break;
+                                }
+                                #endregion
+                            }
+                            {
+                                var parent = va.editBones[hintBoneIndex].transform.parent;
+                                swivelPosition = parent.localToWorldMatrix.MultiplyPoint3x4(va.GetAnimationValueTransformPosition(hintBoneIndex));
+                                if (!GetSwivelRotation(tA.position, tB.position, swivelPosition.Value, out swivelRotation))
+                                {
+                                    switch (target)
+                                    {
+                                    case IKTarget.LeftHand: swivelRotation = 90f; break;
+                                    case IKTarget.RightHand: swivelRotation = -90f; break;
+                                    default: swivelRotation = 0f; break;
+                                    }
+                                }
+                            }
+                            done = true;
+                        }
                     }
                 }
-                break;
-            case IKTarget.RightFoot:
-                if (va.editHumanoidBones[(int)HumanBodyBones.RightUpperLeg] != null && va.editHumanoidBones[(int)HumanBodyBones.RightFoot] != null)
+                #endregion
+#endif
+                #region HumanoidIK
+                if (!done &&
+                    ((target >= IKTarget.LeftHand && target <= IKTarget.RightHand && (syncFlags & SynchroSetFlags.HandIK) != 0) ||
+                    (target >= IKTarget.LeftFoot && target <= IKTarget.RightFoot && (syncFlags & SynchroSetFlags.FootIK) != 0)))
                 {
-                    var tA = va.editHumanoidBones[(int)HumanBodyBones.RightUpperLeg].transform;
-                    var tB = va.editHumanoidBones[(int)HumanBodyBones.RightFoot].transform;
-                    var tC = va.editHumanoidBones[(int)HumanBodyBones.RightLowerLeg].transform;
+                    var ikIndex = VeryAnimation.AnimatorIKIndex.LeftHand + (int)(target - IKTarget.LeftHand);
+                    if (va.IsHaveAnimationCurveAnimatorIkT(ikIndex) &&
+                        va.IsHaveAnimationCurveAnimatorIkQ(ikIndex))
+                    {
+                        var rootT = va.GetAnimationValueAnimatorRootT();
+                        var rootQ = va.GetAnimationValueAnimatorRootQ();
+
+                        rotation = (rootQ * va.GetAnimationValueAnimatorIkQ(ikIndex)) * IKTargetSyncRotation[(int)target];
+
+                        position = va.GetAnimationValueAnimatorIkT(ikIndex);
+                        position = rootT + rootQ * position;
+                        position *= va.editAnimator.humanScale;
+
+                        rotation = va.transformPoseSave.startRotation * rotation;
+                        position = va.transformPoseSave.startMatrix.MultiplyPoint3x4(position);
+
+                        switch (ikIndex)
+                        {
+                        case VeryAnimation.AnimatorIKIndex.LeftFoot:
+                            position += rotation * new Vector3(0f, va.editAnimator.leftFeetBottomHeight, 0f);
+                            break;
+                        case VeryAnimation.AnimatorIKIndex.RightFoot:
+                            position += rotation * new Vector3(0f, va.editAnimator.rightFeetBottomHeight, 0f);
+                            break;
+                        }
+
+                        if (!GetSwivelRotation(tA.position, tB.position, tC.position, out swivelRotation))
+                        {
+                            switch (target)
+                            {
+                            case IKTarget.LeftHand: swivelRotation = 90f; break;
+                            case IKTarget.RightHand: swivelRotation = -90f; break;
+                            default: swivelRotation = 0f; break;
+                            }
+                        }
+                        done = true;
+                    }
+                }
+                #endregion
+                if (!done)
+                {
                     position = tB.position;
-                    rotation = tB.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)HumanBodyBones.RightFoot) * IKTargetSyncRotation[(int)IKTarget.RightFoot];
-                    var axis = tB.position - tA.position;
-                    var dot = Vector3.Dot((tC.position - tA.position).normalized, (tB.position - tC.position).normalized);
-                    axis.Normalize();
-                    if (axis.sqrMagnitude > 0f && Mathf.Abs(dot) < DotThreshold)
+                    rotation = tB.rotation * va.GetAvatarPostRotation((HumanBodyBones)hiB) * IKTargetSyncRotation[(int)target];
+                    if (!GetSwivelRotation(tA.position, tB.position, tC.position, out swivelRotation))
                     {
-                        var worldToLocalMatrix = Matrix4x4.TRS(va.GetHumanWorldRootPosition(), va.GetHumanWorldRootRotation(), Vector3.one).inverse;
-                        axis = worldToLocalMatrix.MultiplyVector(axis);
-                        var posA = worldToLocalMatrix.MultiplyPoint3x4(tA.position);
-                        var posC = worldToLocalMatrix.MultiplyPoint3x4(tC.position);
-                        var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                        var vec = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.forward, axis)) * (posC - posP).normalized;
-                        var rot = Quaternion.FromToRotation(Vector3.up, vec);
-                        data.swivelRotation = rot.eulerAngles.z;
+                        switch (target)
+                        {
+                        case IKTarget.LeftHand: swivelRotation = 90f; break;
+                        case IKTarget.RightHand: swivelRotation = -90f; break;
+                        default: swivelRotation = 0f; break;
+                        }
                     }
-                    else
-                    {
-                        data.swivelRotation = 0f;
-                    }
+                    done = true;
                 }
                 break;
             }
+            if (!done)
+                return;
 
             switch (data.spaceType)
             {
@@ -731,6 +852,7 @@ namespace VeryAnimation
             case AnimatorIKData.SpaceType.Local:
                 data.worldPosition = position;
                 data.worldRotation = rotation;
+                data.swivelRotation = Mathf.Repeat(swivelRotation + 180f, 360f) - 180f;
                 break;
             case AnimatorIKData.SpaceType.Parent:
                 //not update
@@ -738,43 +860,97 @@ namespace VeryAnimation
                     data.rotation = Quaternion.identity;
                 break;
             }
-            while (data.swivelRotation < -180f || data.swivelRotation > 180f)
-            {
-                if (data.swivelRotation > 180f)
-                    data.swivelRotation -= 360f;
-                else if (data.swivelRotation < -180f)
-                    data.swivelRotation += 360f;
-            }
-            data.parentBoneIndex = va.BonesIndexOf(data.parent);
 
-            UpdateOptionData(target);
+            UpdateOptionPosition(target);
+            if (!swivelPosition.HasValue)
+                UpdateSwivelPosition(target);
+            else
+                data.swivelPosition = swivelPosition.Value;
+
+#if VERYANIMATION_ANIMATIONRIGGING
+            UpdateAnimationRiggingConstraint(target);
+#endif
         }
-        public void UpdateOptionData(IKTarget target)
+        public void UpdateOptionPosition(IKTarget target)
         {
             if (!va.isHuman) return;
 
             var data = ikData[(int)target];
+            var humanoidBones = va.editHumanoidBones;
+
+            #region Heel
             switch (target)
             {
             case IKTarget.LeftFoot:
-                if (va.editHumanoidBones[(int)HumanBodyBones.LeftToes] != null)
+                if (humanoidBones[(int)HumanBodyBones.LeftToes] != null)
                 {
-                    var tB = va.editHumanoidBones[(int)HumanBodyBones.LeftFoot].transform;
-                    var tD = va.editHumanoidBones[(int)HumanBodyBones.LeftToes].transform;
+                    var tB = humanoidBones[(int)HumanBodyBones.LeftFoot].transform;
+                    var tD = humanoidBones[(int)HumanBodyBones.LeftToes].transform;
                     data.optionRotation = data.worldRotation;
                     data.optionPosition = data.worldPosition + (data.optionRotation * Vector3.back) * Vector3.Distance(tD.position, tB.position) * 6f;
                 }
                 break;
             case IKTarget.RightFoot:
-                if (va.editHumanoidBones[(int)HumanBodyBones.RightToes] != null)
+                if (humanoidBones[(int)HumanBodyBones.RightToes] != null)
                 {
-                    var tB = va.editHumanoidBones[(int)HumanBodyBones.RightFoot].transform;
-                    var tD = va.editHumanoidBones[(int)HumanBodyBones.RightToes].transform;
+                    var tB = humanoidBones[(int)HumanBodyBones.RightFoot].transform;
+                    var tD = humanoidBones[(int)HumanBodyBones.RightToes].transform;
                     data.optionRotation = data.worldRotation;
                     data.optionPosition = data.worldPosition + (data.optionRotation * Vector3.back) * Vector3.Distance(tD.position, tB.position) * 6f;
                 }
                 break;
             }
+            #endregion
+        }
+        private bool GetSwivelRotation(Vector3 posA, Vector3 posB, Vector3 posC, out float swivelRotation)
+        {
+            const float DotThreshold = 0.99f;
+
+            swivelRotation = 0f;
+            var axis = posB - posA;
+            var dot = Vector3.Dot((posC - posA).normalized, (posB - posC).normalized);
+            axis.Normalize();
+            if (axis.sqrMagnitude > 0f && Mathf.Abs(dot) < DotThreshold)
+            {
+                var posP = posA + axis * Vector3.Dot((posC - posA), axis);
+                var vec = Quaternion.Inverse(Quaternion.FromToRotation(Vector3.forward, axis)) * (posC - posP).normalized;
+                var rot = Quaternion.FromToRotation(Vector3.up, vec);
+                swivelRotation = rot.eulerAngles.z;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public void UpdateSwivelPosition(IKTarget target)
+        {
+            if (!va.isHuman) return;
+            if (target < IKTarget.LeftHand || target > IKTarget.RightFoot)
+                return;
+
+            var data = ikData[(int)target];
+            var humanoidBones = va.editHumanoidBones;
+
+            #region Swivel
+            {
+                var hiA = GetStartHumanoidIndex(target);
+                var hiB = GetEndHumanoidIndex(target);
+                var hiC = GetCenterHumanoidIndex(target);
+                var posA = humanoidBones[(int)hiA].transform.position;
+                var posB = humanoidBones[(int)hiB].transform.position;
+                var axis = posB - posA;
+                if (axis.sqrMagnitude > 0f)
+                {
+                    axis.Normalize();
+                    var posC = humanoidBones[(int)hiC].transform.position;
+                    var posP = posA + axis * Vector3.Dot((posC - posA), axis);
+                    float length = Vector3.Distance(posC, posA) + Vector3.Distance(posC, posB);
+                    var vec = Quaternion.AngleAxis(data.swivelRotation, axis) * (Quaternion.FromToRotation(Vector3.forward, axis) * Vector3.up);
+                    data.swivelPosition = posP + vec * length;
+                }
+            }
+            #endregion
         }
 
         public bool IsValid(IKTarget target)
@@ -795,20 +971,16 @@ namespace VeryAnimation
             return true;
         }
 
-        public void UpdateIK(bool rootUpdated)
+        public void UpdateIK(bool rootUpdated, bool writeAnimationRigging = true)
         {
             if (!va.isHuman) return;
             if (!GetUpdateIKtargetAll()) return;
-
-            va.UpdateSyncEditorCurveClip();
-
-            var time = va.currentTime;
-
+            
             {
                 for (int i = 0; i < 3; i++)
-                    rootTCurves[i] = va.GetAnimationCurveAnimatorRootT(i);
+                    rootTCurves[i] = null;
                 for (int i = 0; i < 4; i++)
-                    rootQCurves[i] = va.GetAnimationCurveAnimatorRootQ(i);
+                    rootQCurves[i] = null;
                 for (int i = 0; i < muscleCurves.Length; i++)
                     muscleCurves[i] = null;
             }
@@ -827,27 +999,27 @@ namespace VeryAnimation
                     muscleCurves[muscleIndex] = va.GetAnimationCurveAnimatorMuscle(muscleIndex);
                 }
 
-                va.SetKeyframe(muscleCurves[neckMuscleIndexes[0]], time, 0f);
-                va.SetKeyframe(muscleCurves[headMuscleIndexes[0]], time, 0f);
+                va.SetKeyframe(muscleCurves[neckMuscleIndexes[0]], va.currentTime, 0f);
+                va.SetKeyframe(muscleCurves[headMuscleIndexes[0]], va.currentTime, 0f);
                 {
                     float angle = (va.humanoidMuscleLimit[(int)HumanBodyBones.Neck].max.y - va.humanoidMuscleLimit[(int)HumanBodyBones.Neck].min.y) / 2f;
                     var rate = (-ikData[(int)IKTarget.Head].swivelRotation / angle) / 2f;
-                    va.SetKeyframe(muscleCurves[neckMuscleIndexes[1]], time, rate);
+                    va.SetKeyframe(muscleCurves[neckMuscleIndexes[1]], va.currentTime, rate);
                 }
                 {
                     float angle = (va.humanoidMuscleLimit[(int)HumanBodyBones.Head].max.y - va.humanoidMuscleLimit[(int)HumanBodyBones.Head].min.y) / 2f;
                     var rate = (-ikData[(int)IKTarget.Head].swivelRotation / angle) / 2f;
-                    va.SetKeyframe(muscleCurves[headMuscleIndexes[1]], time, rate);
+                    va.SetKeyframe(muscleCurves[headMuscleIndexes[1]], va.currentTime, rate);
                 }
                 {
-                    var rate = muscleCurves[neckMuscleIndexes[2]].Evaluate(time);
+                    var rate = muscleCurves[neckMuscleIndexes[2]].Evaluate(va.currentTime);
                     rate = Mathf.Clamp(rate, -1f, 1f);
-                    va.SetKeyframe(muscleCurves[neckMuscleIndexes[2]], time, rate);
+                    va.SetKeyframe(muscleCurves[neckMuscleIndexes[2]], va.currentTime, rate);
                 }
                 {
-                    var rate = muscleCurves[headMuscleIndexes[2]].Evaluate(time);
+                    var rate = muscleCurves[headMuscleIndexes[2]].Evaluate(va.currentTime);
                     rate = Mathf.Clamp(rate, -1f, 1f);
-                    va.SetKeyframe(muscleCurves[headMuscleIndexes[2]], time, rate);
+                    va.SetKeyframe(muscleCurves[headMuscleIndexes[2]], va.currentTime, rate);
                 }
 
                 for (int i = 0; i < neckMuscleIndexes.Length; i++)
@@ -860,17 +1032,17 @@ namespace VeryAnimation
                     var muscleIndex = headMuscleIndexes[i];
                     va.SetAnimationCurveAnimatorMuscle(muscleIndex, muscleCurves[muscleIndex]);
                 }
-
-                va.UpdateSyncEditorCurveClip();
             }
             #endregion
 
-            ikSaveWorldToLocalRotation = Quaternion.Inverse(va.editGameObject.transform.rotation);
-            ikSaveWorldToLocalMatrix = va.editGameObject.transform.worldToLocalMatrix;
+            va.calcObject.SetApplyIK(false);
 
-            va.calcObject.vaEdit.SetAnimationClip(va.currentClip);
-            va.calcObject.vaEdit.SetIKPass(true);
-            va.calcObject.SetOrigin();
+#if !UNITY_2018_3_OR_NEWER
+            ikSaveBodyPosition = va.GetAnimationValueAnimatorRootT(va.currentTime) * va.calcObject.animator.humanScale;
+            ikSaveBodyRotation = va.GetAnimationValueAnimatorRootQ(va.currentTime);
+            if (va.calcObject.animator.applyRootMotion)
+                va.calcObject.animator.applyRootMotion = false;
+#endif
 
             var humanoidBones = va.calcObject.humanoidBones;
             var hp = new HumanPose();
@@ -878,9 +1050,10 @@ namespace VeryAnimation
             #region Loop
             int loopCount = 1;
             {
-                if (rootUpdated) loopCount += 3;
-                else if (va.rootCorrectionMode == VeryAnimation.RootCorrectionMode.Disable) loopCount += 3;
-
+                if (va.rootCorrectionMode == VeryAnimation.RootCorrectionMode.Disable)
+                {
+                    loopCount = Math.Max(loopCount, 4);
+                }
                 foreach (var data in ikData)
                 {
                     if (data.isUpdate &&
@@ -888,137 +1061,20 @@ namespace VeryAnimation
                         data.parentBoneIndex >= 0)
                     {
                         loopCount = Math.Max(loopCount, 2);
+                        break;
                     }
                 }
             }
+
+            va.calcObject.SetApplyIK(true);
+            va.calcObject.SetTransformOrigin();
             for (int loop = 0; loop < loopCount; loop++)
             {
-                va.UpdateSyncEditorCurveClip();
-
                 muscleCurvesUpdated.Clear();
-
-                #region ikSaveRoot
-                {
-                    ikSaveRootT = Vector3.zero;
-                    for (int i = 0; i < 3; i++)
-                    {
-                        ikSaveRootT[i] = rootTCurves[i].Evaluate(time);
-                    }
-                }
-                {
-                    Vector4 result = new Vector4(0, 0, 0, 1);
-                    for (int i = 0; i < 4; i++)
-                        result[i] = rootQCurves[i].Evaluate(time);
-                    result.Normalize();
-                    if (result.sqrMagnitude > 0f)
-                    {
-                        ikSaveRootQ = new Quaternion(result.x, result.y, result.z, result.w);
-                    }
-                    else
-                    {
-                        ikSaveRootQ = Quaternion.identity;
-                    }
-                }
-                #endregion
 
                 #region Update
                 {
-                    float normalizedTime;
-                    {
-                        AnimationClipSettings animationClipSettings = AnimationUtility.GetAnimationClipSettings(va.currentClip);
-                        var totalTime = animationClipSettings.stopTime - animationClipSettings.startTime;
-                        var ttime = time;
-                        if (ttime > 0f && ttime >= totalTime)
-                            ttime = totalTime - 0.0001f;
-                        normalizedTime = totalTime == 0.0 ? 0.0f : (float)((ttime - animationClipSettings.startTime) / (totalTime));
-                    }
-
-                    ikSwivelWeight = 0f;
-                    va.calcObject.AnimatorRebind();
-                    va.calcObject.animator.Play(va.calcObject.vaEdit.stateNameHash, 0, normalizedTime);
-                    va.calcObject.animator.Update(0f);
-
-                    #region IKSwivel
-                    {
-                        var rootRotation = ikSaveRootQ;
-                        var rootRotationInv = Quaternion.Inverse(rootRotation);
-                        {
-                            var posA = humanoidBones[(int)HumanBodyBones.LeftUpperArm].transform.position;
-                            var posB = humanoidBones[(int)HumanBodyBones.LeftHand].transform.position;
-                            var axis = posB - posA;
-                            axis.Normalize();
-                            if (axis.sqrMagnitude > 0f)
-                            {
-                                var posC = humanoidBones[(int)HumanBodyBones.LeftLowerArm].transform.position;
-                                var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                                float length = Vector3.Distance((posA + axis * Vector3.Dot((posC - posA), axis)), posC);
-
-                                var localAxis = rootRotationInv * axis;
-                                var vec = Quaternion.AngleAxis(ikData[(int)IKTarget.LeftHand].swivelRotation, localAxis) * (Quaternion.FromToRotation(Vector3.forward, localAxis) * Vector3.up);
-                                vec = rootRotation * vec;
-
-                                ikData[(int)IKTarget.LeftHand].swivelPosition = posP + vec * length;
-                            }
-                        }
-                        {
-                            var posA = humanoidBones[(int)HumanBodyBones.RightUpperArm].transform.position;
-                            var posB = humanoidBones[(int)HumanBodyBones.RightHand].transform.position;
-                            var axis = posB - posA;
-                            axis.Normalize();
-                            if (axis.sqrMagnitude > 0f)
-                            {
-                                var posC = humanoidBones[(int)HumanBodyBones.RightLowerArm].transform.position;
-                                var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                                float length = Vector3.Distance((posA + axis * Vector3.Dot((posC - posA), axis)), posC);
-
-                                var localAxis = rootRotationInv * axis;
-                                var vec = Quaternion.AngleAxis(ikData[(int)IKTarget.RightHand].swivelRotation, localAxis) * (Quaternion.FromToRotation(Vector3.forward, localAxis) * Vector3.up);
-                                vec = rootRotation * vec;
-
-                                ikData[(int)IKTarget.RightHand].swivelPosition = posP + vec * length;
-                            }
-                        }
-                        {
-                            var posA = humanoidBones[(int)HumanBodyBones.LeftUpperLeg].transform.position;
-                            var posB = humanoidBones[(int)HumanBodyBones.LeftFoot].transform.position;
-                            var axis = posB - posA;
-                            axis.Normalize();
-                            if (axis.sqrMagnitude > 0f)
-                            {
-                                var posC = humanoidBones[(int)HumanBodyBones.LeftLowerLeg].transform.position;
-                                var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                                float length = Vector3.Distance((posA + axis * Vector3.Dot((posC - posA), axis)), posC);
-
-                                var localAxis = rootRotationInv * axis;
-                                var vec = Quaternion.AngleAxis(ikData[(int)IKTarget.LeftFoot].swivelRotation, localAxis) * (Quaternion.FromToRotation(Vector3.forward, localAxis) * Vector3.up);
-                                vec = rootRotation * vec;
-
-                                ikData[(int)IKTarget.LeftFoot].swivelPosition = posP + vec * length;
-                            }
-                        }
-                        {
-                            var posA = humanoidBones[(int)HumanBodyBones.RightUpperLeg].transform.position;
-                            var posB = humanoidBones[(int)HumanBodyBones.RightFoot].transform.position;
-                            var axis = posB - posA;
-                            axis.Normalize();
-                            if (axis.sqrMagnitude > 0f)
-                            {
-                                var posC = humanoidBones[(int)HumanBodyBones.RightLowerLeg].transform.position;
-                                var posP = posA + axis * Vector3.Dot((posC - posA), axis);
-                                float length = Vector3.Distance((posA + axis * Vector3.Dot((posC - posA), axis)), posC);
-
-                                var localAxis = rootRotationInv * axis;
-                                var vec = Quaternion.AngleAxis(ikData[(int)IKTarget.RightFoot].swivelRotation, localAxis) * (Quaternion.FromToRotation(Vector3.forward, localAxis) * Vector3.up);
-                                vec = rootRotation * vec;
-
-                                ikData[(int)IKTarget.RightFoot].swivelPosition = posP + vec * length;
-                            }
-                        }
-                    }
-                    #endregion
-
-                    ikSwivelWeight = 1f;
-                    va.calcObject.animator.Update(0f);
+                    va.calcObject.SampleAnimation(va.currentClip, va.currentTime);
                 }
                 #endregion
 
@@ -1081,6 +1137,7 @@ namespace VeryAnimation
                             hp.muscles[i] = Mathf.Clamp(hp.muscles[i], -1f, 1f);
                         }
                     }
+                    va.calcObject.ResetTranformRoot();
                     va.calcObject.humanPoseHandler.SetHumanPose(ref hp);
                 }
                 #endregion
@@ -1107,17 +1164,27 @@ namespace VeryAnimation
                     {
                         var humanoidIndex = (HumanBodyBones)HumanTrait.BoneFromMuscle(i);
                         var target = IsIKBone(humanoidIndex);
-                        if (target == IKTarget.None)
-                            continue;
-                        var data = ikData[(int)target];
-                        if (!data.isUpdate)
+                        if (target == IKTarget.None || !ikData[(int)target].isUpdate)
                             continue;
                         if (muscleCurves[i] == null)
-                        {
                             muscleCurves[i] = va.GetAnimationCurveAnimatorMuscle(i);
-                        }
-                        va.SetKeyframe(muscleCurves[i], time, hp.muscles[i]);
+                        va.SetKeyframe(muscleCurves[i], va.currentTime, hp.muscles[i]);
                         muscleCurvesUpdated.Add(i);
+                    }
+                    if (rootUpdated)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (rootTCurves[i] == null)
+                                rootTCurves[i] = va.GetAnimationCurveAnimatorRootT(i);
+                            va.SetKeyframe(rootTCurves[i], va.currentTime, hp.bodyPosition[i]);
+                        }
+                        for (int i = 0; i < 4; i++)
+                        {
+                            if (rootQCurves[i] == null)
+                                rootQCurves[i] = va.GetAnimationCurveAnimatorRootQ(i);
+                            va.SetKeyframe(rootQCurves[i], va.currentTime, hp.bodyRotation[i]);
+                        }
                     }
                 }
                 #endregion
@@ -1128,12 +1195,37 @@ namespace VeryAnimation
                     {
                         va.SetAnimationCurveAnimatorMuscle(i, muscleCurves[i]);
                     }
+                    if (rootUpdated)
+                    {
+                        for (int i = 0; i < 3; i++)
+                            va.SetAnimationCurveAnimatorRootT(i, rootTCurves[i]);
+                        for (int i = 0; i < 4; i++)
+                            va.SetAnimationCurveAnimatorRootQ(i, rootQCurves[i]);
+                    }
                 }
                 #endregion
             }
             #endregion
 
-            va.calcObject.SetOutside();
+#if !UNITY_2018_3_OR_NEWER
+            if (va.calcObject.animator.applyRootMotion != vaw.animator.applyRootMotion)
+                va.calcObject.animator.applyRootMotion = vaw.animator.applyRootMotion;
+#endif
+
+            va.calcObject.SetApplyIK(false);
+            va.calcObject.SetTransformStart();
+
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (writeAnimationRigging)
+            {
+                va.calcObject.SampleAnimation(va.currentClip, va.currentTime);
+                for (int target = 0; target < ikData.Length; target++)
+                {
+                    if (ikData[target].isUpdate)
+                        WriteAnimationRiggingConstraint((IKTarget)target, va.currentTime);
+                }
+            }
+#endif
         }
 
         public void HandleGUI()
@@ -1161,7 +1253,7 @@ namespace VeryAnimation
                             {
                                 var tpos = posP;
                                 {
-                                    var post = va.uAvatar.GetPostRotation(va.editAnimator.avatar, (int)HumanBodyBones.Head);
+                                    var post = va.GetAvatarPostRotation(HumanBodyBones.Head);
                                     var up = (va.editHumanoidBones[(int)HumanBodyBones.Head].transform.rotation * post) * Vector3.right;
                                     tpos += up;
                                 }
@@ -1190,14 +1282,8 @@ namespace VeryAnimation
                                     foreach (var target in ikTargetSelect)
                                     {
                                         var data = ikData[(int)target];
-                                        data.swivelRotation -= rotDist;
-                                        while (data.swivelRotation < -180f || data.swivelRotation > 180f)
-                                        {
-                                            if (data.swivelRotation > 180f)
-                                                data.swivelRotation -= 360f;
-                                            else if (data.swivelRotation < -180f)
-                                                data.swivelRotation += 360f;
-                                        }
+                                        data.swivelRotation = Mathf.Repeat(data.swivelRotation - rotDist + 180f, 360f) - 180f;
+                                        UpdateSwivelPosition(target);
                                         va.SetUpdateIKtargetAnimatorIK(target);
                                     }
                                 }
@@ -1214,21 +1300,18 @@ namespace VeryAnimation
                         axis.Normalize();
                         if (axis.sqrMagnitude > 0f)
                         {
-                            var posSwivel = va.editGameObject.transform.localToWorldMatrix.MultiplyPoint3x4(activeData.swivelPosition);
                             var posP = Vector3.Lerp(posA, posB, 0.5f);
                             {
                                 Handles.color = new Color(Handles.centerColor.r, Handles.centerColor.g, Handles.centerColor.b, Handles.centerColor.a * 0.5f);
                                 Handles.DrawWireDisc(posP, axis, HandleUtility.GetHandleSize(posP));
-                                if (activeData.swivelPosition != Vector3.zero)
-                                {
-                                    var posPC = posA + axis * Vector3.Dot((posSwivel - posA), axis);
-                                    Handles.color = Handles.centerColor;
-                                    Handles.DrawLine(posP, posP + (posSwivel - posPC).normalized * HandleUtility.GetHandleSize(posP));
 
-                                    //DebugSwivel
-                                    //Handles.color = Color.red;
-                                    //Handles.DrawLine(posP, posSwivel);
-                                }
+                                var posPC = posA + axis * Vector3.Dot((activeData.swivelPosition - posA), axis);
+                                Handles.color = Handles.centerColor;
+                                Handles.DrawLine(posP, posP + (activeData.swivelPosition - posPC).normalized * HandleUtility.GetHandleSize(posP));
+
+                                //DebugSwivel
+                                //Handles.color = Color.red;
+                                //Handles.DrawLine(posP, activeData.swivelPosition);
                             }
                             {
                                 EditorGUI.BeginChangeCheck();
@@ -1242,14 +1325,8 @@ namespace VeryAnimation
                                     foreach (var target in ikTargetSelect)
                                     {
                                         var data = ikData[(int)target];
-                                        data.swivelRotation -= rotDist;
-                                        while (data.swivelRotation < -180f || data.swivelRotation > 180f)
-                                        {
-                                            if (data.swivelRotation > 180f)
-                                                data.swivelRotation -= 360f;
-                                            else if (data.swivelRotation < -180f)
-                                                data.swivelRotation += 360f;
-                                        }
+                                        data.swivelRotation = Mathf.Repeat(data.swivelRotation - rotDist + 180f, 360f) - 180f;
+                                        UpdateSwivelPosition(target);
                                         va.SetUpdateIKtargetAnimatorIK(target);
                                     }
                                 }
@@ -1272,14 +1349,9 @@ namespace VeryAnimation
                                 {
                                     var data = ikData[(int)target];
                                     data.worldRotation = data.worldRotation * move;
-                                    {   //Handles error -> Quaternion To Matrix conversion failed because input Quaternion is invalid
-                                        float angle;
-                                        Vector3 axis;
-                                        data.worldRotation.ToAngleAxis(out angle, out axis);
-                                        data.worldRotation = Quaternion.AngleAxis(angle, axis);
-                                    }
+                                    UpdateOptionPosition(target);
+                                    UpdateSwivelPosition(target);
                                     va.SetUpdateIKtargetAnimatorIK(target);
-                                    UpdateOptionData(target);
                                 }
                             };
                             if (Tools.pivotRotation == PivotRotation.Local)
@@ -1312,9 +1384,9 @@ namespace VeryAnimation
                             foreach (var target in ikTargetSelect)
                             {
                                 ikData[(int)target].worldPosition = ikData[(int)target].worldPosition + move;
-                                ikData[(int)target].optionPosition = ikData[(int)target].optionPosition + move;
+                                UpdateOptionPosition(target);
+                                UpdateSwivelPosition(target);
                                 va.SetUpdateIKtargetAnimatorIK(target);
-                                UpdateOptionData(target);
                             }
                         }
                         #endregion
@@ -1346,14 +1418,14 @@ namespace VeryAnimation
                                         var normal = activeData.worldRotation * Vector3.up;
                                         var beforeP = activeData.optionPosition - normal * Vector3.Dot(activeData.optionPosition - worldPosition, normal);
                                         var afterP = handlePosition - normal * Vector3.Dot(handlePosition - worldPosition, normal);
-                                        rotationY = Quaternion.AngleAxis(EditorCommon.Vector3SignedAngle((beforeP - toesPos).normalized, (afterP - toesPos).normalized, normal), normal);
+                                        rotationY = Quaternion.AngleAxis(Vector3.SignedAngle((beforeP - toesPos).normalized, (afterP - toesPos).normalized, normal), normal);
                                     }
                                     Quaternion rotationX = Quaternion.identity;
                                     {
                                         var normal = activeData.worldRotation * Vector3.right;
                                         var beforeP = activeData.optionPosition - normal * Vector3.Dot(activeData.optionPosition - worldPosition, normal);
                                         var afterP = handlePosition - normal * Vector3.Dot(handlePosition - worldPosition, normal);
-                                        rotationX = Quaternion.AngleAxis(EditorCommon.Vector3SignedAngle((beforeP - toesPos).normalized, (afterP - toesPos).normalized, normal), normal);
+                                        rotationX = Quaternion.AngleAxis(Vector3.SignedAngle((beforeP - toesPos).normalized, (afterP - toesPos).normalized, normal), normal);
                                     }
                                     var rotation = rotationX * rotationY;
                                     var afterPosition = toesPos + rotation * (worldPosition - toesPos);
@@ -1363,18 +1435,12 @@ namespace VeryAnimation
                                     {
                                         ikData[(int)target].worldPosition = ikData[(int)target].worldPosition + movePosition;
                                         ikData[(int)target].worldRotation = moveRotation * ikData[(int)target].worldRotation;
-                                        {   //Handles error -> Quaternion To Matrix conversion failed because input Quaternion is invalid
-                                            float angle;
-                                            Vector3 axis;
-                                            ikData[(int)target].worldRotation.ToAngleAxis(out angle, out axis);
-                                            ikData[(int)target].worldRotation = Quaternion.AngleAxis(angle, axis);
-                                        }
                                         va.SetUpdateIKtargetAnimatorIK(target);
                                         if (target == IKTarget.LeftFoot || target == IKTarget.RightFoot)
                                         {
                                             toesTransform.rotation = Quaternion.Inverse(moveRotation) * toesTransform.rotation;
                                             HumanPose hpAfter = new HumanPose();
-                                            va.GetHumanPose(ref hpAfter);
+                                            va.GetEditGameObjectHumanPose(ref hpAfter);
                                             var muscleIndex = target == IKTarget.LeftFoot ? HumanTrait.MuscleFromBone((int)HumanBodyBones.LeftToes, 2) : HumanTrait.MuscleFromBone((int)HumanBodyBones.RightToes, 2);
                                             var muscle = hpAfter.muscles[muscleIndex];
                                             if (va.clampMuscle)
@@ -1384,6 +1450,7 @@ namespace VeryAnimation
                                     }
                                 }
                                 activeData.optionPosition = handlePosition;
+                                UpdateSwivelPosition(ikActiveTarget);
                             }
                         }
                     }
@@ -1422,17 +1489,6 @@ namespace VeryAnimation
                             }
                             Vector3 worldPosition2 = va.editHumanoidBones[(int)hiA2].transform.position;
                             Handles.DrawLine(worldPosition, worldPosition2);
-                            if (va.dummyObject != null && ikData[target].spaceType == AnimatorIKData.SpaceType.Parent)
-                            {
-                                Func<Vector3, Vector3> DummySpace2OriginalSpace = (pos) =>
-                                {
-                                    pos = va.editHumanoidBones[(int)hiA2].transform.worldToLocalMatrix.MultiplyPoint(pos);
-                                    return va.humanoidBones[(int)hiA2].transform.localToWorldMatrix.MultiplyPoint3x4(pos);
-                                };
-                                var dummyWorldPosition = DummySpace2OriginalSpace(worldPosition);
-                                var dummyWorldPosition2 = DummySpace2OriginalSpace(worldPosition2);
-                                Handles.DrawLine(dummyWorldPosition, dummyWorldPosition2);
-                            }
                         }
                         Handles.color = vaw.editorSettings.settingIKTargetActiveColor;
                         if (ikTarget == IKTarget.Head)
@@ -1509,16 +1565,54 @@ namespace VeryAnimation
                 #endregion
                 EditorGUILayout.Space();
                 #region Sync
-                EditorGUI.BeginDisabledGroup(activeData.spaceType == AnimatorIKData.SpaceType.Parent);
-                if (GUILayout.Button(Language.GetContent(Language.Help.SelectionSyncIK)))
                 {
-                    Undo.RecordObject(vaw, "Sync IK");
-                    foreach (var target in ikTargetSelect)
+                    EditorGUI.BeginDisabledGroup(activeData.spaceType == AnimatorIKData.SpaceType.Parent);
+                    if (GUILayout.Button(Language.GetContent(Language.Help.SelectionSyncIK), vaw.guiStyleDropDown))
                     {
-                        va.SetSynchroIKtargetAnimatorIK(target);
+                        GenericMenu menu = new GenericMenu();
+                        {
+                            menu.AddItem(new GUIContent("Default"), false, () =>
+                            {
+                                Undo.RecordObject(vaw, "Sync IK");
+                                foreach (var target in ikTargetSelect)
+                                    SynchroSet(target);
+                                SceneView.RepaintAll();
+                            });
+                            menu.AddSeparator(string.Empty);
+#if VERYANIMATION_ANIMATIONRIGGING
+                            if (va.animationRigging.isValid)
+                            {
+                                menu.AddItem(new GUIContent("Animation Rigging (Constraint target curves)"), false, () =>
+                                {
+                                    Undo.RecordObject(vaw, "Sync IK");
+                                    foreach (var target in ikTargetSelect)
+                                        SynchroSet(target, SynchroSetFlags.AnimationRigging);
+                                    SceneView.RepaintAll();
+                                });
+                            }
+#endif
+                            if (va.isHuman && ikActiveTarget >= IKTarget.LeftHand && ikActiveTarget <= IKTarget.RightFoot)
+                            {
+                                menu.AddItem(new GUIContent("Humanoid IK (Foot IK or Hand IK curves)"), false, () =>
+                                {
+                                    Undo.RecordObject(vaw, "Sync IK");
+                                    foreach (var target in ikTargetSelect)
+                                        SynchroSet(target, SynchroSetFlags.HandIK | SynchroSetFlags.FootIK);
+                                    SceneView.RepaintAll();
+                                });
+                            }
+                            menu.AddItem(new GUIContent("Animation"), false, () =>
+                            {
+                                Undo.RecordObject(vaw, "Sync IK");
+                                foreach (var target in ikTargetSelect)
+                                    SynchroSet(target, SynchroSetFlags.None);
+                                SceneView.RepaintAll();
+                            });
+                        }
+                        menu.ShowAsContext();
                     }
+                    EditorGUI.EndDisabledGroup();
                 }
-                EditorGUI.EndDisabledGroup();
                 #endregion
                 EditorGUILayout.Space();
                 #region Reset
@@ -1538,7 +1632,7 @@ namespace VeryAnimation
             #region SpaceType
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Space", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Space", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 var spaceType = (AnimatorIKData.SpaceType)GUILayout.Toolbar((int)activeData.spaceType, IKSpaceTypeStrings, EditorStyles.miniButton);
                 if (EditorGUI.EndChangeCheck())
@@ -1557,20 +1651,13 @@ namespace VeryAnimation
             if (activeData.spaceType == AnimatorIKData.SpaceType.Local || activeData.spaceType == AnimatorIKData.SpaceType.Parent)
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Parent", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Parent", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 if (activeData.spaceType == AnimatorIKData.SpaceType.Local)
                 {
                     EditorGUI.BeginDisabledGroup(true);
-                    if (activeData.root != null && activeData.root.transform.parent != null)
-                    {
-                        var boneIndex = va.EditBonesIndexOf(activeData.root.transform.parent.gameObject);
-                        EditorGUILayout.ObjectField(boneIndex >= 0 ? va.bones[boneIndex] : null, typeof(GameObject), true);
-                    }
-                    else
-                    {
-                        EditorGUILayout.ObjectField(null, typeof(GameObject), true);
-                    }
+                    var parent = va.bones[va.humanoidIndex2boneIndex[(int)GetStartHumanoidIndex(ikActiveTarget)]].transform.parent;
+                    EditorGUILayout.ObjectField(parent != null ? parent.gameObject : null, typeof(GameObject), true);
                     EditorGUI.EndDisabledGroup();
                 }
                 else if (activeData.spaceType == AnimatorIKData.SpaceType.Parent)
@@ -1587,7 +1674,7 @@ namespace VeryAnimation
                             data.parent = parent;
                             data.worldPosition = worldPosition;
                             data.worldRotation = worldRotation;
-                            va.SetUpdateIKtargetAnimatorIK(target);
+                            va.SetSynchroIKtargetAnimatorIK(target);
                         }
                     }
                 }
@@ -1597,7 +1684,7 @@ namespace VeryAnimation
             #region Position
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Position", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Position", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 var position = EditorGUILayout.Vector3Field("", activeData.position);
                 if (EditorGUI.EndChangeCheck())
@@ -1632,7 +1719,7 @@ namespace VeryAnimation
                     EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
                     {
                         EditorGUI.BeginChangeCheck();
-                        var autoRotation = !GUILayout.Toggle(!activeData.autoRotation, "Rotation", EditorStyles.toolbarButton, GUILayout.Width(54));
+                        var autoRotation = !GUILayout.Toggle(!activeData.autoRotation, "Rotation", EditorStyles.toolbarButton, GUILayout.Width(63));
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(vaw, "Change IK Rotation");
@@ -1685,7 +1772,7 @@ namespace VeryAnimation
             #region Swivel
             {
                 EditorGUILayout.BeginHorizontal(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
-                EditorGUILayout.LabelField("Swivel", GUILayout.Width(50));
+                EditorGUILayout.LabelField("Swivel", GUILayout.Width(60));
                 EditorGUI.BeginChangeCheck();
                 var swivelRotation = EditorGUILayout.Slider(activeData.swivelRotation, -180f, 180f);
                 if (EditorGUI.EndChangeCheck())
@@ -1695,20 +1782,72 @@ namespace VeryAnimation
                     foreach (var target in ikTargetSelect)
                     {
                         var data = ikData[(int)target];
-                        data.swivelRotation += move;
-                        while (data.swivelRotation < -180f || data.swivelRotation > 180f)
-                        {
-                            if (data.swivelRotation > 180f)
-                                data.swivelRotation -= 360f;
-                            else if (data.swivelRotation < -180f)
-                                data.swivelRotation += 360f;
-                        }
+                        data.swivelRotation = Mathf.Repeat(data.swivelRotation + move + 180f, 360f) - 180f;
+                        UpdateSwivelPosition(target);
                         va.SetUpdateIKtargetAnimatorIK(target);
                     }
                 }
                 EditorGUILayout.EndHorizontal();
             }
             #endregion
+#if VERYANIMATION_ANIMATIONRIGGING
+            #region AnimationRiggingConstraint
+            if (activeData.rigConstraint != null)
+            {
+                EditorGUILayout.BeginVertical(RowCount++ % 2 == 0 ? vaw.guiStyleAnimationRowEvenStyle : vaw.guiStyleAnimationRowOddStyle);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.Space();
+                if (GUILayout.Button(activeData.rigConstraintGUIContent))
+                {
+                    var list = new List<EditorCurveBinding>();
+                    foreach (var target in ikTargetSelect)
+                    {
+                        list.AddRange(GetAnimationRiggingConstraintBindings(target));
+                        list.Add(ikData[(int)target].rigConstraintWeight);
+                    }
+                    va.SetAnimationWindowSynchroSelection(list.ToArray());
+                }
+                EditorGUILayout.Space();
+                EditorGUILayout.EndHorizontal();
+                GUILayout.Space(8);
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button(new GUIContent("Source", "Source Objects")))
+                {
+                    var list = new List<EditorCurveBinding>();
+                    foreach (var target in ikTargetSelect)
+                    {
+                        list.AddRange(GetAnimationRiggingConstraintBindings(target));
+                    }
+                    va.SetAnimationWindowSynchroSelection(list.ToArray());
+                }
+                GUILayout.Space(8);
+                if (GUILayout.Button(new GUIContent("Weight", "IRigConstraint.weight")))
+                {
+                    var list = new List<EditorCurveBinding>();
+                    foreach (var target in ikTargetSelect)
+                    {
+                        list.Add(ikData[(int)target].rigConstraintWeight);
+                    }
+                    va.SetAnimationWindowSynchroSelection(list.ToArray());
+                }
+                {
+                    var rigConstraint = activeData.rigConstraint as IRigConstraint;
+                    EditorGUI.BeginChangeCheck();
+                    var weight = EditorGUILayout.Slider(va.GetAnimationValueCustomProperty(activeData.rigConstraintWeight), 0f, 1f);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        foreach (var target in ikTargetSelect)
+                        {
+                            if (ikData[(int)target].rigConstraint != null)
+                                va.SetAnimationValueCustomProperty(ikData[(int)target].rigConstraintWeight, weight);
+                        }
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+            }
+            #endregion
+#endif
             #endregion
         }
         public void ControlGUI()
@@ -1723,73 +1862,115 @@ namespace VeryAnimation
                 if (advancedFoldout && ikReorderableList.index >= 0 && ikReorderableList.index < ikData.Length)
                 {
                     var target = ikReorderableList.index;
+                    EditorGUI.BeginDisabledGroup(!ikData[target].enable);
+#if !VERYANIMATION_ANIMATIONRIGGING
                     if ((IKTarget)target == IKTarget.Head)
+#endif
                     {
                         advancedFoldout = EditorGUILayout.Foldout(advancedFoldout, "Advanced", true);
                         #region Head
-                        EditorGUILayout.BeginVertical(vaw.guiStyleSkinBox);
+                        if ((IKTarget)target == IKTarget.Head)
                         {
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField(IKTargetStrings[target]);
-                            EditorGUILayout.Space();
-                            if (GUILayout.Button("Reset", GUILayout.Width(44)))
+                            EditorGUILayout.BeginVertical(vaw.guiStyleSkinBox);
                             {
-                                Undo.RecordObject(vaw, "Change Animator IK Data");
-                                ikData[target].headWeight = 1f;
-                                ikData[target].eyesWeight = 0f;
+                                EditorGUILayout.BeginHorizontal();
+                                EditorGUILayout.LabelField("Look At Weight");
+                                GUILayout.FlexibleSpace();
+                                if (GUILayout.Button("Reset"))
+                                {
+                                    Undo.RecordObject(vaw, "Change Animator IK Data");
+                                    ikData[target].headWeight = 1f;
+                                    ikData[target].eyesWeight = 0f;
+                                }
+                                EditorGUILayout.EndHorizontal();
+                            }
+                            EditorGUI.indentLevel++;
+                            {
+                                EditorGUI.BeginChangeCheck();
+                                var weight = EditorGUILayout.Slider("Head Weight", ikData[target].headWeight, 0f, 1f);
+                                if (EditorGUI.EndChangeCheck())
+                                {
+                                    Undo.RecordObject(vaw, "Change Animator IK Data");
+                                    ikData[target].headWeight = weight;
+                                    ikData[target].eyesWeight = 1f - ikData[target].headWeight;
+                                }
+                            }
+                            {
+                                EditorGUI.BeginChangeCheck();
+                                var weight = EditorGUILayout.Slider("Eyes Weight", ikData[target].eyesWeight, 0f, 1f);
+                                if (EditorGUI.EndChangeCheck())
+                                {
+                                    Undo.RecordObject(vaw, "Change Animator IK Data");
+                                    ikData[target].eyesWeight = weight;
+                                    ikData[target].headWeight = 1f - ikData[target].eyesWeight;
+                                }
+                            }
+                            EditorGUI.indentLevel--;
+                            EditorGUILayout.EndVertical();
+                        }
+                        #endregion
+#if VERYANIMATION_ANIMATIONRIGGING
+                        #region AnimationRigging
+                        {
+                            EditorGUILayout.BeginHorizontal(vaw.guiStyleSkinBox);
+                            EditorGUILayout.LabelField("Animation Rigging Constraint");
+                            GUILayout.FlexibleSpace();
+                            {
+                                EditorGUI.BeginDisabledGroup(ikData[target].rigConstraint != null);
+                                if (GUILayout.Button("Create"))
+                                {
+                                    EditorApplication.delayCall += () =>
+                                    {
+                                        Undo.RecordObject(vaw, "Change Animation Rigging Constraint");
+                                        CreateAnimationRiggingConstraint((IKTarget)target);
+                                    };
+                                }
+                                EditorGUI.EndDisabledGroup();
+                            }
+                            EditorGUILayout.Space();
+                            {
+                                EditorGUI.BeginDisabledGroup(ikData[target].rigConstraint == null);
+                                if (GUILayout.Button("Delete"))
+                                {
+                                    EditorApplication.delayCall += () =>
+                                    {
+                                        Undo.RecordObject(vaw, "Change Animation Rigging Constraint");
+                                        DeleteAnimationRiggingConstraint((IKTarget)target);
+                                    };
+                                }
+                                EditorGUI.EndDisabledGroup();
                             }
                             EditorGUILayout.EndHorizontal();
                         }
-                        EditorGUI.indentLevel++;
-                        {
-                            EditorGUI.BeginChangeCheck();
-                            var weight = EditorGUILayout.Slider("Head Weight", ikData[target].headWeight, 0f, 1f);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                Undo.RecordObject(vaw, "Change Animator IK Data");
-                                ikData[target].headWeight = weight;
-                                ikData[target].eyesWeight = 1f - ikData[target].headWeight;
-                            }
-                        }
-                        {
-                            EditorGUI.BeginChangeCheck();
-                            var weight = EditorGUILayout.Slider("Eyes Weight", ikData[target].eyesWeight, 0f, 1f);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                Undo.RecordObject(vaw, "Change Animator IK Data");
-                                ikData[target].eyesWeight = weight;
-                                ikData[target].headWeight = 1f - ikData[target].eyesWeight;
-                            }
-                        }
-                        EditorGUI.indentLevel--;
-                        EditorGUILayout.EndVertical();
                         #endregion
+#endif
                     }
+                    EditorGUI.EndDisabledGroup();
                 }
             }
             EditorGUILayout.EndVertical();
         }
 
-        public void AnimatorOnAnimatorIK(int layerIndex)
+        private void AnimatorOnAnimatorIK(int layerIndex)
         {
             var animator = va.calcObject.animator;
 
-            #region ResetRoot
+#if !UNITY_2018_3_OR_NEWER
             {
                 animator.rootPosition = Vector3.zero;
                 animator.rootRotation = Quaternion.identity;
-                animator.bodyPosition = animator.rootPosition + ikSaveRootT * animator.humanScale;
-                animator.bodyRotation = animator.rootRotation * ikSaveRootQ;
+                animator.bodyPosition = ikSaveBodyPosition;
+                animator.bodyRotation = ikSaveBodyRotation;
             }
-            #endregion
+#endif
 
             {
                 var data = ikData[(int)IKTarget.Head];
                 if (data.isUpdate)
                 {
-                    Vector3 position;
+                    Vector3 position, hintPosition;
                     Quaternion rotation;
-                    GetCalcWorldTransform(data, out position, out rotation);
+                    GetCalcWorldTransform(IKTarget.Head, out position, out rotation, out hintPosition);
 
                     animator.SetLookAtPosition(position);
                     animator.SetLookAtWeight(1f, 0f, data.headWeight, data.eyesWeight, 0f);
@@ -1803,16 +1984,16 @@ namespace VeryAnimation
                 var data = ikData[(int)IKTarget.LeftHand];
                 if (data.isUpdate)
                 {
-                    Vector3 position;
+                    Vector3 position, hintPosition;
                     Quaternion rotation;
-                    GetCalcWorldTransform(data, out position, out rotation);
+                    GetCalcWorldTransform(IKTarget.LeftHand, out position, out rotation, out hintPosition);
 
                     animator.SetIKPosition(AvatarIKGoal.LeftHand, position);
                     animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1f);
                     animator.SetIKRotation(AvatarIKGoal.LeftHand, rotation);
                     animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1f);
-                    animator.SetIKHintPosition(AvatarIKHint.LeftElbow, data.swivelPosition);
-                    animator.SetIKHintPositionWeight(AvatarIKHint.LeftElbow, ikSwivelWeight);
+                    animator.SetIKHintPosition(AvatarIKHint.LeftElbow, hintPosition);
+                    animator.SetIKHintPositionWeight(AvatarIKHint.LeftElbow, 1f);
                 }
                 else
                 {
@@ -1825,16 +2006,16 @@ namespace VeryAnimation
                 var data = ikData[(int)IKTarget.RightHand];
                 if (data.isUpdate)
                 {
-                    Vector3 position;
+                    Vector3 position, hintPosition;
                     Quaternion rotation;
-                    GetCalcWorldTransform(data, out position, out rotation);
+                    GetCalcWorldTransform(IKTarget.RightHand, out position, out rotation, out hintPosition);
 
                     animator.SetIKPosition(AvatarIKGoal.RightHand, position);
                     animator.SetIKPositionWeight(AvatarIKGoal.RightHand, 1f);
                     animator.SetIKRotation(AvatarIKGoal.RightHand, rotation);
                     animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1f);
-                    animator.SetIKHintPosition(AvatarIKHint.RightElbow, data.swivelPosition);
-                    animator.SetIKHintPositionWeight(AvatarIKHint.RightElbow, ikSwivelWeight);
+                    animator.SetIKHintPosition(AvatarIKHint.RightElbow, hintPosition);
+                    animator.SetIKHintPositionWeight(AvatarIKHint.RightElbow, 1f);
                 }
                 else
                 {
@@ -1847,16 +2028,16 @@ namespace VeryAnimation
                 var data = ikData[(int)IKTarget.LeftFoot];
                 if (data.isUpdate)
                 {
-                    Vector3 position;
+                    Vector3 position, hintPosition;
                     Quaternion rotation;
-                    GetCalcWorldTransform(data, out position, out rotation);
+                    GetCalcWorldTransform(IKTarget.LeftFoot, out position, out rotation, out hintPosition);
 
                     animator.SetIKPosition(AvatarIKGoal.LeftFoot, position);
                     animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1f);
                     animator.SetIKRotation(AvatarIKGoal.LeftFoot, rotation);
                     animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1f);
-                    animator.SetIKHintPosition(AvatarIKHint.LeftKnee, data.swivelPosition);
-                    animator.SetIKHintPositionWeight(AvatarIKHint.LeftKnee, ikSwivelWeight);
+                    animator.SetIKHintPosition(AvatarIKHint.LeftKnee, hintPosition);
+                    animator.SetIKHintPositionWeight(AvatarIKHint.LeftKnee, 1f);
                 }
                 else
                 {
@@ -1869,16 +2050,16 @@ namespace VeryAnimation
                 var data = ikData[(int)IKTarget.RightFoot];
                 if (data.isUpdate)
                 {
-                    Vector3 position;
+                    Vector3 position, hintPosition;
                     Quaternion rotation;
-                    GetCalcWorldTransform(data, out position, out rotation);
+                    GetCalcWorldTransform(IKTarget.RightFoot, out position, out rotation, out hintPosition);
 
                     animator.SetIKPosition(AvatarIKGoal.RightFoot, position);
                     animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1f);
                     animator.SetIKRotation(AvatarIKGoal.RightFoot, rotation);
                     animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 1f);
-                    animator.SetIKHintPosition(AvatarIKHint.RightKnee, data.swivelPosition);
-                    animator.SetIKHintPositionWeight(AvatarIKHint.RightKnee, ikSwivelWeight);
+                    animator.SetIKHintPosition(AvatarIKHint.RightKnee, hintPosition);
+                    animator.SetIKHintPositionWeight(AvatarIKHint.RightKnee, 1f);
                 }
                 else
                 {
@@ -1888,27 +2069,43 @@ namespace VeryAnimation
                 }
             }
         }
-        private void GetCalcWorldTransform(AnimatorIKData data, out Vector3 position, out Quaternion rotation)
+        private void GetCalcWorldTransform(IKTarget target, out Vector3 position, out Quaternion rotation, out Vector3 hintPosition)
         {
+            var data = ikData[(int)target];
+
+            var worldToLocalRotation = Quaternion.Inverse(va.transformPoseSave.startRotation);
+            var worldToLocalMatrix = va.transformPoseSave.startMatrix.inverse;
+
             if (data.spaceType == AnimatorIKData.SpaceType.Parent && data.parentBoneIndex >= 0)
             {
                 var parent = va.calcObject.bones[data.parentBoneIndex].transform;
                 position = parent.localToWorldMatrix.MultiplyPoint3x4(data.position);
                 rotation = parent.rotation * data.rotation;
 
-                var hipEdit = va.editHumanoidBones[(int)HumanBodyBones.Hips].transform;
-                var hipCalc = va.calcObject.humanoidBones[(int)HumanBodyBones.Hips].transform;
-                var hipOffsetMatrix = (ikSaveWorldToLocalMatrix * hipEdit.localToWorldMatrix) * hipCalc.worldToLocalMatrix;
-                position = hipOffsetMatrix.MultiplyPoint3x4(position);
-                var hipOffsetRotation = (ikSaveWorldToLocalRotation * hipEdit.rotation) * Quaternion.Inverse(hipCalc.rotation);
-                rotation = hipOffsetRotation * rotation;
+                var rootEdit = va.editGameObject.transform;
+                var rootCalc = va.calcObject.gameObjectTransform;
+                var rootOffsetMatrix = (worldToLocalMatrix * rootEdit.localToWorldMatrix) * rootCalc.worldToLocalMatrix;
+                position = rootOffsetMatrix.MultiplyPoint3x4(position);
+                var rootOffsetRotation = (worldToLocalRotation * rootEdit.rotation) * Quaternion.Inverse(rootCalc.rotation);
+                rotation = rootOffsetRotation * rotation;
             }
             else
             {
-                position = ikSaveWorldToLocalMatrix.MultiplyPoint3x4(data.worldPosition);
-                rotation = ikSaveWorldToLocalRotation * data.worldRotation;
+                position = worldToLocalMatrix.MultiplyPoint3x4(data.worldPosition);
+                rotation = worldToLocalRotation * data.worldRotation;
             }
+
+            if (data.autoRotation)
+            {
+                var hiB = (int)GetEndHumanoidIndex(target);
+                var tB = va.editHumanoidBones[hiB].transform;
+                rotation = tB.rotation * va.GetAvatarPostRotation((HumanBodyBones)hiB) * IKTargetSyncRotation[(int)target];
+                rotation = worldToLocalRotation * rotation;
+            }
+
+            hintPosition = worldToLocalMatrix.MultiplyPoint3x4(data.swivelPosition);
         }
+
         private void Reset(IKTarget target)
         {
             var data = ikData[(int)target];
@@ -1947,7 +2144,7 @@ namespace VeryAnimation
                 break;
             case IKTarget.LeftFoot:
                 {
-                    var rot = va.editHumanoidBones[(int)HumanBodyBones.Hips].transform.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)HumanBodyBones.Hips) * Quaternion.Euler(90f, 90f, 0);
+                    var rot = va.editHumanoidBones[(int)HumanBodyBones.Hips].transform.rotation * va.GetAvatarPostRotation(HumanBodyBones.Hips) * Quaternion.Euler(90f, 90f, 0);
                     {
                         var vec = rot * Vector3.forward;
                         rot = Quaternion.LookRotation((new Vector3(vec.x, 0f, vec.z)).normalized, Vector3.up);
@@ -1957,7 +2154,7 @@ namespace VeryAnimation
                 break;
             case IKTarget.RightFoot:
                 {
-                    var rot = va.editHumanoidBones[(int)HumanBodyBones.Hips].transform.rotation * va.uAvatar.GetPostRotation(avatarClone, (int)HumanBodyBones.Hips) * Quaternion.Euler(90f, 90f, 0);
+                    var rot = va.editHumanoidBones[(int)HumanBodyBones.Hips].transform.rotation * va.GetAvatarPostRotation(HumanBodyBones.Hips) * Quaternion.Euler(90f, 90f, 0);
                     {
                         var vec = rot * Vector3.forward;
                         rot = Quaternion.LookRotation((new Vector3(vec.x, 0f, vec.z)).normalized, Vector3.up);
@@ -1966,8 +2163,9 @@ namespace VeryAnimation
                 }
                 break;
             }
+            UpdateOptionPosition(target);
+            UpdateSwivelPosition(target);
             va.SetUpdateIKtargetAnimatorIK(target);
-            UpdateOptionData(target);
         }
         private void ChangeSpaceType(IKTarget target, AnimatorIKData.SpaceType spaceType)
         {
@@ -1979,7 +2177,6 @@ namespace VeryAnimation
             data.spaceType = spaceType;
             data.worldPosition = position;
             data.worldRotation = rotation;
-            data.synchroIKtarget = true;
         }
 
         public IKTarget IsIKBone(HumanBodyBones hi)
@@ -2135,12 +2332,7 @@ namespace VeryAnimation
         public void SetUpdateIKtargetAnimatorIK(IKTarget target)
         {
             if (target <= IKTarget.None || ikData == null) return;
-            if (target == IKTarget.Total)
-            {
-                va.SetUpdateIKtargetAll();
-                return;
-            }
-            if (va.rootCorrectionMode == VeryAnimation.RootCorrectionMode.Disable)
+            if (target == IKTarget.Total || va.rootCorrectionMode == VeryAnimation.RootCorrectionMode.Disable)
             {
                 va.SetUpdateIKtargetAll();
             }
@@ -2148,7 +2340,7 @@ namespace VeryAnimation
             {
                 ikData[(int)target].updateIKtarget = true;
 
-                SetUpdateLinkedIKTarget(va.EditBonesIndexOf(ikData[(int)target].root));
+                SetUpdateLinkedIKTarget(ikData[(int)target].rootBoneIndex);
             }
         }
         private void SetUpdateLinkedIKTarget(int boneIndex)
@@ -2175,12 +2367,20 @@ namespace VeryAnimation
                 }
             }
         }
-        public void SetUpdateIKtargetAll(bool flag)
+        public void ResetUpdateIKtargetAll()
         {
             if (ikData == null) return;
             foreach (var data in ikData)
             {
-                data.updateIKtarget = flag;
+                data.updateIKtarget = false;
+            }
+        }
+        public void SetUpdateIKtargetAll()
+        {
+            if (ikData == null) return;
+            foreach (var data in ikData)
+            {
+                data.updateIKtarget = true;
             }
         }
         public bool GetUpdateIKtargetAll()
@@ -2253,6 +2453,19 @@ namespace VeryAnimation
             }
             return humanoidIndex;
         }
+        private HumanBodyBones GetCenterHumanoidIndex(IKTarget target)
+        {
+            var humanoidIndex = HumanBodyBones.Hips;
+            switch ((IKTarget)target)
+            {
+            case IKTarget.Head: break;
+            case IKTarget.LeftHand: humanoidIndex = HumanBodyBones.LeftLowerArm; break;
+            case IKTarget.RightHand: humanoidIndex = HumanBodyBones.RightLowerArm; break;
+            case IKTarget.LeftFoot: humanoidIndex = HumanBodyBones.LeftLowerLeg; break;
+            case IKTarget.RightFoot: humanoidIndex = HumanBodyBones.RightLowerLeg; break;
+            }
+            return humanoidIndex;
+        }
         private HumanBodyBones GetEndHumanoidIndex(IKTarget target)
         {
             var humanoidIndex = HumanBodyBones.Hips;
@@ -2283,5 +2496,628 @@ namespace VeryAnimation
             }
             return list;
         }
+
+#if VERYANIMATION_ANIMATIONRIGGING
+        #region AnimationRigging
+        private void UpdateAnimationRiggingConstraint(IKTarget target)
+        {
+            ikData[(int)target].rigConstraint = null;
+            if (va.animationRigging.isValid)
+            {
+                for (int i = 0; i < va.animationRigging.rig.transform.childCount; i++)
+                {
+                    var child = va.animationRigging.rig.transform.GetChild(i);
+                    var rigConstraint = child.GetComponent<IRigConstraint>();
+                    if (rigConstraint == null)
+                        continue;
+                    MonoBehaviour mono = null;
+                    switch (target)
+                    {
+                    case IKTarget.Head:
+                        mono = rigConstraint as MultiAimConstraint;
+                        break;
+                    case IKTarget.LeftHand:
+                    case IKTarget.RightHand:
+                    case IKTarget.LeftFoot:
+                    case IKTarget.RightFoot:
+                        mono = rigConstraint as TwoBoneIKConstraint;
+                        break;
+                    }
+                    if (mono == null || mono.name != GetAnimationRiggingConstraintName(target))
+                        continue;
+                    ikData[(int)target].rigConstraint = mono;
+                    var text = mono.GetType().ToString();
+                    {
+                        var lastIndex = text.LastIndexOf('.');
+                        if (lastIndex >= 0)
+                            text = text.Remove(0, lastIndex + 1);
+                    }
+                    ikData[(int)target].rigConstraintGUIContent = new GUIContent(text, mono.GetType().ToString());
+
+                    var path = AnimationUtility.CalculateTransformPath(mono.transform, vaw.gameObject.transform);
+                    switch (target)
+                    {
+                    case IKTarget.Head:
+                        ikData[(int)target].rigConstraintWeight = EditorCurveBinding.FloatCurve(path, typeof(MultiAimConstraint), "m_Weight");
+                        break;
+                    case IKTarget.LeftHand:
+                    case IKTarget.RightHand:
+                    case IKTarget.LeftFoot:
+                    case IKTarget.RightFoot:
+                        ikData[(int)target].rigConstraintWeight = EditorCurveBinding.FloatCurve(path, typeof(TwoBoneIKConstraint), "m_Weight");
+                        break;
+                    }
+                }
+            }
+        }
+        private bool CreateAnimationRiggingConstraint(IKTarget target)
+        {
+            DeleteAnimationRiggingConstraint(target);
+
+            va.StopRecording();
+
+            if (!va.animationRigging.isValid)
+            {
+                va.animationRigging.Enable();
+            }
+            if (!va.animationRigging.isValid)
+                return false;
+
+            var listIndex = ikReorderableList.index;
+            {
+                var go = AddAnimationRiggingConstraint(vaw.gameObject, target);
+                UpdateAnimationRiggingConstraint(target);
+                va.OnHierarchyWindowChanged();
+                Selection.activeGameObject = go;
+                va.SetUpdateSampleAnimation();
+                va.SetSynchroIKtargetAll();
+            }
+            ikReorderableList.index = listIndex;
+
+            return true;
+        }
+        private void DeleteAnimationRiggingConstraint(IKTarget target)
+        {
+            if (ikData[(int)target].rigConstraint == null)
+                return;
+
+            va.StopRecording();
+
+            var listIndex = ikReorderableList.index;
+            {
+                Selection.activeGameObject= ikData[(int)target].rigConstraint.gameObject;
+                Unsupported.DeleteGameObjectSelection();
+                if (ikData[(int)target].rigConstraint != null)
+                    return;
+                ikData[(int)target].rigConstraint = null;
+                switch (target)
+                {
+                case IKTarget.Head:
+                    break;
+                case IKTarget.LeftHand:
+                    va.animationRigging.vaRig.basePoseLeftHand.Reset();
+                    break;
+                case IKTarget.RightHand:
+                    va.animationRigging.vaRig.basePoseRightHand.Reset();
+                    break;
+                case IKTarget.LeftFoot:
+                    va.animationRigging.vaRig.basePoseLeftFoot.Reset();
+                    break;
+                case IKTarget.RightFoot:
+                    va.animationRigging.vaRig.basePoseRightFoot.Reset();
+                    break;
+                }
+                va.OnHierarchyWindowChanged();
+            }
+            ikReorderableList.index = listIndex;
+        }
+        private void WriteAnimationRiggingConstraint(IKTarget target, float time)
+        {
+            if (ikData[(int)target].rigConstraint == null || !ikData[(int)target].enable)
+                return;
+
+            Vector3 position, hintPosition;
+            Quaternion rotation;
+            GetCalcWorldTransform(target, out position, out rotation, out hintPosition);
+
+            var worldToLocalRotation = Quaternion.Inverse(va.transformPoseSave.startRotation);
+            var worldToLocalMatrix = va.transformPoseSave.startMatrix.inverse;
+
+            #region FeetBottomHeight
+            switch (target)
+            {
+            case IKTarget.LeftFoot: position += new Vector3(0f, -va.editAnimator.leftFeetBottomHeight, 0f); break;
+            case IKTarget.RightFoot: position += new Vector3(0f, -va.editAnimator.rightFeetBottomHeight, 0f); break;
+            }
+            #endregion
+
+            switch (target)
+            {
+            case IKTarget.Head:
+                {
+                    var constraint = ikData[(int)target].rigConstraint as MultiAimConstraint;
+                    if (constraint != null && constraint.data.sourceObjects.Count > 0 && constraint.data.sourceObjects[0].transform != null)
+                    {
+                        var boneIndex = va.BonesIndexOf(constraint.gameObject);
+                        var parentMatrix = (worldToLocalMatrix * va.editBones[boneIndex].transform.localToWorldMatrix).inverse;
+                        var targetBoneIndex = va.BonesIndexOf(constraint.data.sourceObjects[0].transform.gameObject);
+                        var localPosition = parentMatrix.MultiplyPoint3x4(position);
+                        va.SetAnimationValueTransformPosition(targetBoneIndex, localPosition, time);
+                    }
+                }
+                break;
+            case IKTarget.LeftHand:
+            case IKTarget.RightHand:
+            case IKTarget.LeftFoot:
+            case IKTarget.RightFoot:
+                {
+                    var constraint = ikData[(int)target].rigConstraint as TwoBoneIKConstraint;
+                    if (constraint != null)
+                    {
+                        var boneIndex = va.BonesIndexOf(constraint.gameObject);
+                        var parentRotation = Quaternion.Inverse(worldToLocalRotation * va.editBones[boneIndex].transform.rotation);
+                        var parentMatrix = (worldToLocalMatrix * va.editBones[boneIndex].transform.localToWorldMatrix).inverse;
+                        if (constraint.data.target != null)
+                        {
+                            var targetBoneIndex = va.BonesIndexOf(constraint.data.target.gameObject);
+                            var localPosition = parentMatrix.MultiplyPoint3x4(position);
+                            var localRotation = parentRotation * rotation;
+                            va.SetAnimationValueTransformPosition(targetBoneIndex, localPosition, time);
+                            va.SetAnimationValueTransformRotation(targetBoneIndex, localRotation, time);
+                        }
+                        if (constraint.data.hint != null)
+                        {
+                            var hintBoneIndex = va.BonesIndexOf(constraint.data.hint.gameObject);
+                            var localPosition = parentMatrix.MultiplyPoint3x4(hintPosition);
+                            va.SetAnimationValueTransformPosition(hintBoneIndex, localPosition, time);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+
+        public void WriteCurveAnimationRiggingConstraint(IKTarget target, int beginFrame, int endFrame, SynchroSetFlags syncFlags)
+        {
+            if (beginFrame < 0)
+                beginFrame = 0;
+            if (endFrame < 0) 
+                endFrame = va.uAw.GetLastFrame(va.currentClip);
+
+            var frameCountList = new List<int>();
+            {
+                var checkCurves = new List<AnimationCurve>();
+                var humanoidIndex = GetEndHumanoidIndex(target);
+                for (int dof = 0; dof < 3; dof++)
+                {
+                    var muscleIndex = HumanTrait.MuscleFromBone((int)humanoidIndex, dof);
+                    if (muscleIndex < 0)
+                        continue;
+                    var curve = va.GetAnimationCurveAnimatorMuscle(muscleIndex, false);
+                    if (curve == null)
+                        continue;
+                    checkCurves.Add(curve);
+                }
+                if (va.humanoidHasTDoF && VeryAnimation.HumanBonesAnimatorTDOFIndex[(int)humanoidIndex] != null)
+                {
+                    var tdofIndex = VeryAnimation.HumanBonesAnimatorTDOFIndex[(int)humanoidIndex].index;
+                    for (int dof = 0; dof < 3; dof++)
+                    {
+                        var curve = va.GetAnimationCurveAnimatorTDOF(tdofIndex, dof, false);
+                        if (curve == null)
+                            continue;
+                        checkCurves.Add(curve);
+                    }
+                }
+                frameCountList.AddRange(va.GetAnimationCurveFrameList(checkCurves.ToArray()));
+                if (!frameCountList.Contains(beginFrame))
+                    frameCountList.Add(beginFrame);
+                if (!frameCountList.Contains(endFrame))
+                    frameCountList.Add(endFrame);
+                frameCountList.RemoveAll(s => s < beginFrame || s > endFrame);
+                frameCountList.Sort();
+            }
+            if (frameCountList.Count > 0)
+            {
+                var saveTime = va.currentTime;
+                try
+                {
+                    for (int i = 0; i < frameCountList.Count; i++)
+                    {
+                        EditorUtility.DisplayProgressBar("Genarate IK Curves", target.ToString(), i / (float)frameCountList.Count);
+
+                        var time = va.GetFrameTime(frameCountList[i]);
+                        va.SetCurrentTime(time);
+                        va.SampleAnimation(time);
+                        SynchroSet(target, syncFlags);
+
+                        WriteAnimationRiggingConstraint(target, time);
+                    }
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                    va.SetCurrentTime(saveTime);
+                }
+            }
+        }
+        public void SetSyncroAndWriteAllAnimationRiggingConstraint()
+        {
+            for (int target = 0; target < ikData.Length; target++)
+            {
+                if (!ikData[target].enable)
+                    continue;
+                SynchroSet((IKTarget)target, SynchroSetFlags.None);
+                WriteAnimationRiggingConstraint((IKTarget)target, va.currentTime);
+            }
+        }
+        public EditorCurveBinding[] GetAnimationRiggingConstraintBindings(IKTarget target)
+        {
+            List<EditorCurveBinding> bindings = new List<EditorCurveBinding>();
+            switch (target)
+            {
+            case IKTarget.Head:
+                {
+                    var constraint = ikData[(int)target].rigConstraint as MultiAimConstraint;
+                    if (constraint != null && constraint.data.sourceObjects.Count > 0 && constraint.data.sourceObjects[0].transform != null)
+                    {
+                        var boneIndex = va.BonesIndexOf(constraint.data.sourceObjects[0].transform.gameObject);
+                        for (int dof = 0; dof < 3; dof++)
+                            bindings.Add(va.AnimationCurveBindingTransformPosition(boneIndex, dof));
+                    }
+                }
+                break;
+            case IKTarget.LeftHand:
+            case IKTarget.RightHand:
+            case IKTarget.LeftFoot:
+            case IKTarget.RightFoot:
+                {
+                    var constraint = ikData[(int)target].rigConstraint as TwoBoneIKConstraint;
+                    if (constraint != null)
+                    {
+                        if (constraint.data.target != null)
+                        {
+                            var boneIndex = va.BonesIndexOf(constraint.data.target.gameObject);
+                            for (int dof = 0; dof < 3; dof++)
+                                bindings.Add(va.AnimationCurveBindingTransformPosition(boneIndex, dof));
+                            for (int dof = 0; dof < 3; dof++)
+                                bindings.Add(va.AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.RawEuler));
+                            for (int dof = 0; dof < 4; dof++)
+                                bindings.Add(va.AnimationCurveBindingTransformRotation(boneIndex, dof, URotationCurveInterpolation.Mode.RawQuaternions));
+                        }
+                        if (constraint.data.hint != null)
+                        {
+                            var boneIndex = va.BonesIndexOf(constraint.data.hint.gameObject);
+                            for (int dof = 0; dof < 3; dof++)
+                                bindings.Add(va.AnimationCurveBindingTransformPosition(boneIndex, dof));
+                        }
+                    }
+                }
+                break;
+            }
+            return bindings.ToArray();
+        }
+        public void AddAnimationRiggingConstraintSkeletonIKShowBoneList()
+        {
+            Action<int, int> AddBone = (boneIndex, targetIndex) =>
+            {
+                if (!va.skeletonFKShowBoneList.Contains(boneIndex))
+                    return;
+                va.skeletonIKShowBoneList.Add(new Vector2Int(boneIndex, targetIndex));
+            };
+            for (int target = 0; target < ikData.Length; target++)
+            {
+                if (ikData[target].rigConstraint == null)
+                    continue;
+                switch ((IKTarget)target)
+                {
+                case IKTarget.Head:
+                    {
+                        var constraint = ikData[target].rigConstraint as MultiAimConstraint;
+                        if (constraint != null)
+                        {
+                            if (constraint.data.constrainedObject != null && constraint.data.sourceObjects.Count > 0 && constraint.data.sourceObjects[0].transform != null)
+                            {
+                                var targetIndex = va.BonesIndexOf(constraint.data.sourceObjects[0].transform.gameObject);
+                                if (targetIndex >= 0)
+                                    AddBone(va.BonesIndexOf(constraint.data.constrainedObject.gameObject), targetIndex);
+                            }
+                        }
+                    }
+                    break;
+                case IKTarget.LeftHand:
+                case IKTarget.RightHand:
+                case IKTarget.LeftFoot:
+                case IKTarget.RightFoot:
+                    {
+                        var constraint = ikData[target].rigConstraint as TwoBoneIKConstraint;
+                        if (constraint != null)
+                        {
+                            if (constraint.data.mid != null)
+                                AddBone(va.BonesIndexOf(constraint.data.mid.gameObject), -1);
+                            if (constraint.data.tip != null)
+                                AddBone(va.BonesIndexOf(constraint.data.tip.gameObject), -1);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        public static string GetAnimationRiggingConstraintName(IKTarget target)
+        {
+            return string.Format("{0}_{1}", AnimationRigging.AnimationRiggingRigName, target);
+        }
+        public static GameObject GetAnimationRiggingConstraint(GameObject gameObject, IKTarget target)
+        {
+            var vaRig = AnimationRigging.GetVeryAnimationRig(gameObject);
+            if (vaRig == null)
+                return null;
+            var rig = vaRig.GetComponent<Rig>();
+            if (rig == null)
+                return null;
+            var animator = gameObject.GetComponent<Animator>();
+            if (animator == null || animator.avatar == null)
+                return null;
+            var child = vaRig.transform.Find(GetAnimationRiggingConstraintName(target));
+            if (child == null)
+                return null;
+            if (target == IKTarget.Head)
+            {
+                if (child.GetComponent<MultiAimConstraint>() == null)
+                    return null;
+            }
+            else
+            {
+                if (child.GetComponent<TwoBoneIKConstraint>() == null)
+                    return null;
+            }
+            return child.gameObject;
+        }
+        public static GameObject AddAnimationRiggingConstraint(GameObject gameObject, IKTarget target)
+        {
+            var vaRig = AnimationRigging.GetVeryAnimationRig(gameObject);
+            if (vaRig == null)
+                return null;
+            var rig = vaRig.GetComponent<Rig>();
+            if (rig == null)
+                return null;
+            var animator = gameObject.GetComponent<Animator>();
+            if (animator == null || animator.avatar == null)
+                return null;
+
+            if (!animator.isInitialized)
+                animator.Rebind();
+
+            var uAvatar = new UAvatar();
+
+            var go = new GameObject(GetAnimationRiggingConstraintName(target));
+            go.transform.SetParent(rig.transform);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+            Undo.RegisterCreatedObjectUndo(go, "");
+            var targetObj = new GameObject(go.name + "_Target");
+            targetObj.transform.SetParent(go.transform);
+            targetObj.transform.localPosition = Vector3.zero;
+            targetObj.transform.localRotation = Quaternion.identity;
+            targetObj.transform.localScale = Vector3.one;
+            Undo.RegisterCreatedObjectUndo(targetObj, "");
+
+            var transformPoseSave = new TransformPoseSave(gameObject);
+            transformPoseSave.CreateExtraTransforms();
+            var saveRoot = transformPoseSave.GetTPoseTransform(gameObject.transform);
+            var rootRotationInv = Quaternion.Inverse(saveRoot.rotation);
+            if (target == IKTarget.Head)
+            {
+                var tHead = animator.GetBoneTransform(HumanBodyBones.Head);
+                if (tHead != null)
+                {
+                    var constraint = Undo.AddComponent<MultiAimConstraint>(go);
+                    Undo.RecordObject(constraint, "");
+
+                    constraint.weight = 0f;
+                    constraint.data.constrainedObject = tHead;
+                    {
+                        var list = constraint.data.sourceObjects;
+                        list.Add(new WeightedTransform(targetObj.transform, 1f));
+                        constraint.data.sourceObjects = list;
+                    }
+                    {
+                        var forward = uAvatar.GetPostRotation(animator.avatar, (int)HumanBodyBones.Head) * Vector3.down;
+                        var dotX = Vector3.Dot(forward, Vector3.right);
+                        var dotY = Vector3.Dot(forward, Vector3.up);
+                        var dotZ = Vector3.Dot(forward, Vector3.forward);
+                        var axis = forward;
+                        if (Mathf.Abs(dotX) > Mathf.Abs(dotY) && Mathf.Abs(dotX) > Mathf.Abs(dotZ))
+                        {
+                            if (dotX > 0f)
+                            {
+                                constraint.data.aimAxis = MultiAimConstraintData.Axis.X;
+                                axis = Vector3.right;
+                            }
+                            else
+                            {
+                                constraint.data.aimAxis = MultiAimConstraintData.Axis.X_NEG;
+                                axis = Vector3.left;
+                            }
+                            constraint.data.constrainedXAxis = false;
+                        }
+                        else if (Mathf.Abs(dotY) > Mathf.Abs(dotX) && Mathf.Abs(dotY) > Mathf.Abs(dotZ))
+                        {
+                            if (dotY > 0f)
+                            {
+                                constraint.data.aimAxis = MultiAimConstraintData.Axis.Y;
+                                axis = Vector3.up;
+                            }
+                            else
+                            {
+                                constraint.data.aimAxis = MultiAimConstraintData.Axis.Y_NEG;
+                                axis = Vector3.down;
+                            }
+                            constraint.data.constrainedYAxis = false;
+                        }
+                        else
+                        {
+                            if (dotZ > 0f)
+                            {
+                                constraint.data.aimAxis = MultiAimConstraintData.Axis.Z;
+                                axis = Vector3.forward;
+                            }
+                            else
+                            {
+                                constraint.data.aimAxis = MultiAimConstraintData.Axis.Z_NEG;
+                                axis = Vector3.back;
+                            }
+                            constraint.data.constrainedZAxis = false;
+                        }
+                        constraint.data.offset = Quaternion.FromToRotation(forward, axis).eulerAngles;
+                    }
+                    {
+                        var limit = uAvatar.GetMuscleLimitNonError(animator.avatar, HumanBodyBones.Head);
+                        var min = Mathf.Min(limit.min[0], limit.min[2]);
+                        var max = Mathf.Min(limit.max[0], limit.max[2]);
+                        constraint.data.limits = new Vector2(min, max);
+                    }
+                    {
+                        constraint.data.maintainOffset = false;
+                    }
+                }
+                else
+                {
+                    Debug.LogErrorFormat("Unknown avatar file error. {0}", animator.avatar);
+                }
+            }
+            else
+            {
+                Transform tRoot, tMid, tTip;
+                switch (target)
+                {
+                case IKTarget.LeftHand:
+                    tRoot = animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+                    tMid = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+                    tTip = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+                    break;
+                case IKTarget.RightHand:
+                    tRoot = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+                    tMid = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
+                    tTip = animator.GetBoneTransform(HumanBodyBones.RightHand);
+                    break;
+                case IKTarget.LeftFoot:
+                    tRoot = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+                    tMid = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+                    tTip = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+                    break;
+                case IKTarget.RightFoot:
+                    tRoot = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+                    tMid = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+                    tTip = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+                    break;
+                default:
+                    tRoot = tMid = tTip = null;
+                    break;
+                }
+                if (tRoot != null && tMid != null && tTip != null)
+                {
+                    var constraint = Undo.AddComponent<TwoBoneIKConstraint>(go);
+                    var hintObj = new GameObject(go.name + "_Hint");
+                    hintObj.transform.SetParent(go.transform);
+                    hintObj.transform.localPosition = Vector3.zero;
+                    hintObj.transform.localRotation = Quaternion.identity;
+                    hintObj.transform.localScale = Vector3.one;
+                    Undo.RegisterCreatedObjectUndo(hintObj, "");
+                    Undo.RecordObject(constraint, "");
+                    Undo.RecordObject(vaRig, "");
+                    constraint.weight = 0f;
+                    switch (target)
+                    {
+                    case IKTarget.LeftHand:
+                        constraint.data.root = tRoot;
+                        constraint.data.mid = tMid;
+                        constraint.data.tip = tTip;
+                        constraint.data.maintainTargetRotationOffset = true;
+                        {
+                            var save = transformPoseSave.GetTPoseTransform(constraint.data.tip);
+                            var rotation = save.rotation;
+                            #region Corrects the difference between the finger direction not straight to the arm direction at the T-Pose stage.
+                            var finger = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
+                            if (finger != null)
+                            {
+                                var saveLower = transformPoseSave.GetTPoseTransform(constraint.data.mid);
+                                var saveFinger = transformPoseSave.GetTPoseTransform(finger);
+                                var vecArm = save.position - saveLower.position;
+                                var vecIndex = saveFinger.position - save.position;
+                                vecIndex.z = vecArm.z = 0f;
+                                var offset = Quaternion.FromToRotation(vecIndex.normalized, vecArm.normalized);
+                                rotation = offset * rotation;
+                            }
+                            #endregion
+                            rotation = Quaternion.Euler(0f, 90f, 0f) * (rootRotationInv * rotation);
+                            vaRig.basePoseLeftHand = new VeryAnimationRig.BasePoseTransformOffset(go.transform, rotation);
+                        }
+                        break;
+                    case IKTarget.RightHand:
+                        constraint.data.root = tRoot;
+                        constraint.data.mid = tMid;
+                        constraint.data.tip = tTip;
+                        constraint.data.maintainTargetRotationOffset = true;
+                        {
+                            var save = transformPoseSave.GetTPoseTransform(constraint.data.tip);
+                            var rotation = save.rotation;
+                            #region Corrects the difference between the finger direction not straight to the arm direction at the T-Pose stage.
+                            var finger = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
+                            if (finger != null)
+                            {
+                                var saveLower = transformPoseSave.GetTPoseTransform(constraint.data.mid);
+                                var saveFinger = transformPoseSave.GetTPoseTransform(finger);
+                                var vecArm = save.position - saveLower.position;
+                                var vecIndex = saveFinger.position - save.position;
+                                vecIndex.z = vecArm.z = 0f;
+                                var offset = Quaternion.FromToRotation(vecIndex.normalized, vecArm.normalized);
+                                rotation = offset * rotation;
+                            }
+                            #endregion
+                            rotation = Quaternion.Euler(0f, -90f, 0f) * (rootRotationInv * rotation);
+                            vaRig.basePoseRightHand = new VeryAnimationRig.BasePoseTransformOffset(go.transform, rotation);
+                        }
+                        break;
+                    case IKTarget.LeftFoot:
+                        constraint.data.root = tRoot;
+                        constraint.data.mid = tMid;
+                        constraint.data.tip = tTip;
+                        constraint.data.maintainTargetPositionOffset = true;
+                        constraint.data.maintainTargetRotationOffset = true;
+                        {
+                            var save = transformPoseSave.GetTPoseTransform(constraint.data.tip);
+                            var rotation = save.rotation;
+                            vaRig.basePoseLeftFoot = new VeryAnimationRig.BasePoseTransformOffset(go.transform, new Vector3(0f, animator.leftFeetBottomHeight, 0f), rootRotationInv * rotation);
+                        }
+                        break;
+                    case IKTarget.RightFoot:
+                        constraint.data.root = tRoot;
+                        constraint.data.mid = tMid;
+                        constraint.data.tip = tTip;
+                        constraint.data.maintainTargetPositionOffset = true;
+                        constraint.data.maintainTargetRotationOffset = true;
+                        {
+                            var save = transformPoseSave.GetTPoseTransform(constraint.data.tip);
+                            var rotation = save.rotation;
+                            vaRig.basePoseRightFoot = new VeryAnimationRig.BasePoseTransformOffset(go.transform, new Vector3(0f, animator.rightFeetBottomHeight, 0f), rootRotationInv * rotation);
+                        }
+                        break;
+                    }
+                    constraint.data.target = targetObj.transform;
+                    constraint.data.hint = hintObj.transform;
+                }
+                else
+                {
+                    Debug.LogErrorFormat("Unknown avatar file error. {0}", animator.avatar);
+                }
+            }
+
+            return go;
+        }
+        #endregion
+#endif
     }
 }

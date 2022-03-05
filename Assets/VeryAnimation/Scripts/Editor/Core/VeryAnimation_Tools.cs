@@ -1,4 +1,4 @@
-﻿#if UNITY_2017_1_OR_NEWER && !UNITY_2019_1_OR_NEWER
+﻿#if !UNITY_2019_1_OR_NEWER
 #define VERYANIMATION_TIMELINE
 #endif
 
@@ -25,10 +25,12 @@ namespace VeryAnimation
         {
             Copy,
             Trim,
+            Add,
             Combine,
             CreateNewClip,
             CreateNewKeyframe,
-            RangeIK,
+            BakeIK,
+            AnimationRigging,
             HumanoidIK,
             RootMotion,
             ParameterRelatedCurves,
@@ -46,7 +48,8 @@ namespace VeryAnimation
         public int toolCopy_WriteFrame;
         public int toolTrim_FirstFrame;
         public int toolTrim_LastFrame;
-        public AnimationClip toolCombine_clip;
+        public AnimationClip toolAdd_Clip;
+        public AnimationClip toolCombine_Clip;
         public int toolCreateNewKeyframe_FirstFrame;
         public int toolCreateNewKeyframe_LastFrame;
         public int toolCreateNewKeyframe_IntervalFrame = 6;
@@ -57,10 +60,21 @@ namespace VeryAnimation
         public bool toolCreateNewKeyframe_TransformPosition;
         public bool toolCreateNewKeyframe_TransformRotation = true;
         public bool toolCreateNewKeyframe_TransformScale;
-        public int toolRangeIK_FirstFrame;
-        public int toolRangeIK_LastFrame;
-        private bool toolRangeIK_AnimatorIKFoldout = true;
-        private bool toolRangeIK_OriginalIKFoldout = true;
+        public enum BakeIKMode
+        {
+            Simple,
+            Interpolation,
+        }
+        public BakeIKMode toolBakeIK_Mode;
+        public int toolBakeIK_FirstFrame;
+        public int toolBakeIK_LastFrame;
+        public bool toolBakeIK_BakeHandIK;
+        public bool toolBakeIK_BakeFootIK;
+        public bool toolBakeIK_BakeAnimationRigging;
+        public int toolAnimationRigging_FirstFrame;
+        public int toolAnimationRigging_LastFrame;
+        public bool toolAnimationRigging_BakeHandIK;
+        public bool toolAnimationRigging_BakeFootIK;
         public bool toolHumanoidIK_Hand;
         public bool toolHumanoidIK_Foot = true;
         public int toolHumanoidIK_FirstFrame;
@@ -113,7 +127,18 @@ namespace VeryAnimation
         public ExportAnimationMode toolExport_AnimationMode = ExportAnimationMode.CurrentClip;
         public bool toolExport_FootIK = true;
 
-        private GUIContent[] RootMotionModeStrings =
+#pragma warning disable 0414
+        private bool toolBakeIK_AnimatorIKFoldout = true;
+        private bool toolBakeIK_OriginalIKFoldout = true;
+        private bool toolAnimationRigging_AnimatorIKFoldout = true;
+#pragma warning restore 0414
+
+        private static readonly GUIContent[] BakeIKModeStrings =
+        {
+            new GUIContent("Simple"),
+            new GUIContent("Interpolation"),
+        };
+        private static readonly GUIContent[] RootMotionModeStrings =
         {
             new GUIContent("Motion Curves", "MotionT, MotionQ"),
             new GUIContent("Root Curves", "RootT, RootQ"),
@@ -255,22 +280,48 @@ namespace VeryAnimation
                 }
                 #endregion
             }
-            else if (toolMode == ToolMode.Combine)
+            else if (toolMode == ToolMode.Add)
             {
-                #region Combine
+                #region Add
                 {
                     EditorGUI.BeginChangeCheck();
-                    var combineClip = EditorGUILayout.ObjectField("Animation Clip", toolCombine_clip, typeof(AnimationClip), true) as AnimationClip;
+                    var addClip = EditorGUILayout.ObjectField("Add Clip", toolAdd_Clip, typeof(AnimationClip), true) as AnimationClip;
                     if (EditorGUI.EndChangeCheck())
                     {
-                        Undo.RecordObject(vaw, "Change Combine Clip");
-                        toolCombine_clip = combineClip;
+                        Undo.RecordObject(vaw, "Change Add Clip");
+                        toolAdd_Clip = addClip;
                     }
                 }
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.Space();
-                    EditorGUI.BeginDisabledGroup(toolCombine_clip == null);
+                    EditorGUI.BeginDisabledGroup(toolAdd_Clip == null);
+                    if (GUILayout.Button("Add"))
+                    {
+                        ToolsAdd(clip);
+                    }
+                    EditorGUI.EndDisabledGroup();
+                    EditorGUILayout.Space();
+                    EditorGUILayout.EndHorizontal();
+                }
+                #endregion
+            }
+            else if (toolMode == ToolMode.Combine)
+            {
+                #region Combine
+                {
+                    EditorGUI.BeginChangeCheck();
+                    var combineClip = EditorGUILayout.ObjectField("Combine Clip", toolCombine_Clip, typeof(AnimationClip), true) as AnimationClip;
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(vaw, "Change Combine Clip");
+                        toolCombine_Clip = combineClip;
+                    }
+                }
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.Space();
+                    EditorGUI.BeginDisabledGroup(toolCombine_Clip == null);
                     if (GUILayout.Button("Combine"))
                     {
                         ToolsCombine(clip);
@@ -374,7 +425,7 @@ namespace VeryAnimation
                     {
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("RootT", toolCreateNewKeyframe_AnimatorRootT);
+                            var flag = EditorGUILayout.ToggleLeft("RootT", toolCreateNewKeyframe_AnimatorRootT);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
@@ -383,7 +434,7 @@ namespace VeryAnimation
                         }
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("RootQ", toolCreateNewKeyframe_AnimatorRootQ);
+                            var flag = EditorGUILayout.ToggleLeft("RootQ", toolCreateNewKeyframe_AnimatorRootQ);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
@@ -392,17 +443,17 @@ namespace VeryAnimation
                         }
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("Muscle", toolCreateNewKeyframe_AnimatorMuscle);
+                            var flag = EditorGUILayout.ToggleLeft("Muscle", toolCreateNewKeyframe_AnimatorMuscle);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
                                 toolCreateNewKeyframe_AnimatorMuscle = flag;
                             }
                         }
-                        if(humanoidHasTDoF)
+                        if (humanoidHasTDoF)
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("TDOF", toolCreateNewKeyframe_AnimatorTDOF);
+                            var flag = EditorGUILayout.ToggleLeft("TDOF", toolCreateNewKeyframe_AnimatorTDOF);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
@@ -418,7 +469,7 @@ namespace VeryAnimation
                     {
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("Position", toolCreateNewKeyframe_TransformPosition);
+                            var flag = EditorGUILayout.ToggleLeft("Position", toolCreateNewKeyframe_TransformPosition);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
@@ -427,7 +478,7 @@ namespace VeryAnimation
                         }
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("Rotation", toolCreateNewKeyframe_TransformRotation);
+                            var flag = EditorGUILayout.ToggleLeft("Rotation", toolCreateNewKeyframe_TransformRotation);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
@@ -436,7 +487,7 @@ namespace VeryAnimation
                         }
                         {
                             EditorGUI.BeginChangeCheck();
-                            var flag = EditorGUILayout.Toggle("Scale", toolCreateNewKeyframe_TransformScale);
+                            var flag = EditorGUILayout.ToggleLeft("Scale", toolCreateNewKeyframe_TransformScale);
                             if (EditorGUI.EndChangeCheck())
                             {
                                 Undo.RecordObject(vaw, "Change Flag");
@@ -461,13 +512,13 @@ namespace VeryAnimation
                 }
                 #endregion
             }
-            else if (toolMode == ToolMode.RangeIK)
+            else if (toolMode == ToolMode.BakeIK)
             {
-                #region RangeIK
+                #region BakeIK
                 if (uAnimationClipEditor != null)
                 {
-                    float firstFrame = toolRangeIK_FirstFrame;
-                    float lastFrame = toolRangeIK_LastFrame;
+                    float firstFrame = toolBakeIK_FirstFrame;
+                    float lastFrame = toolBakeIK_LastFrame;
                     float additivePoseframe = 0.0f;
                     bool changedStart = false;
                     bool changedStop = false;
@@ -476,30 +527,82 @@ namespace VeryAnimation
                     if (changedStart)
                     {
                         Undo.RecordObject(vaw, "Change First Frame");
-                        toolRangeIK_FirstFrame = Mathf.RoundToInt(firstFrame);
+                        toolBakeIK_FirstFrame = Mathf.RoundToInt(firstFrame);
                     }
                     if (changedStop)
                     {
                         Undo.RecordObject(vaw, "Change Last Frame");
-                        toolRangeIK_LastFrame = Mathf.RoundToInt(lastFrame);
+                        toolBakeIK_LastFrame = Mathf.RoundToInt(lastFrame);
                     }
                 }
-                bool disable = false;
                 {
-                    var saveIndentLevel = EditorGUI.indentLevel;
-                    EditorGUI.indentLevel = 0;
-                    int enableCount = 0;
+                    EditorGUI.BeginChangeCheck();
+                    var mode = (BakeIKMode)GUILayout.Toolbar((int)toolBakeIK_Mode, BakeIKModeStrings, EditorStyles.miniButton);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        Undo.RecordObject(vaw, "Change Root Motion Mode");
+                        toolBakeIK_Mode = mode;
+                    }
+                    if (toolsHelp)
+                    {
+                        EditorGUILayout.HelpBox(Language.GetText(Language.Help.ToolsBakeIKSimple + (int)toolBakeIK_Mode), MessageType.Info);
+                    }
+                    EditorGUILayout.Space();
+                }
+                bool disable = !animatorIK.ikData.Any(data => data.enable) && !originalIK.ikData.Any(data => data.enable);
+                {
+                    {
+                        EditorGUILayout.LabelField("Bake");
+                        EditorGUI.indentLevel++;
+                        {
+                            bool disableBake = !isHuman;
+                            EditorGUI.BeginDisabledGroup(disableBake);
+                            EditorGUI.BeginChangeCheck();
+                            var flag = EditorGUILayout.ToggleLeft(new GUIContent("Hand IK", "Animator HandT and HandQ"), toolBakeIK_BakeHandIK);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(vaw, "Change Bake Flag");
+                                toolBakeIK_BakeHandIK = flag;
+                            }
+                            EditorGUI.EndDisabledGroup();
+                        }
+                        {
+                            bool disableBake = !isHuman;
+                            EditorGUI.BeginDisabledGroup(disableBake);
+                            EditorGUI.BeginChangeCheck();
+                            var flag = EditorGUILayout.ToggleLeft(new GUIContent("Foot IK", "Animator FootT and FootQ"), toolBakeIK_BakeFootIK);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(vaw, "Change Bake Flag");
+                                toolBakeIK_BakeFootIK = flag;
+                            }
+                            EditorGUI.EndDisabledGroup();
+                        }
+#if VERYANIMATION_ANIMATIONRIGGING
+                        {
+                            bool disableBake = !animationRigging.isValid;
+                            EditorGUI.BeginDisabledGroup(disableBake);
+                            EditorGUI.BeginChangeCheck();
+                            var flag = EditorGUILayout.ToggleLeft("Animation Rigging", toolBakeIK_BakeAnimationRigging);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(vaw, "Change Bake Flag");
+                                toolBakeIK_BakeAnimationRigging = flag;
+                            }
+                            EditorGUI.EndDisabledGroup();
+                        }
+#endif
+                        EditorGUI.indentLevel--;
+                    }
                     #region AnimatorIK
                     if (isHuman && animatorIK.ikData != null)
                     {
-                        toolRangeIK_AnimatorIKFoldout = EditorGUILayout.Foldout(toolRangeIK_AnimatorIKFoldout, "Animator IK", true);
-                        if (toolRangeIK_AnimatorIKFoldout)
+                        toolBakeIK_AnimatorIKFoldout = EditorGUILayout.Foldout(toolBakeIK_AnimatorIKFoldout, "Animator IK", true);
+                        if (toolBakeIK_AnimatorIKFoldout)
                         {
                             EditorGUI.indentLevel++;
-                            EditorGUILayout.BeginVertical(vaw.guiStyleSkinBox);
                             for (int index = 0; index < animatorIK.ikData.Length; index++)
                             {
-                                EditorGUILayout.BeginHorizontal();
                                 {
                                     EditorGUI.BeginChangeCheck();
                                     EditorGUILayout.ToggleLeft(AnimatorIKCore.IKTargetStrings[index], animatorIK.ikData[index].enable);
@@ -508,19 +611,7 @@ namespace VeryAnimation
                                         animatorIK.ChangeTargetIK((AnimatorIKCore.IKTarget)index);
                                     }
                                 }
-                                GUILayout.FlexibleSpace();
-                                {
-                                    EditorGUILayout.LabelField(animatorIK.IKSpaceTypeStrings[(int)animatorIK.ikData[index].spaceType], vaw.guiStyleMiddleRightGreyMiniLabel);
-                                }
-                                EditorGUILayout.Space();
-                                EditorGUILayout.EndHorizontal();
-
-                                if (animatorIK.ikData[index].enable)
-                                {
-                                    enableCount++;
-                                }
                             }
-                            EditorGUILayout.EndVertical();
                             EditorGUI.indentLevel--;
                         }
                     }
@@ -528,59 +619,143 @@ namespace VeryAnimation
                     #region OriginalIK
                     if (originalIK.ikData != null)
                     {
-                        toolRangeIK_OriginalIKFoldout = EditorGUILayout.Foldout(toolRangeIK_OriginalIKFoldout, "Original IK", true);
-                        if (toolRangeIK_OriginalIKFoldout)
+                        toolBakeIK_OriginalIKFoldout = EditorGUILayout.Foldout(toolBakeIK_OriginalIKFoldout, "Original IK", true);
+                        if (toolBakeIK_OriginalIKFoldout)
                         {
                             EditorGUI.indentLevel++;
-                            EditorGUILayout.BeginVertical(vaw.guiStyleSkinBox);
-                            if (originalIK.ikData.Count > 0)
+                            for (int index = 0; index < originalIK.ikData.Count; index++)
                             {
-                                for (int index = 0; index < originalIK.ikData.Count; index++)
                                 {
-                                    EditorGUILayout.BeginHorizontal();
+                                    EditorGUI.BeginChangeCheck();
+                                    EditorGUILayout.ToggleLeft(originalIK.ikData[index].name, originalIK.ikData[index].enable);
+                                    if (EditorGUI.EndChangeCheck())
                                     {
-                                        EditorGUI.BeginChangeCheck();
-                                        EditorGUILayout.ToggleLeft(originalIK.ikData[index].name, originalIK.ikData[index].enable);
-                                        if (EditorGUI.EndChangeCheck())
-                                        {
-                                            originalIK.ChangeTargetIK(index);
-                                        }
-                                    }
-                                    GUILayout.FlexibleSpace();
-                                    {
-                                        EditorGUILayout.LabelField(string.Format("{0} : {1}", originalIK.SolverTypeStrings[(int)originalIK.ikData[index].solverType].text, originalIK.IKSpaceTypeStrings[(int)originalIK.ikData[index].spaceType].text), vaw.guiStyleMiddleRightGreyMiniLabel);
-                                    }
-                                    EditorGUILayout.Space();
-                                    EditorGUILayout.EndHorizontal();
-
-                                    if (originalIK.ikData[index].enable)
-                                    {
-                                        enableCount++;
+                                        originalIK.ChangeTargetIK(index);
                                     }
                                 }
                             }
-                            else
-                            {
-                                EditorGUILayout.LabelField("Empty", EditorStyles.centeredGreyMiniLabel);
-                            }
-                            EditorGUILayout.EndVertical();
                             EditorGUI.indentLevel--;
                         }
                     }
                     #endregion
-                    disable = enableCount <= 0;
-                    EditorGUI.indentLevel = saveIndentLevel;
                 }
                 EditorGUI.BeginDisabledGroup(disable);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.Space();
                 if (GUILayout.Button("Apply"))
                 {
-                    ToolsGenarateRangeIK(clip);
+                    ToolsGenarateBakeIK(clip);
                 }
                 EditorGUILayout.Space();
                 EditorGUILayout.EndHorizontal();
                 EditorGUI.EndDisabledGroup();
+                #endregion
+            }
+            else if (toolMode == ToolMode.AnimationRigging)
+            {
+                #region AnimationRigging
+#if VERYANIMATION_ANIMATIONRIGGING
+                EditorGUI.BeginDisabledGroup(!animationRigging.isValid);
+                if (uAnimationClipEditor != null)
+                {
+                    float firstFrame = toolAnimationRigging_FirstFrame;
+                    float lastFrame = toolAnimationRigging_LastFrame;
+                    float additivePoseframe = 0.0f;
+                    bool changedStart = false;
+                    bool changedStop = false;
+                    bool changedAdditivePoseframe = false;
+                    uAnimationClipEditor.ClipRangeGUI(ref firstFrame, ref lastFrame, out changedStart, out changedStop, false, ref additivePoseframe, out changedAdditivePoseframe);
+                    if (changedStart)
+                    {
+                        Undo.RecordObject(vaw, "Change First Frame");
+                        toolAnimationRigging_FirstFrame = Mathf.RoundToInt(firstFrame);
+                    }
+                    if (changedStop)
+                    {
+                        Undo.RecordObject(vaw, "Change Last Frame");
+                        toolAnimationRigging_LastFrame = Mathf.RoundToInt(lastFrame);
+                    }
+                }
+                bool disable = !animatorIK.ikData.Any(data => data.enable && data.rigConstraint != null);
+                {
+                    {
+                        EditorGUILayout.LabelField("Bake");
+                        EditorGUI.indentLevel++;
+                        {
+                            bool disableBake = !isHuman;
+                            EditorGUI.BeginDisabledGroup(disableBake);
+                            EditorGUI.BeginChangeCheck();
+                            var flag = EditorGUILayout.ToggleLeft(new GUIContent("Hand IK", "Animator HandT and HandQ"), toolAnimationRigging_BakeHandIK);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(vaw, "Change Bake Flag");
+                                toolAnimationRigging_BakeHandIK = flag;
+                            }
+                            EditorGUI.EndDisabledGroup();
+                        }
+                        {
+                            bool disableBake = !isHuman;
+                            EditorGUI.BeginDisabledGroup(disableBake);
+                            EditorGUI.BeginChangeCheck();
+                            var flag = EditorGUILayout.ToggleLeft(new GUIContent("Foot IK", "Animator FootT and FootQ"), toolAnimationRigging_BakeFootIK);
+                            if (EditorGUI.EndChangeCheck())
+                            {
+                                Undo.RecordObject(vaw, "Change Bake Flag");
+                                toolAnimationRigging_BakeFootIK = flag;
+                            }
+                            EditorGUI.EndDisabledGroup();
+                        }
+                        EditorGUI.indentLevel--;
+                    }
+                    #region AnimatorIK
+                    if (isHuman && animatorIK.ikData != null)
+                    {
+                        toolAnimationRigging_AnimatorIKFoldout = EditorGUILayout.Foldout(toolAnimationRigging_AnimatorIKFoldout, "Animator IK", true);
+                        if (toolAnimationRigging_AnimatorIKFoldout)
+                        {
+                            EditorGUI.indentLevel++;
+                            for (int index = 0; index < animatorIK.ikData.Length; index++)
+                            {
+                                var data = animatorIK.ikData[index];
+                                if (data.rigConstraint == null)
+                                    continue;
+                                EditorGUILayout.BeginHorizontal();
+                                {
+                                    EditorGUI.BeginChangeCheck();
+                                    EditorGUILayout.ToggleLeft(AnimatorIKCore.IKTargetStrings[index], data.enable);
+                                    if (EditorGUI.EndChangeCheck())
+                                    {
+                                        animatorIK.ChangeTargetIK((AnimatorIKCore.IKTarget)index);
+                                    }
+                                }
+                                GUILayout.FlexibleSpace();
+                                {
+                                    EditorGUILayout.LabelField(data.rigConstraintGUIContent, vaw.guiStyleMiddleRightGreyMiniLabel);
+                                }
+                                EditorGUILayout.EndHorizontal();
+                            }
+                            EditorGUI.indentLevel--;
+                        }
+                    }
+                    #endregion
+                }
+                EditorGUI.BeginDisabledGroup(disable);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Clear"))
+                {
+                    ToolsClearAnimationRigging(clip);
+                }
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Genarate"))
+                {
+                    ToolsGenarateAnimationRigging(clip);
+                }
+                EditorGUILayout.Space();
+                EditorGUILayout.EndHorizontal();
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.EndDisabledGroup();
+#endif
                 #endregion
             }
             else if (toolMode == ToolMode.HumanoidIK)
@@ -663,7 +838,7 @@ namespace VeryAnimation
                 if (toolRootMotion_Mode == RootMotionMode.MotionCurves)
                 {
                     #region MotionCurves
-                    var disable = editAnimator == null;
+                    var disable = vaw.animator == null;
                     EditorGUI.BeginDisabledGroup(disable);
 
                     {
@@ -712,7 +887,7 @@ namespace VeryAnimation
                     EditorGUILayout.EndHorizontal();
                     EditorGUI.EndDisabledGroup();
                     EditorGUILayout.Space();
-                    if (editAnimator == null)
+                    if (vaw.animator == null)
                     {
                         EditorGUILayout.HelpBox(Language.GetText(Language.Help.HelpToolsNotAnimatorWarning), MessageType.Warning);
                     }
@@ -764,7 +939,7 @@ namespace VeryAnimation
                 }
                 if (clip.legacy || vaw.animator == null)
                 {
-                    EditorGUILayout.HelpBox("Only Humanoid and Generic Motion will be effective.", MessageType.Warning);
+                    EditorGUILayout.HelpBox(Language.GetText(Language.Help.HelpToolsNotAnimatorWarning), MessageType.Warning);
                 }
                 #endregion
             }
@@ -1211,146 +1386,169 @@ namespace VeryAnimation
             }
             else
             {
-                path = FileUtil.GetProjectRelativePath(path);
-                AssetDatabase.CreateAsset(AnimationClip.Instantiate(currentClip), path);
-                var newClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
-#if VERYANIMATION_TIMELINE
-                #region Timeline
-                if (uAw_2017_1.GetLinkedWithTimeline())
+                try
                 {
-                    var uAw_2017_1 = uAw as UAnimationWindow_2017_1;
-                    var timelineClip = uAw_2017_1.GetTimelineAnimationClip();
-                    if (timelineClip == currentClip)
+                    VeryAnimationWindow.CustomAssetModificationProcessor.Pause();
+                    path = FileUtil.GetProjectRelativePath(path);
+                    AssetDatabase.CreateAsset(AnimationClip.Instantiate(currentClip), path);
+                    var newClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+                    #region Extra
                     {
-                        uAw_2017_1.SetTimelineAnimationClip(newClip, "Duplicate and Replace");
+                        ToolsReductionCurve(newClip);
+
+                        ToolsRotationCurveInterpolation(newClip, RotationCurveInterpolationMode.Quaternion);
                     }
-                }
-                #endregion
-                else
-#endif
-                {
-                    #region Animator
-                    if (vaw.animator != null && vaw.animator.runtimeAnimatorController != null)
+                    #endregion
+
+                    bool replaced = false;
+                    if (uAw.GetLinkedWithTimeline())
                     {
-                        var ac = EditorCommon.GetAnimatorController(vaw.animator);
-                        #region AnimatorOverrideController
-                        if (vaw.animator.runtimeAnimatorController is AnimatorOverrideController)
+                        #region Timeline
+#if VERYANIMATION_TIMELINE
+                        var timelineClip = uAw.GetTimelineAnimationClip();
+                        if (timelineClip == currentClip)
                         {
-                            var owc = vaw.animator.runtimeAnimatorController as AnimatorOverrideController;
-                            {
-                                List<KeyValuePair<AnimationClip, AnimationClip>> srcList = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-                                owc.GetOverrides(srcList);
-                                List<KeyValuePair<AnimationClip, AnimationClip>> dstList = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-                                bool changed = false;
-                                foreach (var pair in srcList)
-                                {
-                                    if (pair.Key == currentClip || pair.Value == currentClip)
-                                        changed = true;
-                                    dstList.Add(new KeyValuePair<AnimationClip, AnimationClip>(pair.Key != currentClip ? pair.Key : newClip,
-                                                                                                pair.Value != currentClip ? pair.Value : newClip));
-                                }
-                                if (changed)
-                                    owc.ApplyOverrides(dstList);
-                            }
+                            uAw.SetTimelineAnimationClip(newClip, "Duplicate and Replace");
+                            uAw.EditSequencerClip(uAw.GetTimelineClip());
+                            replaced = true;
                         }
+#else
+                        Assert.IsTrue(false);
+#endif
                         #endregion
-                        #region AnimatorControllerLayer
-                        if (ac != null)
+                    }
+                    else
+                    {
+                        #region Animator
+                        if (vaw.animator != null && vaw.animator.runtimeAnimatorController != null)
                         {
-                            foreach (UnityEditor.Animations.AnimatorControllerLayer layer in ac.layers)
+                            var ac = EditorCommon.GetAnimatorController(vaw.animator);
+                            #region AnimatorOverrideController
+                            if (vaw.animator.runtimeAnimatorController is AnimatorOverrideController)
                             {
-                                Action<AnimatorStateMachine> ReplaceStateMachine = null;
-                                ReplaceStateMachine = (stateMachine) =>
+                                var owc = vaw.animator.runtimeAnimatorController as AnimatorOverrideController;
                                 {
-                                    foreach (var state in stateMachine.states)
+                                    List<KeyValuePair<AnimationClip, AnimationClip>> srcList = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+                                    owc.GetOverrides(srcList);
+                                    List<KeyValuePair<AnimationClip, AnimationClip>> dstList = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+                                    bool changed = false;
+                                    foreach (var pair in srcList)
                                     {
-                                        if (state.state.motion is UnityEditor.Animations.BlendTree)
+                                        if (pair.Key == currentClip || pair.Value == currentClip)
+                                            changed = true;
+                                        dstList.Add(new KeyValuePair<AnimationClip, AnimationClip>(pair.Key != currentClip ? pair.Key : newClip,
+                                                                                                    pair.Value != currentClip ? pair.Value : newClip));
+                                    }
+                                    if (changed)
+                                    {
+                                        owc.ApplyOverrides(dstList);
+                                        replaced = true;
+                                    }
+                                }
+                            }
+                            #endregion
+                            #region AnimatorControllerLayer
+                            if (ac != null)
+                            {
+                                foreach (UnityEditor.Animations.AnimatorControllerLayer layer in ac.layers)
+                                {
+                                    Action<AnimatorStateMachine> ReplaceStateMachine = null;
+                                    ReplaceStateMachine = (stateMachine) =>
+                                    {
+                                        foreach (var state in stateMachine.states)
                                         {
-                                            Undo.RecordObject(state.state, "Duplicate and Replace");
-                                            Action<UnityEditor.Animations.BlendTree> ReplaceBlendTree = null;
-                                            ReplaceBlendTree = (blendTree) =>
-                                            {
-                                                if (blendTree.children == null) return;
-                                                Undo.RecordObject(blendTree, "Duplicate and Replace");
-                                                var children = blendTree.children;
-                                                for (int i = 0; i < children.Length; i++)
-                                                {
-                                                    if (children[i].motion is UnityEditor.Animations.BlendTree)
-                                                    {
-                                                        ReplaceBlendTree(children[i].motion as UnityEditor.Animations.BlendTree);
-                                                    }
-                                                    else
-                                                    {
-                                                        if (children[i].motion == currentClip)
-                                                        {
-                                                            children[i].motion = newClip;
-                                                        }
-                                                    }
-                                                }
-                                                blendTree.children = children;
-                                            };
-                                            ReplaceBlendTree(state.state.motion as UnityEditor.Animations.BlendTree);
-                                        }
-                                        else
-                                        {
-                                            if (state.state.motion == currentClip)
+                                            if (state.state.motion is UnityEditor.Animations.BlendTree)
                                             {
                                                 Undo.RecordObject(state.state, "Duplicate and Replace");
-                                                state.state.motion = newClip;
+                                                Action<UnityEditor.Animations.BlendTree> ReplaceBlendTree = null;
+                                                ReplaceBlendTree = (blendTree) =>
+                                                {
+                                                    if (blendTree.children == null) return;
+                                                    Undo.RecordObject(blendTree, "Duplicate and Replace");
+                                                    var children = blendTree.children;
+                                                    for (int i = 0; i < children.Length; i++)
+                                                    {
+                                                        if (children[i].motion is UnityEditor.Animations.BlendTree)
+                                                        {
+                                                            ReplaceBlendTree(children[i].motion as UnityEditor.Animations.BlendTree);
+                                                        }
+                                                        else
+                                                        {
+                                                            if (children[i].motion == currentClip)
+                                                            {
+                                                                children[i].motion = newClip;
+                                                                replaced = true;
+                                                            }
+                                                        }
+                                                    }
+                                                    blendTree.children = children;
+                                                };
+                                                ReplaceBlendTree(state.state.motion as UnityEditor.Animations.BlendTree);
+                                            }
+                                            else
+                                            {
+                                                if (state.state.motion == currentClip)
+                                                {
+                                                    Undo.RecordObject(state.state, "Duplicate and Replace");
+                                                    state.state.motion = newClip;
+                                                    replaced = true;
+                                                }
                                             }
                                         }
-                                    }
-                                    foreach (var childStateMachine in stateMachine.stateMachines)
-                                    {
-                                        ReplaceStateMachine(childStateMachine.stateMachine);
-                                    }
-                                };
-                                ReplaceStateMachine(layer.stateMachine);
+                                        foreach (var childStateMachine in stateMachine.stateMachines)
+                                        {
+                                            ReplaceStateMachine(childStateMachine.stateMachine);
+                                        }
+                                    };
+                                    ReplaceStateMachine(layer.stateMachine);
+                                }
+                            }
+                            #endregion
+                        }
+                        #endregion
+                        #region Animation
+                        if (vaw.animation != null)
+                        {
+                            Undo.RecordObject(vaw.animation, "Duplicate and Replace");
+                            bool changed = false;
+                            var animations = AnimationUtility.GetAnimationClips(vaw.gameObject);
+                            for (int i = 0; i < animations.Length; i++)
+                            {
+                                if (animations[i] == currentClip)
+                                {
+                                    animations[i] = newClip;
+                                    changed = true;
+                                }
+                            }
+                            if (vaw.animation.clip == currentClip)
+                            {
+                                vaw.animation.clip = newClip;
+                                changed = true;
+                            }
+                            if (changed)
+                            {
+                                AnimationUtility.SetAnimationClips(vaw.animation, animations);
+                                replaced = true;
                             }
                         }
                         #endregion
-                    }
-                    #endregion
-                    #region Animation
-                    if (vaw.animation != null)
-                    {
-                        Undo.RecordObject(vaw.animation, "Duplicate and Replace");
-                        bool changed = false;
-                        var animations = AnimationUtility.GetAnimationClips(vaw.gameObject);
-                        for (int i = 0; i < animations.Length; i++)
-                        {
-                            if (animations[i] == currentClip)
-                            {
-                                animations[i] = newClip;
-                                changed = true;
-                            }
-                        }
-                        if (vaw.animation.clip == currentClip)
-                        {
-                            vaw.animation.clip = newClip;
-                            changed = true;
-                        }
-                        if (changed)
-                            AnimationUtility.SetAnimationClips(vaw.animation, animations);
-                    }
-                    #endregion
-                }
 
-                #region Extra
+                        if (replaced)
+                            uAw.SetSelectionAnimationClip(newClip);
+                    }
+
+                    if (!replaced)
+                        Debug.LogWarningFormat(Language.GetText(Language.Help.LogAnimationClipReferenceReplaceError), newClip);
+
+                    ClearEditorCurveCache();
+                    OnHierarchyWindowChanged();
+                    SetUpdateSampleAnimation();
+                    uAw.ForceRefresh();
+                }
+                finally
                 {
-                    ToolsReductionCurve(newClip);
-
-                    ToolsRotationCurveInterpolation(newClip, RotationCurveInterpolationMode.Quaternion);
+                    VeryAnimationWindow.CustomAssetModificationProcessor.Resume();
                 }
-                #endregion
-
-                IKUpdateBones();
-
-                uAw.SetSelectionAnimationClip(newClip);
-
-                ClearEditorCurveCache();
-                SetUpdateResampleAnimation();
-                uAw.ForceRefresh();
             }
         }
 
@@ -1359,10 +1557,12 @@ namespace VeryAnimation
             var lastFrame = GetLastFrame();
             toolCreateNewKeyframe_FirstFrame = 0;
             toolCreateNewKeyframe_LastFrame = lastFrame;
-            toolRangeIK_FirstFrame = 0;
-            toolRangeIK_LastFrame = lastFrame;
+            toolBakeIK_FirstFrame = 0;
+            toolBakeIK_LastFrame = lastFrame;
             toolHumanoidIK_FirstFrame = 0;
             toolHumanoidIK_LastFrame = lastFrame;
+            toolAnimationRigging_FirstFrame = 0;
+            toolAnimationRigging_LastFrame = lastFrame;
             toolCopy_FirstFrame = 0;
             toolCopy_LastFrame = lastFrame;
             toolCopy_WriteFrame = lastFrame + 1;
@@ -1397,7 +1597,7 @@ namespace VeryAnimation
                     data.parameterIndex = ArrayUtility.FindIndex(parameters, (x) => x.name == data.propertyName);
                     data.enableAnimatorParameter = data.parameterIndex >= 0 && parameters[data.parameterIndex].type == UnityEngine.AnimatorControllerParameterType.Float;
                 }
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
                 SetAnimationWindowRefresh(AnimationWindowStateRefreshType.Everything);
             };
             Action<int> UpdateEnableFlag = (index) =>
@@ -1414,7 +1614,7 @@ namespace VeryAnimation
                     data.parameterIndex = ArrayUtility.FindIndex(parameters, (x) => x.name == data.propertyName);
                     data.enableAnimatorParameter = data.parameterIndex >= 0 && parameters[data.parameterIndex].type == UnityEngine.AnimatorControllerParameterType.Float;
                 }
-                SetUpdateResampleAnimation();
+                SetUpdateSampleAnimation();
                 SetAnimationWindowRefresh(AnimationWindowStateRefreshType.Everything);
             };
 
@@ -1462,7 +1662,6 @@ namespace VeryAnimation
                 }
             }
             toolParameterRelatedCurve_List = new ReorderableList(toolParameterRelatedCurve_DataList, typeof(ParameterRelatedData), false, true, true, true);
-            toolParameterRelatedCurve_List.elementHeight = 20;
             toolParameterRelatedCurve_List.drawHeaderCallback = (Rect rect) =>
             {
                 float x = rect.x;
@@ -1661,25 +1860,25 @@ namespace VeryAnimation
             {
                 if (!ToolsCommonBefore(currentClip, "Add Parameter Related Curve")) return;
 
+                var ac = EditorCommon.GetAnimatorController(vaw.animator);
+                if (ac == null)
+                    return;
+
                 Undo.RecordObject(vaw, "Add Parameter Related Curve");
                 {
-                    var ac = EditorCommon.GetAnimatorController(vaw.animator);
-                    if (ac != null)
+                    var name = ac.MakeUniqueParameterName("New Parameter");
+                    var data = new ParameterRelatedData() { propertyName = name };
                     {
-                        var name = ac.MakeUniqueParameterName("New Parameter");
-                        var data = new ParameterRelatedData() { propertyName = name };
-                        {
-                            var binding = AnimationCurveBindingAnimatorCustom(name);
-                            var curve = new AnimationCurve();
-                            SetKeyframeTangentModeLinear(curve, curve.AddKey(0f, 0f));
-                            SetKeyframeTangentModeLinear(curve, curve.AddKey(currentClip.length, 1f));
-                            AnimationUtility.SetEditorCurve(currentClip, binding, curve);
-                        }
-                        {
-                            ac.AddParameter(name, UnityEngine.AnimatorControllerParameterType.Float);
-                        }
-                        toolParameterRelatedCurve_DataList.Add(data);
+                        var binding = AnimationCurveBindingAnimatorCustom(name);
+                        var curve = new AnimationCurve();
+                        SetKeyframeTangentModeLinear(curve, curve.AddKey(0f, 0f));
+                        SetKeyframeTangentModeLinear(curve, curve.AddKey(currentClip.length, 1f));
+                        AnimationUtility.SetEditorCurve(currentClip, binding, curve);
                     }
+                    {
+                        ac.AddParameter(name, UnityEngine.AnimatorControllerParameterType.Float);
+                    }
+                    toolParameterRelatedCurve_DataList.Add(data);
                 }
                 toolParameterRelatedCurve_Update = true;
                 EditorApplication.delayCall += () =>
@@ -1691,6 +1890,11 @@ namespace VeryAnimation
 
                 ToolsCommonAfter();
                 InternalEditorUtility.RepaintAllViews();
+            };
+            toolParameterRelatedCurve_List.onCanAddCallback = (ReorderableList list) =>
+            {
+                var ac = EditorCommon.GetAnimatorController(vaw.animator);
+                return (ac != null);
             };
             toolParameterRelatedCurve_List.onRemoveCallback = (ReorderableList list) =>
             {
@@ -1725,6 +1929,25 @@ namespace VeryAnimation
             toolParameterRelatedCurve_Update = false;
         }
 
+        private void ToolsCurvesWasModifiedStoppedSmoothTangents(float beginTime, float endTime)
+        {
+            foreach (var pair in curvesWasModifiedStopped)
+            {
+                if (pair.Value.deleted != AnimationUtility.CurveModifiedType.CurveModified)
+                    continue;
+                var curve = GetEditorCurveCache(pair.Value.binding);
+                if (curve == null)
+                    continue;
+
+                for (int i = 0; i < curve.length; i++)
+                {
+                    if (curve[i].time >= beginTime && curve[i].time <= endTime)
+                        curve.SmoothTangents(i, 0f);
+                }
+                SetEditorCurveCache(pair.Value.binding, curve);
+            }
+        }
+
         private bool ToolsCommonBefore(AnimationClip clip, string undoName)
         {
             if (!BeginChangeAnimationCurve(clip, undoName))
@@ -1739,9 +1962,10 @@ namespace VeryAnimation
         private void ToolsCommonAfter()
         {
             SetOnCurveWasModifiedStop(false);
+            UpdateSyncEditorCurveClip();
             curvesWasModified.Clear();
             ClearEditorCurveCache();
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation(true);
             ResetUpdateIKtargetAll();
             SetSynchroIKtargetAll();
             uAw.ForceRefresh();
@@ -1754,13 +1978,11 @@ namespace VeryAnimation
             try
             {
                 bool allWriteDefaults = true;
-#if VERYANIMATION_TIMELINE
-                if (uAw_2017_1.GetLinkedWithTimeline())
+                if (uAw.GetLinkedWithTimeline())
                 {
                     allWriteDefaults = false;
                 }
                 else
-#endif
                 {
                     ActionAllAnimatorState(clip, (animatorState) =>
                     {
@@ -1944,7 +2166,7 @@ namespace VeryAnimation
                     }
                     Action<HumanBodyBones> RemoveNoneMuscleCurve = (hi) =>
                     {
-                        if (!isHuman || editHumanoidBones[(int)hi] == null)
+                        if (!isHuman || humanoidBones[(int)hi] == null)
                             RemoveMuscleCurve(hi);
                     };
                     RemoveNoneMuscleCurve(HumanBodyBones.LeftEye);
@@ -2050,6 +2272,7 @@ namespace VeryAnimation
                 worldPosition = ikData.worldPosition;
                 worldRotation = ikData.worldRotation;
                 swivelRotation = ikData.swivelRotation;
+                swivelPosition = ikData.swivelPosition;
             }
             public IKDataSave(OriginalIKCore.OriginalIKData ikData)
             {
@@ -2058,6 +2281,7 @@ namespace VeryAnimation
                 worldPosition = ikData.worldPosition;
                 worldRotation = ikData.worldRotation;
                 swivelRotation = ikData.swivel;
+                swivelPosition = ikData.worldPosition;
             }
             public void Set(AnimatorIKCore.AnimatorIKData ikData)
             {
@@ -2072,6 +2296,7 @@ namespace VeryAnimation
                     ikData.worldRotation = worldRotation;
                 }
                 ikData.swivelRotation = swivelRotation;
+                ikData.swivelPosition = swivelPosition;
             }
             public void Set(OriginalIKCore.OriginalIKData ikData)
             {
@@ -2096,6 +2321,7 @@ namespace VeryAnimation
                     rotation = Quaternion.Slerp(a.rotation, b.rotation, t),
                     worldPosition = Vector3.Lerp(a.worldPosition, b.worldPosition, t),
                     worldRotation = Quaternion.Slerp(a.worldRotation, b.worldRotation, t),
+                    swivelPosition = Vector3.Lerp(a.swivelPosition, b.swivelPosition, t),
                 };
                 if (Mathf.Abs(a.swivelRotation - b.swivelRotation) > 180f)
                 {
@@ -2124,102 +2350,163 @@ namespace VeryAnimation
             public Vector3 worldPosition;
             public Quaternion worldRotation;
             public float swivelRotation;
+            public Vector3 swivelPosition;
         }
-        private void ToolsGenarateRangeIK(AnimationClip clip)
+        private void ToolsGenarateBakeIK(AnimationClip clip)
         {
-            if (!ToolsCommonBefore(clip, "Range IK")) return;
+            if (!ToolsCommonBefore(clip, "Bake IK")) return;
 
             if (clip != currentClip) return;
 
             var saveCurrentTime = uAw.GetCurrentTime();
             try
             {
-                var beginTime = uAw.SnapToFrame(toolRangeIK_FirstFrame >= 0 ? toolRangeIK_FirstFrame / clip.frameRate : 0f, clip.frameRate);
-                var endTime = uAw.SnapToFrame(toolRangeIK_LastFrame >= 0 ? toolRangeIK_LastFrame / clip.frameRate : clip.length, clip.frameRate);
+                var beginTime = uAw.SnapToFrame(toolBakeIK_FirstFrame >= 0 ? toolBakeIK_FirstFrame / clip.frameRate : 0f, clip.frameRate);
+                var endTime = uAw.SnapToFrame(toolBakeIK_LastFrame >= 0 ? toolBakeIK_LastFrame / clip.frameRate : clip.length, clip.frameRate);
                 int progressIndex = 0;
                 int progressTotal = 2;
-                #region AnimatorIK
-                EditorUtility.DisplayProgressBar("Range IK", "Animator IK", progressIndex++ / (float)progressTotal);
-                if (isHuman && animatorIK.ikData.Where(data => data.enable).ToArray().Length > 0)
+
+                Action<float> SampleAnimationBase = (time) =>
                 {
-                    IKDataSave[] ikDataBeginSave = new IKDataSave[animatorIK.ikData.Length];
-                    IKDataSave[] ikDataEndSave = new IKDataSave[animatorIK.ikData.Length];
+                    SetCurrentTime(time);
+                    SampleAnimation(time);
+                };
+
+                #region AnimatorIK
+                EditorUtility.DisplayProgressBar("Bake IK", "Animator IK", progressIndex++ / (float)progressTotal);
+                if (isHuman && animatorIK.ikData.Any(data => data.enable))
+                {
+                    AnimatorIKCore.SynchroSetFlags syncFlags = AnimatorIKCore.SynchroSetFlags.None;
                     {
-                        ResampleAnimation(beginTime);
+                        if (toolBakeIK_BakeHandIK) syncFlags |= AnimatorIKCore.SynchroSetFlags.HandIK;
+                        if (toolBakeIK_BakeFootIK) syncFlags |= AnimatorIKCore.SynchroSetFlags.FootIK;
+                        if (toolBakeIK_BakeAnimationRigging) syncFlags |= AnimatorIKCore.SynchroSetFlags.AnimationRigging;
+                    }
+                    #region Save
+                    IKDataSave[,] ikDataAllSave = null;
+                    IKDataSave[] ikDataBeginSave = null, ikDataEndSave = null;
+                    if (toolBakeIK_Mode == BakeIKMode.Simple)
+                    {
+                        ikDataAllSave = new IKDataSave[animatorIK.ikData.Length, GetLastFrame() + 1];
+                        for (int frame = toolBakeIK_FirstFrame; frame <= toolBakeIK_LastFrame; frame++)
+                        {
+                            var time = uAw.GetFrameTime(frame, clip);
+                            SampleAnimationBase(time);
+                            for (var index = 0; index < animatorIK.ikData.Length; index++)
+                            {
+                                if (!animatorIK.ikData[index].enable) continue;
+                                animatorIK.SynchroSet((AnimatorIKCore.IKTarget)index, syncFlags);
+                                ikDataAllSave[index, frame] = new IKDataSave(animatorIK.ikData[index]);
+                            }
+                        }
+                    }
+                    else if (toolBakeIK_Mode == BakeIKMode.Interpolation)
+                    {
+                        ikDataBeginSave = new IKDataSave[animatorIK.ikData.Length];
+                        ikDataEndSave = new IKDataSave[animatorIK.ikData.Length];
+                        SampleAnimationBase(beginTime);
                         for (var index = 0; index < animatorIK.ikData.Length; index++)
                         {
                             if (!animatorIK.ikData[index].enable) continue;
-                            animatorIK.SynchroSet((AnimatorIKCore.IKTarget)index);
+                            animatorIK.SynchroSet((AnimatorIKCore.IKTarget)index, syncFlags);
                             ikDataBeginSave[index] = new IKDataSave(animatorIK.ikData[index]);
                         }
-                        ResampleAnimation(endTime);
+                        SampleAnimationBase(endTime);
                         for (var index = 0; index < animatorIK.ikData.Length; index++)
                         {
                             if (!animatorIK.ikData[index].enable) continue;
-                            animatorIK.SynchroSet((AnimatorIKCore.IKTarget)index);
+                            animatorIK.SynchroSet((AnimatorIKCore.IKTarget)index, syncFlags);
                             ikDataEndSave[index] = new IKDataSave(animatorIK.ikData[index]);
                         }
                     }
+                    #endregion
 
                     ResetAnimatorRootCorrection();
-                    for (int frame = toolRangeIK_FirstFrame; frame <= toolRangeIK_LastFrame; frame++)
+                    for (int frame = toolBakeIK_FirstFrame; frame <= toolBakeIK_LastFrame; frame++)
                     {
                         var time = uAw.GetFrameTime(frame, clip);
-                        SetCurrentTime(time);
 
-#if VERYANIMATION_TIMELINE
-                        if (uAw_2017_1.GetLinkedWithTimeline())
+                        SampleAnimationBase(time);
+
+                        if (toolBakeIK_Mode == BakeIKMode.Simple)
                         {
-                            PlayableDirectorEvaluate(time);
+                            #region Simple
+                            for (var index = 0; index < animatorIK.ikData.Length; index++)
+                            {
+                                if (!animatorIK.ikData[index].enable) continue;
+                                ikDataAllSave[index, frame].Set(animatorIK.ikData[index]);
+                                SetUpdateIKtargetAnimatorIK((AnimatorIKCore.IKTarget)index);
+                            }
+                            #endregion
                         }
-                        else
-#endif
+                        else if (toolBakeIK_Mode == BakeIKMode.Interpolation)
                         {
-                            ResampleAnimation(time);
-                        }
+                            #region Interpolation
+                            float rate = 0f;
+                            if (toolBakeIK_LastFrame - toolBakeIK_FirstFrame > 0)
+                                rate = (frame - toolBakeIK_FirstFrame) / (float)(toolBakeIK_LastFrame - toolBakeIK_FirstFrame);
 
-                        float rate = 0f;
-                        if (toolRangeIK_LastFrame - toolRangeIK_FirstFrame > 0)
-                            rate = (frame - toolRangeIK_FirstFrame) / (float)(toolRangeIK_LastFrame - toolRangeIK_FirstFrame);
-
-                        for (var index = 0; index < animatorIK.ikData.Length; index++)
-                        {
-                            if (!animatorIK.ikData[index].enable) continue;
-                            var ikDataSave = IKDataSave.Lerp(ikDataBeginSave[index], ikDataEndSave[index], rate);
-                            ikDataSave.Set(animatorIK.ikData[index]);
-                            SetUpdateIKtargetAnimatorIK((AnimatorIKCore.IKTarget)index);
+                            for (var index = 0; index < animatorIK.ikData.Length; index++)
+                            {
+                                if (!animatorIK.ikData[index].enable) continue;
+                                var ikDataSave = IKDataSave.Lerp(ikDataBeginSave[index], ikDataEndSave[index], rate);
+                                ikDataSave.Set(animatorIK.ikData[index]);
+                                SetUpdateIKtargetAnimatorIK((AnimatorIKCore.IKTarget)index);
+                            }
+                            #endregion
                         }
 
                         EnableAnimatorRootCorrection(time, time, time);
                         UpdateAnimatorRootCorrection();
+                        animatorIK.UpdateIK(false, !toolBakeIK_BakeAnimationRigging);
                         ResetAnimatorRootCorrection();
-
-                        animatorIK.UpdateIK(false);
                         ResetUpdateIKtargetAll();
                     }
-                    for (int frame = toolRangeIK_FirstFrame; frame <= toolRangeIK_LastFrame; frame++)
+                    for (int frame = toolBakeIK_FirstFrame; frame <= toolBakeIK_LastFrame; frame++)
                     {
                         var time = uAw.GetFrameTime(frame, clip);
                         EnableAnimatorRootCorrection(time, time, time);
                     }
                     UpdateAnimatorRootCorrection();
+                    ResetAnimatorRootCorrection();
+                    if (toolBakeIK_BakeFootIK)
+                        humanoidFootIK.Clear();
                 }
                 #endregion
                 #region OriginalIK
-                EditorUtility.DisplayProgressBar("Range IK", "Original IK", progressIndex++ / (float)progressTotal);
-                if (originalIK.ikData.Where(data => data.enable).ToArray().Length > 0)
+                EditorUtility.DisplayProgressBar("Bake IK", "Original IK", progressIndex++ / (float)progressTotal);
+                if (originalIK.ikData.Any(data => data.enable))
                 {
-                    IKDataSave[] ikDataBeginSave = new IKDataSave[originalIK.ikData.Count];
-                    IKDataSave[] ikDataEndSave = new IKDataSave[originalIK.ikData.Count];
+                    #region Save
+                    IKDataSave[,] ikDataAllSave = null;
+                    IKDataSave[] ikDataBeginSave = null, ikDataEndSave = null;
+                    if (toolBakeIK_Mode == BakeIKMode.Simple)
                     {
-                        ResampleAnimation(beginTime);
+                        ikDataAllSave = new IKDataSave[originalIK.ikData.Count, GetLastFrame() + 1];
+                        for (int frame = toolBakeIK_FirstFrame; frame <= toolBakeIK_LastFrame; frame++)
+                        {
+                            var time = uAw.GetFrameTime(frame, clip);
+                            SampleAnimationBase(time);
+                            for (var index = 0; index < originalIK.ikData.Count; index++)
+                            {
+                                if (!originalIK.ikData[index].enable) continue;
+                                originalIK.SynchroSet(index);
+                                ikDataAllSave[index, frame] = new IKDataSave(originalIK.ikData[index]);
+                            }
+                        }
+                    }
+                    else if (toolBakeIK_Mode == BakeIKMode.Interpolation)
+                    {
+                        ikDataBeginSave = new IKDataSave[originalIK.ikData.Count];
+                        ikDataEndSave = new IKDataSave[originalIK.ikData.Count];
+                        SampleAnimationBase(beginTime);
                         for (var index = 0; index < originalIK.ikData.Count; index++)
                         {
                             if (!originalIK.ikData[index].enable) continue;
                             originalIK.SynchroSet(index);
                             ikDataBeginSave[index] = new IKDataSave(originalIK.ikData[index]);
                         }
-                        ResampleAnimation(endTime);
+                        SampleAnimationBase(endTime);
                         for (var index = 0; index < originalIK.ikData.Count; index++)
                         {
                             if (!originalIK.ikData[index].enable) continue;
@@ -2227,33 +2514,40 @@ namespace VeryAnimation
                             ikDataEndSave[index] = new IKDataSave(originalIK.ikData[index]);
                         }
                     }
+                    #endregion
 
-                    for (int frame = toolRangeIK_FirstFrame; frame <= toolRangeIK_LastFrame; frame++)
+                    for (int frame = toolBakeIK_FirstFrame; frame <= toolBakeIK_LastFrame; frame++)
                     {
                         var time = uAw.GetFrameTime(frame, clip);
-                        SetCurrentTime(time);
 
-#if VERYANIMATION_TIMELINE
-                        if (uAw_2017_1.GetLinkedWithTimeline())
+                        SampleAnimationBase(time);
+
+                        if (toolBakeIK_Mode == BakeIKMode.Simple)
                         {
-                            PlayableDirectorEvaluate(time);
+                            #region Simple
+                            for (var index = 0; index < originalIK.ikData.Count; index++)
+                            {
+                                if (!originalIK.ikData[index].enable) continue;
+                                ikDataAllSave[index, frame].Set(originalIK.ikData[index]);
+                                SetUpdateIKtargetOriginalIK(index);
+                            }
+                            #endregion
                         }
-                        else
-#endif
+                        else if (toolBakeIK_Mode == BakeIKMode.Interpolation)
                         {
-                            ResampleAnimation(time);
-                        }
+                            #region Interpolation
+                            float rate = 0f;
+                            if (toolBakeIK_LastFrame - toolBakeIK_FirstFrame > 0)
+                                rate = (frame - toolBakeIK_FirstFrame) / (float)(toolBakeIK_LastFrame - toolBakeIK_FirstFrame);
 
-                        float rate = 0f;
-                        if (toolRangeIK_LastFrame - toolRangeIK_FirstFrame > 0)
-                            rate = (frame - toolRangeIK_FirstFrame) / (float)(toolRangeIK_LastFrame - toolRangeIK_FirstFrame);
-
-                        for (var index = 0; index < originalIK.ikData.Count; index++)
-                        {
-                            if (!originalIK.ikData[index].enable) continue;
-                            var ikDataSave = IKDataSave.Lerp(ikDataBeginSave[index], ikDataEndSave[index], rate);
-                            ikDataSave.Set(originalIK.ikData[index]);
-                            SetUpdateIKtargetOriginalIK(index);
+                            for (var index = 0; index < originalIK.ikData.Count; index++)
+                            {
+                                if (!originalIK.ikData[index].enable) continue;
+                                var ikDataSave = IKDataSave.Lerp(ikDataBeginSave[index], ikDataEndSave[index], rate);
+                                ikDataSave.Set(originalIK.ikData[index]);
+                                SetUpdateIKtargetOriginalIK(index);
+                            }
+                            #endregion
                         }
 
                         originalIK.UpdateIK();
@@ -2261,6 +2555,8 @@ namespace VeryAnimation
                     }
                 }
                 #endregion
+
+                ToolsCurvesWasModifiedStoppedSmoothTangents(beginTime, endTime);
             }
             finally
             {
@@ -2272,7 +2568,6 @@ namespace VeryAnimation
 
             ToolsCommonAfter();
         }
-
         private void ToolsClearHumanoidIK(AnimationClip clip)
         {
             if (!ToolsCommonBefore(clip, "Clear IK Keyframe")) return;
@@ -2317,16 +2612,94 @@ namespace VeryAnimation
 
             ToolsCommonAfter();
         }
+        private void ToolsGenarateAnimationRigging(AnimationClip clip)
+        {
+            ToolsClearAnimationRigging(clip);
+
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (!ToolsCommonBefore(clip, "AnimationRigging")) return;
+
+            if (clip != currentClip) return;
+
+            try
+            {
+                var beginTime = uAw.SnapToFrame(toolAnimationRigging_FirstFrame >= 0 ? toolAnimationRigging_FirstFrame / clip.frameRate : 0f, clip.frameRate);
+                var endTime = uAw.SnapToFrame(toolAnimationRigging_LastFrame >= 0 ? toolAnimationRigging_LastFrame / clip.frameRate : clip.length, clip.frameRate);
+
+                #region AnimatorIK
+                if (isHuman && animatorIK.ikData.Any(data => data.enable && data.rigConstraint != null))
+                {
+                    var syncFlags = AnimatorIKCore.SynchroSetFlags.None;
+                    {
+                        if (toolAnimationRigging_BakeHandIK) syncFlags |= AnimatorIKCore.SynchroSetFlags.HandIK;
+                        if (toolAnimationRigging_BakeFootIK) syncFlags |= AnimatorIKCore.SynchroSetFlags.FootIK;
+                    }
+                    for (var target = 0; target < animatorIK.ikData.Length; target++)
+                    {
+                        var data = animatorIK.ikData[target];
+                        if (!data.enable || data.rigConstraint == null)
+                            continue;
+
+                        animatorIK.WriteCurveAnimationRiggingConstraint((AnimatorIKCore.IKTarget)target, toolAnimationRigging_FirstFrame, toolAnimationRigging_LastFrame, syncFlags);
+                    }
+                }
+                #endregion
+            }
+            finally
+            {
+                ResetUpdateIKtargetAll();
+                SetSynchroIKtargetAll();
+                EditorUtility.ClearProgressBar();
+            }
+
+            ToolsCommonAfter();
+#endif
+        }
+        private void ToolsClearAnimationRigging(AnimationClip clip)
+        {
+#if VERYANIMATION_ANIMATIONRIGGING
+            if (!ToolsCommonBefore(clip, "Clear AnimationRigging")) return;
+
+            {
+                var beginTime = uAw.SnapToFrame(toolAnimationRigging_FirstFrame >= 0 ? toolAnimationRigging_FirstFrame / clip.frameRate : 0f, clip.frameRate);
+                var endTime = uAw.SnapToFrame(toolAnimationRigging_LastFrame >= 0 ? toolAnimationRigging_LastFrame / clip.frameRate : clip.length, clip.frameRate);
+                float halfFrameTime = (0.5f / clip.frameRate) - 0.0001f;
+
+                Action<EditorCurveBinding> Clear = (binding) =>
+                {
+                    var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                    if (curve == null) return;
+                    for (int i = curve.length - 1; i >= 0; i--)
+                    {
+                        if (curve[i].time >= beginTime - halfFrameTime && curve[i].time <= endTime + halfFrameTime)
+                        {
+                            curve.RemoveKey(i);
+                        }
+                    }
+                    AnimationUtility.SetEditorCurve(clip, binding, curve.length > 0 ? curve : null);
+                };
+
+                for (var target = 0; target < animatorIK.ikData.Length; target++)
+                {
+                    var data = animatorIK.ikData[target];
+                    if (!data.enable || data.rigConstraint == null)
+                        continue;
+
+                    var bindings = animatorIK.GetAnimationRiggingConstraintBindings((AnimatorIKCore.IKTarget)target);
+                    foreach (var binding in bindings)
+                    {
+                        Clear(binding);
+                    }
+                }
+            }
+
+            ToolsCommonAfter();
+#endif
+        }
         private void ToolsGenarateHumanoidIK(AnimationClip clip)
         {
             if (!isHuman || !clip.isHumanMotion) return;
             if (!ToolsCommonBefore(clip, "Genarate IK Keyframe")) return;
-
-            calcObject.vaEdit.SetAnimationClip(clip);
-            calcObject.vaEdit.SetIKPass(false);
-            calcObject.SetOrigin();
-            calcObject.AnimatorRebind();
-            var currentFrame = uAw.GetCurrentFrame();
 
             try
             {
@@ -2429,6 +2802,15 @@ namespace VeryAnimation
                         AddKeyTimes(AnimatorIKIndex2HumanBodyBones[(int)ikIndex]);
                     }
                     #endregion
+                    calcObject.SetApplyIK(false);
+                    calcObject.SetTransformStart();
+                    var locaToWorldRotation = transformPoseSave.startRotation;
+                    var worldToLocalMatrix = transformPoseSave.startMatrix.inverse;
+                    var humanScale = calcObject.animator.humanScale;
+                    var leftFeetBottomHeight = calcObject.animator.leftFeetBottomHeight;
+                    var rightFeetBottomHeight = calcObject.animator.rightFeetBottomHeight;
+                    var postLeftFoot = GetAvatarPostRotation(HumanBodyBones.LeftFoot);
+                    var postRightFoot = GetAvatarPostRotation(HumanBodyBones.RightFoot);
                     var humanoidIndex = AnimatorIKIndex2HumanBodyBones[(int)ikIndex];
                     var t = calcObject.humanoidBones[(int)humanoidIndex].transform;
                     var positionTable = new Dictionary<float, Vector3>();
@@ -2485,29 +2867,35 @@ namespace VeryAnimation
                             var rate = nearR - nearL != 0f ? (time - nearL) / (nearR - nearL) : 0f;
                             rotation = Quaternion.Slerp(rotationL, rotationR, rate);
                         }
+                        var rootT = GetAnimationValueAnimatorRootT(time);
+                        var rootQ = GetAnimationValueAnimatorRootQ(time);
+
                         Vector3 ikT = position;
                         Quaternion ikQ = rotation;
                         {
-                            var rootT = GetAnimationValueAnimatorRootT(time);
-                            var rootQ = GetAnimationValueAnimatorRootQ(time);
-                            var post = uAvatar.GetPostRotation(calcObject.animator.avatar, (int)humanoidIndex);
+                            Quaternion post = Quaternion.identity;
+                            switch ((AnimatorIKIndex)ikIndex)
+                            {
+                            case AnimatorIKIndex.LeftFoot: post = postLeftFoot; break;
+                            case AnimatorIKIndex.RightFoot: post = postRightFoot; break;
+                            }
                             #region IkT
                             if (ikIndex == AnimatorIKIndex.LeftFoot || ikIndex == AnimatorIKIndex.RightFoot)
                             {
                                 Vector3 add = Vector3.zero;
-                                switch (ikIndex)
+                                switch ((AnimatorIKIndex)ikIndex)
                                 {
-                                case AnimatorIKIndex.LeftFoot: add.x += calcObject.animator.leftFeetBottomHeight; break;
-                                case AnimatorIKIndex.RightFoot: add.x += calcObject.animator.rightFeetBottomHeight; break;
+                                case AnimatorIKIndex.LeftFoot: add.x += leftFeetBottomHeight; break;
+                                case AnimatorIKIndex.RightFoot: add.x += rightFeetBottomHeight; break;
                                 }
                                 ikT += (rotation * post) * add;
                             }
-                            ikT = calcObject.gameObjectTransform.worldToLocalMatrix.MultiplyPoint3x4(ikT) - (rootT * calcObject.animator.humanScale);
+                            ikT = worldToLocalMatrix.MultiplyPoint3x4(ikT) - (rootT * humanScale);
                             ikT = Quaternion.Inverse(rootQ) * ikT;
-                            ikT *= 1f / calcObject.animator.humanScale;
+                            ikT *= 1f / humanScale;
                             #endregion
                             #region IkQ
-                            ikQ = Quaternion.Inverse(calcObject.gameObjectTransform.rotation * rootQ) * (rotation * post);
+                            ikQ = Quaternion.Inverse(locaToWorldRotation * rootQ) * (rotation * post);
                             #endregion
                         }
                         for (int dofIndex = 0; dofIndex < 3; dofIndex++)
@@ -2527,9 +2915,8 @@ namespace VeryAnimation
             }
             finally
             {
-                calcObject.SetOutside();
+                calcObject.SetTransformStart();
                 EditorUtility.ClearProgressBar();
-                uAw.SetCurrentFrame(currentFrame);
             }
 
             ToolsCommonAfter();
@@ -2549,7 +2936,7 @@ namespace VeryAnimation
         }
         private void ToolsRootMotionMotionGenerate(AnimationClip clip)
         {
-            if (editAnimator == null) return;
+            if (vaw.animator == null) return;
             if (!ToolsCommonBefore(clip, "Genarate Generic Root Motion Keyframe")) return;
 
             if (isHuman)
@@ -2571,12 +2958,6 @@ namespace VeryAnimation
             }
             else
             {
-                calcObject.vaEdit.SetAnimationClip(clip);
-                calcObject.vaEdit.SetIKPass(false);
-                calcObject.SetOrigin();
-                calcObject.AnimatorRebind();
-                var currentFrame = uAw.GetCurrentFrame();
-
                 try
                 {
                     EditorUtility.DisplayProgressBar("Genarate Generic Root Motion Keyframe", "", 0f);
@@ -2588,32 +2969,25 @@ namespace VeryAnimation
                         for (int dof = 0; dof < 4; dof++)
                             rootQ[dof] = new AnimationCurve();
                     }
-                    var rootNodeBone = rootMotionBoneIndex >= 0 ? calcObject.bones[rootMotionBoneIndex].transform : null;
-                    Matrix4x4 startMatrix = Matrix4x4.identity;
-                    Quaternion startRotation = Quaternion.identity;
-                    if (rootNodeBone != null)
+                    calcObject.SetApplyIK(false);
+                    calcObject.SetTransformOrigin();
+                    var rootTransform = calcObject.bones[rootMotionBoneIndex >= 0 ? rootMotionBoneIndex : 0].transform;
+                    Vector3 startPosition;
+                    Quaternion startRotation;
                     {
                         calcObject.SampleAnimation(clip, 0f);
-                        startMatrix = rootNodeBone.localToWorldMatrix;
-                        startRotation = rootNodeBone.rotation;
+                        startPosition = rootTransform.position;
+                        startRotation = rootTransform.rotation;
                     }
                     var lastFrame = uAw.GetLastFrame(clip);
                     for (int frame = 0; frame <= lastFrame; frame++)
                     {
                         var time = GetFrameTime(frame);
+
                         calcObject.SampleAnimation(clip, time);
 
-                        Vector3 position, scale;
-                        Quaternion rotation;
-                        if (rootNodeBone != null)
-                        {
-                            EditorCommon.GetTRS(rootNodeBone.localToWorldMatrix * startMatrix.inverse, out position, out rotation, out scale);
-                        }
-                        else
-                        {
-                            position = calcObject.gameObjectTransform.localPosition - boneSaveTransforms[0].localPosition;
-                            rotation = Quaternion.Inverse(boneSaveTransforms[0].localRotation) * calcObject.gameObjectTransform.localRotation;
-                        }
+                        var position = rootTransform.position - startPosition;
+                        var rotation = Quaternion.Inverse(startRotation) * rootTransform.rotation;
 
                         for (int dof = 0; dof < 3; dof++)
                             SetKeyframe(rootT[dof], time, position[dof]);
@@ -2629,9 +3003,8 @@ namespace VeryAnimation
                 }
                 finally
                 {
-                    calcObject.SetOutside();
+                    calcObject.SetTransformStart();
                     EditorUtility.ClearProgressBar();
-                    uAw.SetCurrentFrame(currentFrame);
                 }
             }
 
@@ -2655,12 +3028,6 @@ namespace VeryAnimation
             if (isHuman || rootMotionBoneIndex < 0) return;
             if (!ToolsCommonBefore(clip, "Genarate Generic Root Motion Keyframe")) return;
 
-            calcObject.vaEdit.SetAnimationClip(clip);
-            calcObject.vaEdit.SetIKPass(false);
-            calcObject.SetOrigin();
-            calcObject.AnimatorRebind();
-            var currentFrame = uAw.GetCurrentFrame();
-
             try
             {
                 EditorUtility.DisplayProgressBar("Genarate Generic Root Motion Keyframe", "", 0f);
@@ -2672,23 +3039,25 @@ namespace VeryAnimation
                     for (int dof = 0; dof < 4; dof++)
                         rootQ[dof] = new AnimationCurve();
                 }
-                var rootNodeBone = calcObject.bones[rootMotionBoneIndex].transform;
-                Matrix4x4 startMatrix = Matrix4x4.identity;
-                Quaternion startRotation = Quaternion.identity;
+                calcObject.SetApplyIK(false);
+                calcObject.SetTransformOrigin();
+                var rootTransform = calcObject.bones[rootMotionBoneIndex >= 0 ? rootMotionBoneIndex : 0].transform;
+                Vector3 startPosition;
+                Quaternion startRotation;
                 {
                     calcObject.SampleAnimation(clip, 0f);
-                    startMatrix = rootNodeBone.localToWorldMatrix;
-                    startRotation = rootNodeBone.rotation;
+                    startPosition = rootTransform.position;
+                    startRotation = rootTransform.rotation;
                 }
                 var lastFrame = uAw.GetLastFrame(clip);
                 for (int frame = 0; frame <= lastFrame; frame++)
                 {
                     var time = GetFrameTime(frame);
+
                     calcObject.SampleAnimation(clip, time);
 
-                    Vector3 position, scale;
-                    Quaternion rotation;
-                    EditorCommon.GetTRS(rootNodeBone.localToWorldMatrix * startMatrix.inverse, out position, out rotation, out scale);
+                    var position = rootTransform.position - startPosition;
+                    var rotation = Quaternion.Inverse(startRotation) * rootTransform.rotation;
 
                     for (int dof = 0; dof < 3; dof++)
                         SetKeyframe(rootT[dof], time, position[dof]);
@@ -2704,9 +3073,8 @@ namespace VeryAnimation
             }
             finally
             {
-                calcObject.SetOutside();
+                calcObject.SetTransformStart();
                 EditorUtility.ClearProgressBar();
-                uAw.SetCurrentFrame(currentFrame);
             }
 
             ToolsCommonAfter();
@@ -3007,23 +3375,76 @@ namespace VeryAnimation
 
             ToolsCommonAfter();
         }
+        private void ToolsAdd(AnimationClip clip)
+        {
+            if (!ToolsCommonBefore(clip, "Add Clip")) return;
+
+            try
+            {
+                var addTime = clip.length + (1f / clip.frameRate);
+                foreach (var binding in AnimationUtility.GetCurveBindings(toolAdd_Clip))
+                {
+                    var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                    if (curve == null)
+                        curve = new AnimationCurve();
+                    var srcCurve = AnimationUtility.GetEditorCurve(toolAdd_Clip, binding);
+                    for (int i = 0; i < srcCurve.length; i++)
+                    {
+                        var key = srcCurve[i];
+                        key.time += addTime;
+                        curve.AddKey(key);
+                    }
+                    AnimationUtility.SetEditorCurve(clip, binding, curve);
+                }
+                foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(toolAdd_Clip))
+                {
+                    var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding).ToList();
+                    if (curve == null)
+                        curve = new List<ObjectReferenceKeyframe>();
+                    var srcCurve = AnimationUtility.GetObjectReferenceCurve(toolAdd_Clip, binding);
+                    for (int i = 0; i < srcCurve.Length; i++)
+                    {
+                        var key = srcCurve[i];
+                        key.time += addTime;
+                        curve.Add(key);
+                    }
+                    AnimationUtility.SetObjectReferenceCurve(clip, binding, curve.ToArray());
+                }
+                {
+                    var events = AnimationUtility.GetAnimationEvents(clip).ToList();
+                    foreach (var ev in AnimationUtility.GetAnimationEvents(toolAdd_Clip))
+                    {
+                        var tmp = ev;
+                        tmp.time += addTime;
+                        events.Add(tmp);
+                    }
+                    AnimationUtility.SetAnimationEvents(clip, events.ToArray());
+                }
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+
+            ToolsCommonAfter();
+        }
         private void ToolsCombine(AnimationClip clip)
         {
             if (!ToolsCommonBefore(clip, "Combine Clip")) return;
 
             try
             {
-                foreach (var binding in AnimationUtility.GetCurveBindings(toolCombine_clip))
+                foreach (var binding in AnimationUtility.GetCurveBindings(toolCombine_Clip))
                 {
-                    AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(toolCombine_clip, binding));
+                    AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(toolCombine_Clip, binding));
                 }
-                foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(toolCombine_clip))
+                foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(toolCombine_Clip))
                 {
-                    AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(toolCombine_clip, binding));
+                    AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(toolCombine_Clip, binding));
                 }
                 {
                     var events = AnimationUtility.GetAnimationEvents(clip).ToList();
-                    foreach (var ev in AnimationUtility.GetAnimationEvents(toolCombine_clip))
+                    foreach (var ev in AnimationUtility.GetAnimationEvents(toolCombine_Clip))
                     {
                         events.Add(ev);
                     }
@@ -3052,10 +3473,10 @@ namespace VeryAnimation
         private void ToolsCreateNewClip(string clipPath, ToolsCreateNewClipMode mode)
         {
             VeryAnimationWindow.CustomAssetModificationProcessor.Pause();
-            var clip = uAnimationWindowUtility.CreateNewClipAtPath(clipPath);
+            var newClip = uAnimationWindowUtility.CreateNewClipAtPath(clipPath);
             VeryAnimationWindow.CustomAssetModificationProcessor.Resume();
 
-            if (!ToolsCommonBefore(clip, "Create new clip")) return;
+            if (!ToolsCommonBefore(newClip, "Create new clip")) return;
 
             try
             {
@@ -3063,25 +3484,25 @@ namespace VeryAnimation
                 int progressTotal = 1;
                 EditorUtility.DisplayProgressBar("Create", clipPath, progressIndex++ / (float)progressTotal);
 
-                AnimationUtility.SetAnimationClipSettings(clip, AnimationUtility.GetAnimationClipSettings(currentClip));
+                AnimationUtility.SetAnimationClipSettings(newClip, AnimationUtility.GetAnimationClipSettings(currentClip));
                 {
-                    clip.frameRate = currentClip.frameRate;
-                    clip.wrapMode = currentClip.wrapMode;
-                    clip.localBounds = currentClip.localBounds;
-                    clip.legacy = currentClip.legacy;
+                    newClip.frameRate = currentClip.frameRate;
+                    newClip.wrapMode = currentClip.wrapMode;
+                    newClip.localBounds = currentClip.localBounds;
+                    newClip.legacy = currentClip.legacy;
                 }
                 if (mode == ToolsCreateNewClipMode.Duplicate || mode == ToolsCreateNewClipMode.Mirror)
                 {
                     #region Duplicate
                     foreach (var binding in AnimationUtility.GetCurveBindings(currentClip))
                     {
-                        AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(currentClip, binding));
+                        AnimationUtility.SetEditorCurve(newClip, binding, AnimationUtility.GetEditorCurve(currentClip, binding));
                     }
                     foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(currentClip))
                     {
-                        AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(currentClip, binding));
+                        AnimationUtility.SetObjectReferenceCurve(newClip, binding, AnimationUtility.GetObjectReferenceCurve(currentClip, binding));
                     }
-                    AnimationUtility.SetAnimationEvents(clip, AnimationUtility.GetAnimationEvents(currentClip));
+                    AnimationUtility.SetAnimationEvents(newClip, AnimationUtility.GetAnimationEvents(currentClip));
                     #endregion
                 }
                 if (mode == ToolsCreateNewClipMode.Mirror)
@@ -3090,7 +3511,7 @@ namespace VeryAnimation
                     {
                         #region SwapMirrorCurve
                         {
-                            var bindings = AnimationUtility.GetCurveBindings(clip);
+                            var bindings = AnimationUtility.GetCurveBindings(newClip);
                             Func<EditorCurveBinding, int> GetMirrorBindingIndex = (binding) =>
                             {
                                 var mbinding = GetMirrorAnimationCurveBinding(binding);
@@ -3108,7 +3529,7 @@ namespace VeryAnimation
                                     Action<float> AddKey = (value) =>
                                     {
                                         AddKeyframe(mcurve, 0, value);
-                                        AddKeyframe(mcurve, clip.length, value);
+                                        AddKeyframe(mcurve, newClip.length, value);
                                     };
                                     int dofIndex = GetDOFIndexFromCurveBinding(mbinding.Value);
                                     if (mbinding.Value.type == typeof(Animator))
@@ -3143,24 +3564,24 @@ namespace VeryAnimation
                                     {
                                         Assert.IsTrue(false);
                                     }
-                                    AnimationUtility.SetEditorCurve(clip, mbinding.Value, mcurve);
+                                    AnimationUtility.SetEditorCurve(newClip, mbinding.Value, mcurve);
                                 }
                             }
-                            bindings = AnimationUtility.GetCurveBindings(clip);
+                            bindings = AnimationUtility.GetCurveBindings(newClip);
                             #endregion
 
                             #region MirrorCurve
                             {
                                 Action<int, int> SwapCurve = (indexA, indexB) =>
                                 {
-                                    var curveA = AnimationUtility.GetEditorCurve(clip, bindings[indexA]);
-                                    var curveB = AnimationUtility.GetEditorCurve(clip, bindings[indexB]);
-                                    AnimationUtility.SetEditorCurve(clip, bindings[indexB], curveA);
-                                    AnimationUtility.SetEditorCurve(clip, bindings[indexA], curveB);
+                                    var curveA = AnimationUtility.GetEditorCurve(newClip, bindings[indexA]);
+                                    var curveB = AnimationUtility.GetEditorCurve(newClip, bindings[indexB]);
+                                    AnimationUtility.SetEditorCurve(newClip, bindings[indexB], curveA);
+                                    AnimationUtility.SetEditorCurve(newClip, bindings[indexA], curveB);
                                 };
                                 Action<int> MirrorCurve = (index) =>
                                 {
-                                    var curve = AnimationUtility.GetEditorCurve(clip, bindings[index]);
+                                    var curve = AnimationUtility.GetEditorCurve(newClip, bindings[index]);
                                     for (int i = 0; i < curve.length; i++)
                                     {
                                         var key = curve[i];
@@ -3169,7 +3590,7 @@ namespace VeryAnimation
                                         key.outTangent = -key.outTangent;
                                         curve.MoveKey(i, key);
                                     }
-                                    AnimationUtility.SetEditorCurve(clip, bindings[index], curve);
+                                    AnimationUtility.SetEditorCurve(newClip, bindings[index], curve);
                                 };
 
                                 bool[] doneFlag = new bool[bindings.Length];
@@ -3322,7 +3743,7 @@ namespace VeryAnimation
                                 AnimationCurve curve;
                                 if (!curves.TryGetValue(binding, out curve))
                                 {
-                                    curve = AnimationUtility.GetEditorCurve(clip, binding);
+                                    curve = AnimationUtility.GetEditorCurve(newClip, binding);
                                     if (curve == null)
                                         curve = new AnimationCurve();
                                     curves.Add(binding, curve);
@@ -3330,9 +3751,9 @@ namespace VeryAnimation
                                 return curve;
                             };
 
-                            Quaternion[] boneWroteRotation = new Quaternion[editBones.Length];
-                            Vector3[] boneWroteEuler = new Vector3[editBones.Length];
-                            for (int boneIndex = 0; boneIndex < editBones.Length; boneIndex++)
+                            Quaternion[] boneWroteRotation = new Quaternion[bones.Length];
+                            Vector3[] boneWroteEuler = new Vector3[bones.Length];
+                            for (int boneIndex = 0; boneIndex < bones.Length; boneIndex++)
                             {
                                 boneWroteRotation[boneIndex] = boneSaveOriginalTransforms[boneIndex].localRotation;
                                 boneWroteEuler[boneIndex] = boneWroteRotation[boneIndex].eulerAngles;
@@ -3342,7 +3763,7 @@ namespace VeryAnimation
                                 var time = GetFrameTime(frame);
                                 #region Generic
                                 {
-                                    for (int boneIndex = 0; boneIndex < editBones.Length; boneIndex++)
+                                    for (int boneIndex = 0; boneIndex < bones.Length; boneIndex++)
                                     {
                                         if (isHuman && humanoidConflict[boneIndex]) continue;
                                         Vector3 position;
@@ -3440,6 +3861,7 @@ namespace VeryAnimation
                                 #endregion
                             }
 
+                            #region SmoothTangents
                             foreach (var pair in curves)
                             {
                                 var curve = pair.Value;
@@ -3447,27 +3869,34 @@ namespace VeryAnimation
 
                                 for (int i = 0; i < curve.length; i++)
                                     curve.SmoothTangents(i, 0f);
-                                AnimationUtility.SetEditorCurve(clip, pair.Key, curve);
+                                AnimationUtility.SetEditorCurve(newClip, pair.Key, curve);
                             }
+                            #endregion
                         }
                         #endregion
                     }
                     #endregion
                 }
 
-#if VERYANIMATION_TIMELINE
-                if (uAw_2017_1.GetLinkedWithTimeline())
+                bool added = false;
+                if (uAw.GetLinkedWithTimeline())
                 {
-                    Undo.RecordObject(uAw_2017_1.GetTimelineCurrentDirector(), "Create New Clip");
-                    var animationTrack = uAw_2017_1.GetAnimationTrack();
+                    #region Timeline
+#if VERYANIMATION_TIMELINE
+                    Undo.RecordObject(uAw.GetTimelineCurrentDirector(), "Create New Clip");
+                    var animationTrack = uAw.GetTimelineAnimationTrack();
                     Undo.RecordObject(animationTrack, "Create New Clip");
-                    var timelineClip = animationTrack.CreateClip(clip);
+                    var timelineClip = animationTrack.CreateClip(newClip);
                     timelineClip.displayName = Path.GetFileNameWithoutExtension(clipPath);
                     uAw.ForceRefresh();
-                    uAw_2017_1.EditSequencerClip(timelineClip);
+                    uAw.EditSequencerClip(timelineClip);
+                    added = true;
+#else
+                    Assert.IsTrue(false);
+#endif
+                    #endregion
                 }
                 else
-#endif
                 {
                     #region Animator
                     if (vaw.animator != null && vaw.animator.runtimeAnimatorController != null)
@@ -3486,6 +3915,7 @@ namespace VeryAnimation
                                     if (pair.Value == currentClip)
                                     {
                                         virtualClip = pair.Key;
+                                        added = true;
                                         break;
                                     }
                                 }
@@ -3550,7 +3980,7 @@ namespace VeryAnimation
                                 };
                                 FindStateMachine(layer.stateMachine);
                             }
-                            var animatorState = ac.AddMotion(clip, layerIndex);
+                            var animatorState = ac.AddMotion(newClip, layerIndex);
                             if (srcState != null)
                             {
                                 animatorState.behaviours = srcState.behaviours;
@@ -3567,11 +3997,10 @@ namespace VeryAnimation
                                 animatorState.mirror = srcState.mirror;
                                 animatorState.cycleOffset = srcState.cycleOffset;
                                 animatorState.speed = srcState.speed;
-                                animatorState.motion = clip;
-#if UNITY_2017_2_OR_NEWER
+                                animatorState.motion = newClip;
                                 animatorState.timeParameter = srcState.timeParameter;
                                 animatorState.timeParameterActive = srcState.timeParameterActive;
-#endif
+                                added = true;
                             }
                         }
                         #endregion
@@ -3582,13 +4011,17 @@ namespace VeryAnimation
                     {
                         Undo.RecordObject(vaw.animation, "Create New Clip");
                         var animations = AnimationUtility.GetAnimationClips(vaw.gameObject);
-                        ArrayUtility.Add(ref animations, clip);
+                        ArrayUtility.Add(ref animations, newClip);
                         AnimationUtility.SetAnimationClips(vaw.animation, animations);
+                        added = true;
                     }
                     #endregion
 
+                    if (!added)
+                        Debug.LogWarningFormat(Language.GetText(Language.Help.LogAnimationClipAddError), newClip);
+
                     uAw.ForceRefresh();
-                    uAw.SetSelectionAnimationClip(clip);
+                    uAw.SetSelectionAnimationClip(newClip);
                 }
             }
             finally
@@ -3712,8 +4145,6 @@ namespace VeryAnimation
                             SetAnimationValueTransformScale(boneIndex, pair.Value, pair.Key);
                     }
                 }
-
-                UpdateSyncEditorCurveClip();
             }
             finally
             {
@@ -3831,7 +4262,7 @@ namespace VeryAnimation
 
                 tmpClip = AnimationClip.Instantiate(clip);
                 tmpClip.hideFlags |= HideFlags.HideAndDontSave;
-                tmpObject = GameObject.Instantiate(editGameObject);
+                tmpObject = GameObject.Instantiate(vaw.gameObject);
                 tmpObject.hideFlags |= HideFlags.HideAndDontSave;
                 EditorCommon.DisableOtherBehaviors(tmpObject);
 
@@ -3853,7 +4284,7 @@ namespace VeryAnimation
                             {
                                 //Motion
                             }
-                            else if(!IsAnimatorReservedPropertyName(binding.propertyName))
+                            else if (!IsAnimatorReservedPropertyName(binding.propertyName))
                             {
                                 //ParameterRelatedCurves
                             }
@@ -4213,11 +4644,11 @@ namespace VeryAnimation
                 if (toolCleanup_RemoveHumanoidConflict && isHuman)
                 {
                     List<string> paths = new List<string>();
-                    for (int i = 0; i < editBones.Length; i++)
+                    for (int i = 0; i < bones.Length; i++)
                     {
                         if (humanoidConflict[i])
                         {
-                            paths.Add(AnimationUtility.CalculateTransformPath(editBones[i].transform, editGameObject.transform));
+                            paths.Add(AnimationUtility.CalculateTransformPath(bones[i].transform, vaw.gameObject.transform.transform));
                         }
                     }
                     foreach (var binding in AnimationUtility.GetCurveBindings(clip))
@@ -4304,7 +4735,7 @@ namespace VeryAnimation
         {
             string path = EditorUtility.SaveFilePanel("Export",
                                                         Path.GetDirectoryName(AssetDatabase.GetAssetPath(currentClip)),
-                                                        editGameObject.name + ".dae", "dae");
+                                                        vaw.gameObject.name + ".dae", "dae");
             if (string.IsNullOrEmpty(path))
                 return;
 
@@ -4313,8 +4744,8 @@ namespace VeryAnimation
             if (!blendShapeWeightSave.ResetPrefabWeight())
                 blendShapeWeightSave.ResetOriginalWeight();
 
-            var transforms = new List<Transform>(editBones.Length);
-            foreach (var b in editBones)
+            var transforms = new List<Transform>(bones.Length);
+            foreach (var b in bones)
                 transforms.Add(b.transform);
 
             AnimationClip[] clips = null;
@@ -4350,7 +4781,7 @@ namespace VeryAnimation
             {
                 VeryAnimationWindow.CustomAssetModificationProcessor.Resume();
             }
-            SetUpdateResampleAnimation();
+            SetUpdateSampleAnimation();
             uAw.ForceRefresh();
         }
     }

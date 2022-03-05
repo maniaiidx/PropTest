@@ -31,7 +31,7 @@ namespace VeryAnimation
                     var animator = go.GetComponent<Animator>();
                     if (animator == null || animator.avatar == null)
                         return false;
-                    var assetPath = EditorCommon.GetAssetPath(animator.avatar);
+                    var assetPath = AssetDatabase.GetAssetPath(animator.avatar);
                     var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
                     if (importer != null)
                     {

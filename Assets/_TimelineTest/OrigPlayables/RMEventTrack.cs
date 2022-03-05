@@ -9,7 +9,8 @@ using System.Text;//UTF-8エンコードに
 using Candlelight;//プロパティいじったときのコールバック機能
 using System;//array
 using DG.Tweening;//DOTween
-
+using System.Reflection;
+using UnityEngine.Events;//メソッド指定用
 
 [TrackColor(0.875f, 0.5944853f, 0.1737132f)]
 [TrackClipType(typeof(RMEventClip))]
@@ -27,6 +28,7 @@ public class RMEventTrack : TrackAsset
         //ミキサー変数にDC割り当て
         mixer.GetBehaviour().DC = GameObject.Find("Server").GetComponent<DataCounter>();
         mixer.GetBehaviour().DB = GameObject.Find("DataBridging").GetComponent<DataBridging>();
+        mixer.GetBehaviour().ResourceFiles = mixer.GetBehaviour().DC.transform.Find("ResourceFiles").GetComponent<ResourceFiles>();
 
         //ミキサーの変数にDirectorを割り当て（ポーズなどをさせるため）
         mixer.GetBehaviour().m_PlayableDirector = obj.GetComponent<PlayableDirector>();
@@ -43,8 +45,14 @@ public class RMEventTrack : TrackAsset
         return mixer;
     }
 
-    [HeaderAttribute("■フラグリスト")]
-    [SerializeField, PropertyBackingField]//[SerializeField, PropertyBackingField( "spawnObj" )]とすれば　→　PropertyBackingField 属性にプロパティ名を指定することで 変数を好きなプロパティと紐付けることができます
+    #region イベント製作チーム用
+    [HeaderAttribute("■イベント製作チーム用")]
+    public RuntimeAnimatorController useAnimator;
+    public List<String> useIEnumList;
+
+    #endregion
+
+    [SerializeField, PropertyBackingField, Space(40)]//[SerializeField, PropertyBackingField( "spawnObj" )]とすれば　→　PropertyBackingField 属性にプロパティ名を指定することで 変数を好きなプロパティと紐付けることができます
     public List<bool>
     m_flagBoolList;
     public List<bool> flagBoolList //↑のリスト設定時にclipのリストそれぞれ数合わせる
@@ -77,7 +85,7 @@ public class RMEventTrack : TrackAsset
     }
 
 
-
+    #region ■コード生成 読み取り関係(tmpKey連番付与もこの中)
     [SerializeField, Space(100)]
     [Button(nameof(Build), "コード生成")]
     public bool dummy;//属性でボタンを作るので何かしら宣言が必要。使わない
@@ -91,7 +99,46 @@ public class RMEventTrack : TrackAsset
     public List<string>
         readCodeList = new List<string>();
 
+    #region ■tmpkeyの末尾に連番を付与
+    [SerializeField, Space(20)]
+    [Button(nameof(tmpKeyNumberSerialized), "tmpKey名の末尾に連番を付与")]
+    public bool dummy5;//属性でボタンを作るので何かしら宣言が必要。使わない
 
+    void tmpKeyNumberSerialized()
+    {
+        //このトラックのクリップをリスト化
+        List<TimelineClip> tmpClipList = this.GetClips().ToList();
+
+        //連番付与用Int変数
+        int tmpSerialNumberInt = 0;
+
+        //クリップ一つ一つに処理
+        for (int i = 0; i < tmpClipList.Count; i++)
+        {
+            //まずクリップの変数用behaviour読み込み
+            var bh = (tmpClipList[i].asset as RMEventClip).m_behaviour; // クリップが持つBehaviourを参照（パラメータ）
+
+            //tmpセリフあったら
+            if (!string.IsNullOrWhiteSpace(bh.tmpSerihuKey))
+            {
+                //連番付与して連番用Int++
+                bh.tmpSerihuKey += tmpSerialNumberInt;
+                tmpSerialNumberInt++;
+            }
+
+            //tmpノベルあったら
+            if (!string.IsNullOrWhiteSpace(bh.tmpNovelKey))
+            {
+                //連番付与して連番用Int++
+                bh.tmpNovelKey += tmpSerialNumberInt;
+                tmpSerialNumberInt++;
+            }
+
+        }
+
+    }
+
+    #endregion
 
     [SerializeField, Space(100)]
     [Multiline]
@@ -104,7 +151,6 @@ public class RMEventTrack : TrackAsset
 
         DataCounter DC = GameObject.Find("Server").GetComponent<DataCounter>();
         DataBridging DB = GameObject.Find("DataBridging").GetComponent<DataBridging>();
-
 
         //初期化
         readCodeAll = tmpReadCode = "";
@@ -216,6 +262,10 @@ public class RMEventTrack : TrackAsset
 
             for (int i = 0; i < tmpKaburiCheckClipList.Count; i++)
             {
+                //displaynameやstartはRMEventClipにしたら読み込めないので没
+                ////情報取得用にcpも変数化
+                //var cp = (tmpKaburiCheckClipList[i].asset as RMEventClip);
+
                 //まずクリップの変数用behaviour読み込み
                 var bh = (tmpKaburiCheckClipList[i].asset as RMEventClip).m_behaviour; // クリップが持つBehaviourを参照（パラメータ）
 
@@ -226,7 +276,9 @@ public class RMEventTrack : TrackAsset
                     //■被りがあったら警告してtmpのままにする。
                     if (tmpSerihuKeyList.Contains(bh.tmpSerihuKey))
                     {
-                        Debug.LogError("■■tmpSerihuキー " + bh.tmpSerihuKey + " はキー被りがあったため本テキスト出力処理を停止しました。キー名を変更してください");
+                        var info = " clip" + i + " " + tmpKaburiCheckClipList[i].displayName + " " + (tmpKaburiCheckClipList[i].start * 30).ToString("f0");
+
+                        Debug.LogError("■■tmpSerihuキー " + bh.tmpSerihuKey + info + " はキー被りがあったため本テキスト出力処理を停止しました。キー名を変更してください");
                         isKaburi = true;
                     }
                     #endregion
@@ -242,7 +294,9 @@ public class RMEventTrack : TrackAsset
                     //■被りがあったら警告してtmpのままにする。
                     if (tmpNovelKeyList.Contains(bh.tmpNovelKey))
                     {
-                        Debug.LogError("■■■tmpNovelキー " + bh.tmpNovelKey + " はキー被りがあったため本テキスト出力処理を停止しました。キー名を変更してください");
+                        var info = " clip" + i + " " + tmpKaburiCheckClipList[i].displayName + " " + (tmpKaburiCheckClipList[i].start * 30).ToString("f0");
+
+                        Debug.LogError("■■■tmpNovelキー " + bh.tmpNovelKey + info + " はキー被りがあったため本テキスト出力処理を停止しました。キー名を変更してください");
                         isKaburi = true;
                     }
 
@@ -260,7 +314,7 @@ public class RMEventTrack : TrackAsset
         #endregion
 
 
-        //■トラックリスト分 全部書き出す
+        #region ■トラックリスト分 全部書き出す
         for (int a = 0; a < outputTrackList.Count; a++)
         {
             List<TimelineClip> clipList = outputTrackList[a].GetClips().ToList();
@@ -1099,7 +1153,7 @@ public class RMEventTrack : TrackAsset
 
                         + "//ヒエラルキーからObj削除（Obj名で直接）" + "\n"
                         + "Destroy(GameObject.Find(\"" + bh.destroyObjName + "\"));" + "\n"
-                        
+
                         + "}" + "\n"
                         + "else" + "\n"
                         + "{ Debug.Log(\"■" + bh.destroyObjName + "がヒエラルキーにない？\"" + ");}" + "\n"
@@ -1107,7 +1161,7 @@ public class RMEventTrack : TrackAsset
                         + "\n";
                 }
                 #endregion
-                #region 削除destroyObjListあれば
+                #region 削除destroyObjListあれば //Hideで廃止済み 念の為処理だけはされるように残し
                 if (bh.destroyObjList.Count != 0)
                 {
 
@@ -1504,7 +1558,7 @@ public class RMEventTrack : TrackAsset
                         + "#region シンプル移動ポイント設置起動" + "\n"
                         + "//移動Obj本体" + "\n"
                         + "GameObject tmpMovePointObj" + i.ToString() + "\n"
-                        + "    = Instantiate(Resources.Load(\"EventSystem/KakureOni/Prefab/KO_SimplePointObj\") as GameObject" + "\n"
+                        + "    = Instantiate(ResourceFiles.KO_SimplePointObj" + "\n"
                         + "    , GameObjectsTrs);" + "\n"
                         + "//システム終了時削除するようにリストに入れ" + "\n"
                         + "KO_KakurePosObjsList.Add(tmpMovePointObj" + i.ToString() + ");" + "\n"
@@ -1739,6 +1793,7 @@ public class RMEventTrack : TrackAsset
             tmpReadCode = "";
 
         }
+        #endregion
 
         //それぞれ上書き保存（されてるように見えても、これしないと、保存して終了しないと消える（tmpキーの移動など））
         //■トラックリスト分 全部
@@ -2431,8 +2486,307 @@ public class RMEventTrack : TrackAsset
         //UnityEditor.AssetDatabase.Refresh();
     }
 
+    #endregion
 
 
+
+
+    #region ■全クリップの内容テキストで一覧出力
+
+    [SerializeField, Space(40)]
+    [Button(nameof(TextOutput), "全クリップの内容テキストで一覧出力")]
+    public bool dummy3;//属性でボタンを作るので何かしら宣言が必要。使わない
+
+    public void TextOutput()
+    {
+#if UNITY_EDITOR
+        //テキストクリア
+        allClipText = nowClipText = "";
+
+        //■比較用にcpとbhのデフォ変数一覧生成
+        RMEventClip defCp = new RMEventClip();
+        FieldInfo[] defCpInfoArray = defCp.GetType().GetFields();
+        RMEventBehaviour defBh = new RMEventBehaviour();
+        FieldInfo[] defBhInfoArray = defBh.GetType().GetFields();
+
+        //■このトラックのクリップ全部読み込み
+        var tmpClipList = GetClips().ToList();
+        //デリゲートでクリップをソート（スタートタイム順にする）
+        tmpClipList.Sort((o1, o2) =>
+        {
+            if (o1.start < o2.start) return -1;
+            if (o1.start > o2.start) return 1;
+            return 0;
+        });
+
+
+        //■トラックの全クリップで処理
+        for (int i = 0; i < tmpClipList.Count; i++)
+        {
+
+            //■クリップの変数読み込み
+            var nowCp = (tmpClipList[i].asset as RMEventClip); //クリップのみ
+            FieldInfo[] nowCpInfoArray = nowCp.GetType().GetFields();
+
+            //■クリップの位置や名前出力
+            allClipText += "■＝＝＝＝＝clip" + i + " " + tmpClipList[i].displayName + " " + (tmpClipList[i].start * 30);
+            allClipText += "\n";//改行
+
+            #region ■クリップのフィールド変数 1項目ずつ処理
+
+            for (int k = 0; k < defCpInfoArray.Length; k++)
+            {
+                var tmpDef = defCpInfoArray[k].GetValue(defCp);
+                var tmpNow = nowCpInfoArray[k].GetValue(nowCp);
+
+                #region //参考 objectの配列から要素数など抽出
+                //if (k == 46)//この時は一括モーションの配列だった
+                //{
+                //    Debug.Log(defCpInfoArray[k]);
+                //    var a = tmpNow;
+                //    var type = a.GetType();
+                //    var props = type.GetProperties();
+                //    var pairs = props.Select(x => x.Name + " = " + x.GetValue(a, null)).ToArray();
+                //    var result = string.Join("\n", pairs);
+                //    Debug.Log(result);
+                //}
+                #endregion
+
+                //■比較して、デフォルトと違う（何か変更がある）場合はテキストに出力
+                if (!Equals(tmpDef, tmpNow))
+                {
+                    #region ■無視リスト
+                    if (nowCpInfoArray[k].Name == nameof(nowCp.m_behaviour)
+                        || nowCpInfoArray[k].Name == nameof(nowCp.autoTextOutput)
+                        || nowCpInfoArray[k].Name == nameof(nowCp.flagBoolArray)
+                        || nowCpInfoArray[k].Name == nameof(nowCp.aSentakuflagBoolArray)
+                        || nowCpInfoArray[k].Name == nameof(nowCp.bSentakuflagBoolArray)
+                        || nowCpInfoArray[k].Name == nameof(nowCp.debugFlagBoolArray)
+                        )
+                    {
+                        continue;
+                    }
+
+                    #endregion
+
+                    #region ■まず、Nowの内容がArrayで、空じゃなかったらもう書き出して抜ける
+                    if (tmpNow.GetType().IsArray)
+                    {
+                        //配列数1以上だったら出力（コピペでほぼ理解できてないけど、これで配列数が取得できた）
+                        var type = tmpNow.GetType(); //型取得
+                        var props = type.GetProperties(); //プロパティ取得（この場合取得してるのは配列としてのデータ（モーションの内容とかではない））
+                        long tmpLength = (long)props[0].GetValue(tmpNow); //そのプロパティ（0番目はLongLength）が、tmpNowではいくつに設定されているか取得
+
+                        if (tmpLength >= 1)
+                        {
+                            //変数名出力
+                            nowClipText += nowCpInfoArray[k].Name + ":";
+                            //要素数出力
+                            nowClipText += tmpLength;
+                            nowClipText += "\n";//改行
+                        }
+                        continue;
+                    }
+                    #endregion
+
+                    #region ■Nowの内容が、Nullじゃない　かつ　空白じゃない　であれば書き出し（Nullと空白以外の何かであれば） 
+                    if (tmpNow != null
+                        && !Equals(tmpNow, "")
+                        && !Equals(tmpNow, "null")
+                        )
+                    {
+                        //更に、型がGameObjectだった場合は
+                        if (tmpNow is GameObject)
+                        {
+                            //nullじゃなければ書き出す
+                            if ((GameObject)tmpNow != null)
+                            {
+                                nowClipText += nowCpInfoArray[k].Name + ":" + nowCpInfoArray[k].GetValue(nowCp);
+                                nowClipText += "\n";//改行
+                            }
+                        }
+                        //型がGameObjectじゃないならすぐ書き出す
+                        else
+                        {
+                            //UserMemoはAllにのみ
+                            if (nowCpInfoArray[k].Name == nameof(nowCp.userMemo))
+                            {
+                                allClipText += nowCpInfoArray[k].Name + ":" + nowCpInfoArray[k].GetValue(nowCp);
+                                allClipText += "\n";//改行
+                            }
+                            else
+                            {
+                                nowClipText += nowCpInfoArray[k].Name + ":" + nowCpInfoArray[k].GetValue(nowCp);
+                                nowClipText += "\n";//改行
+                            }
+                        }
+                    }
+                    #endregion
+                }
+
+            }
+            #endregion
+
+            #region ■↑のBh版 (クリップに内包されているのでこの位置)
+
+            //■このクリップのビヘイビアの変数情報読み込み
+            var nowBh = (tmpClipList[i].asset as RMEventClip).m_behaviour; // クリップが持つBehaviourを参照（パラメータ）
+            FieldInfo[] nowBhInfoArray = nowBh.GetType().GetFields();
+
+            //ビヘイビアのフィールド変数 1項目ずつ処理
+            for (int k = 0; k < defBhInfoArray.Length; k++)
+            {
+                var tmpDef = defBhInfoArray[k].GetValue(defBh);
+                var tmpNow = nowBhInfoArray[k].GetValue(nowBh);
+
+                //■比較して、デフォルトと違う（何か変更がある）場合はテキストに出力
+                if (!Equals(tmpDef, tmpNow))
+                {
+                    #region ■無視リスト
+                    if (nowBhInfoArray[k].Name == nameof(nowBh.destroyObjList) //Hideで廃止済み 念の為処理だけはされるように残し
+                        || nowBhInfoArray[k].Name == nameof(nowBh.isClipEnter)
+                        || nowBhInfoArray[k].Name == nameof(nowBh.ReadParentObj)
+                        || nowBhInfoArray[k].Name == nameof(nowBh.ReadChildObj)
+                        || nowBhInfoArray[k].Name == nameof(nowBh.readMoveObj)
+                        || nowBhInfoArray[k].Name == nameof(nowBh.movePointEnterFlagBoolArray)
+                        )
+                    {
+                        continue;
+                    }
+
+                    #endregion
+
+                    #region ■まず、Nowの内容がArrayで、空じゃなかったらもう書き出して抜ける
+                    if (tmpNow.GetType().IsArray)
+                    {
+                        //配列数1以上だったら出力（コピペでほぼ理解できてないけど、これで配列数が取得できた）
+                        var type = tmpNow.GetType(); //型取得
+                        var props = type.GetProperties(); //プロパティ取得（この場合取得してるのは配列としてのデータ（モーションの内容とかではない））
+                        long tmpLength = (long)props[0].GetValue(tmpNow); //そのプロパティ（0番目はLength）が、tmpNowではいくつに設定されているか取得
+
+                        if (tmpLength >= 1)
+                        {
+                            //変数名出力
+                            nowClipText += nowBhInfoArray[k].Name + ":";
+                            //要素数出力
+                            nowClipText += tmpLength;
+                            nowClipText += "\n";//改行
+                        }
+                        continue;
+                    }
+                    #endregion
+
+                    #region ■Nowの内容が、Nullじゃない　かつ　空白じゃない　であれば書き出し（未入力はそもそも弾く というやり方） 
+                    if (tmpNow != null
+                        && !Equals(tmpNow, "")
+                        && !Equals(tmpNow, "null")
+                        )
+                    {
+                        //更に、型がGameObjectだった場合は
+                        if (tmpNow is GameObject)
+                        {
+                            //nullじゃなければ書き出す
+                            if ((GameObject)tmpNow != null)
+                            {
+                                nowClipText += nowBhInfoArray[k].Name + ":" + nowBhInfoArray[k].GetValue(nowBh);
+                                nowClipText += "\n";//改行
+                            }
+                        }
+                        //型がGameObjectじゃないならすぐ
+                        else
+                        {
+                            nowClipText += nowBhInfoArray[k].Name + ":" + nowBhInfoArray[k].GetValue(nowBh);
+                            nowClipText += "\n";//改行
+                        }
+                    }
+                    #endregion
+
+                }
+
+            }
+            #endregion
+
+            //nowClipTextをAllClipTextへ
+            allClipText += nowClipText;
+
+            //クリップにnowClipTextを貼り付け
+            nowCp.autoTextOutput = nowClipText;
+
+            //nowClipTextをクリア
+            nowClipText = "";
+
+            //次のクリップに移る前に改行
+            allClipText += "\n";
+
+
+        }
+#endif
+    }
+
+    [Multiline]
+    public string
+        allClipText;
+    string
+        nowClipText;
+    #endregion
+
+    [SerializeField, Space(40)]
+    [Button(nameof(DataMove), "一括Obj削除へ移設")]
+    public bool dummy4;//属性でボタンを作るので何かしら宣言が必要。使わない
+
+    void DataMove()
+    {
+        //■このトラックのクリップ全部読み込み
+        var tmpClipList = GetClips().ToList();
+        //デリゲートでクリップをソート（スタートタイム順にする）
+        tmpClipList.Sort((o1, o2) =>
+        {
+            if (o1.start < o2.start) return -1;
+            if (o1.start > o2.start) return 1;
+            return 0;
+        });
+
+
+        //■トラックの全クリップで処理
+        for (int i = 0; i < tmpClipList.Count; i++)
+        {
+            //■クリップの変数読み込み
+            var nowCp = (tmpClipList[i].asset as RMEventClip); //クリップのみ
+
+            //■このクリップのビヘイビアの変数情報読み込み
+            var nowBh = (tmpClipList[i].asset as RMEventClip).m_behaviour; // クリップが持つBehaviourを参照（パラメータ）
+
+
+            //実際の処理
+
+            //Hideで廃止したのでコメントアウト
+            ////■BhのDestroyObjListの内容を、Cpの一括Obj削除へ
+            //if (nowBh.destroyObjList.Count > 0)
+            //{
+            //    for (int k = 0; k < nowBh.destroyObjList.Count; k++)
+            //    {
+            //        string[] result = new string[nowCp.destroyObjArray.Length + 1];
+            //        Array.Copy(nowCp.destroyObjArray, result, nowCp.destroyObjArray.Length);
+            //        result[nowCp.destroyObjArray.Length] = nowBh.destroyObjList[k];
+            //        nowCp.destroyObjArray = result;
+
+            //        Debug.Log((k + 1) + "/" + nowBh.destroyObjList.Count
+            //            + "■一括Obj削除へデータ移動" + nowBh.destroyObjList[k]);
+
+            //    }
+
+            //    nowBh.destroyObjList.Clear();
+
+            //}
+
+        }
+
+    }
+
+    //宿題ループ時用の変数
+    public double RMEHWLoopStartTime;
+    //宿題終了時用の変数
+    public PlayableAsset RMEHWEndGoPlayableAsset;
 
 
     //終了時初期値に戻す命令

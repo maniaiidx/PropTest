@@ -18,14 +18,14 @@ namespace VeryAnimation
         {
             public DummyObject dummyObject;
 
-            public bool active { get { return dummyObject.gameObject.activeSelf; } set { dummyObject.gameObject.SetActive(value); } }
+            public bool active;
 
             public OnionSkinObject(GameObject go)
             {
                 dummyObject = new DummyObject();
                 dummyObject.Initialize(go);
                 dummyObject.ChangeTransparent();
-                dummyObject.gameObject.SetActive(false);
+                active = false;
             }
             public void Release()
             {
@@ -48,6 +48,8 @@ namespace VeryAnimation
         }
         private Dictionary<int, OnionSkinObject> onionSkinObjects;
 
+        private bool isShow { get { return vaw.IsShowSceneGizmo(); } }
+
         public OnionSkin()
         {
             onionSkinObjects = new Dictionary<int, OnionSkinObject>();
@@ -68,91 +70,100 @@ namespace VeryAnimation
                 Release();
                 return;
             }
-            var show = !va.uAw.GetPlaying() && !va.prefabMode;
+
             foreach (var pair in onionSkinObjects)
             {
                 pair.Value.active = false;
             }
-            if (!show) return;
 
-            var lastFrame = va.GetLastFrame();
-
-            if (vaw.editorSettings.settingExtraOnionSkinMode == EditorSettings.OnionSkinMode.Keyframes)
+            if (isShow)
             {
-                #region Keyframes
-                float[] nextTimes = vaw.editorSettings.settingExtraOnionSkinNextCount > 0 ? new float[vaw.editorSettings.settingExtraOnionSkinNextCount] : null;
-                float[] prevTimes = vaw.editorSettings.settingExtraOnionSkinPrevCount > 0 ? new float[vaw.editorSettings.settingExtraOnionSkinPrevCount] : null;
-                va.uAw.GetNearKeyframeTimes(nextTimes, prevTimes);
-                #region Next
-                if (nextTimes != null)
+                var lastFrame = va.GetLastFrame();
+
+                if (vaw.editorSettings.settingExtraOnionSkinMode == EditorSettings.OnionSkinMode.Keyframes)
                 {
-                    var frame = va.uAw.GetCurrentFrame();
-                    for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinNextCount; i++)
+                    #region Keyframes
+                    float[] nextTimes = vaw.editorSettings.settingExtraOnionSkinNextCount > 0 ? new float[vaw.editorSettings.settingExtraOnionSkinNextCount] : null;
+                    float[] prevTimes = vaw.editorSettings.settingExtraOnionSkinPrevCount > 0 ? new float[vaw.editorSettings.settingExtraOnionSkinPrevCount] : null;
+                    va.uAw.GetNearKeyframeTimes(nextTimes, prevTimes);
+                    #region Next
+                    if (nextTimes != null)
                     {
-                        if (Mathf.Approximately(va.currentTime, nextTimes[i])) break;
-                        frame = va.uAw.TimeToFrameRound(nextTimes[i]);
-                        if (frame < 0 || frame > lastFrame) break;
-                        var oso = SetFrame((i + 1), va.GetFrameTime(frame));
-                        var color = vaw.editorSettings.settingExtraOnionSkinNextColor;
-                        var rate = vaw.editorSettings.settingExtraOnionSkinNextCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinNextCount - 1) : 0f;
-                        color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinNextMinAlpha, rate);
-                        oso.SetColor(color);
+                        var frame = va.uAw.GetCurrentFrame();
+                        for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinNextCount; i++)
+                        {
+                            if (Mathf.Approximately(va.currentTime, nextTimes[i])) break;
+                            frame = va.uAw.TimeToFrameRound(nextTimes[i]);
+                            if (frame < 0 || frame > lastFrame) break;
+                            var oso = SetFrame((i + 1), va.GetFrameTime(frame));
+                            var color = vaw.editorSettings.settingExtraOnionSkinNextColor;
+                            var rate = vaw.editorSettings.settingExtraOnionSkinNextCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinNextCount - 1) : 0f;
+                            color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinNextMinAlpha, rate);
+                            oso.SetColor(color);
+                        }
                     }
+                    #endregion
+                    #region Prev
+                    if (prevTimes != null)
+                    {
+                        var frame = va.uAw.GetCurrentFrame();
+                        for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinPrevCount; i++)
+                        {
+                            if (Mathf.Approximately(va.currentTime, prevTimes[i])) break;
+                            frame = va.uAw.TimeToFrameRound(prevTimes[i]);
+                            if (frame < 0 || frame > lastFrame) break;
+                            var oso = SetFrame(-(i + 1), va.GetFrameTime(frame));
+                            var color = vaw.editorSettings.settingExtraOnionSkinPrevColor;
+                            var rate = vaw.editorSettings.settingExtraOnionSkinPrevCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinPrevCount - 1) : 0f;
+                            color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinPrevMinAlpha, rate);
+                            oso.SetColor(color);
+                        }
+                    }
+                    #endregion
+                    #endregion
                 }
-                #endregion
-                #region Prev
-                if (prevTimes != null)
+                else if (vaw.editorSettings.settingExtraOnionSkinMode == EditorSettings.OnionSkinMode.Frames)
                 {
-                    var frame = va.uAw.GetCurrentFrame();
-                    for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinPrevCount; i++)
+                    #region Frames
+                    #region Next
                     {
-                        if (Mathf.Approximately(va.currentTime, prevTimes[i])) break;
-                        frame = va.uAw.TimeToFrameRound(prevTimes[i]);
-                        if (frame < 0 || frame > lastFrame) break;
-                        var oso = SetFrame(-(i + 1), va.GetFrameTime(frame));
-                        var color = vaw.editorSettings.settingExtraOnionSkinPrevColor;
-                        var rate = vaw.editorSettings.settingExtraOnionSkinPrevCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinPrevCount - 1) : 0f;
-                        color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinPrevMinAlpha, rate);
-                        oso.SetColor(color);
+                        var frame = va.uAw.GetCurrentFrame();
+                        for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinNextCount; i++)
+                        {
+                            frame += vaw.editorSettings.settingExtraOnionSkinFrameIncrement;
+                            if (frame < 0 || frame > lastFrame) break;
+                            var oso = SetFrame((i + 1), va.GetFrameTime(frame));
+                            var color = vaw.editorSettings.settingExtraOnionSkinNextColor;
+                            var rate = vaw.editorSettings.settingExtraOnionSkinNextCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinNextCount - 1) : 0f;
+                            color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinNextMinAlpha, rate);
+                            oso.SetColor(color);
+                        }
                     }
+                    #endregion
+                    #region Prev
+                    {
+                        var frame = va.uAw.GetCurrentFrame();
+                        for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinPrevCount; i++)
+                        {
+                            frame -= vaw.editorSettings.settingExtraOnionSkinFrameIncrement;
+                            if (frame < 0 || frame > lastFrame) break;
+                            var oso = SetFrame(-(i + 1), va.GetFrameTime(frame));
+                            var color = vaw.editorSettings.settingExtraOnionSkinPrevColor;
+                            var rate = vaw.editorSettings.settingExtraOnionSkinPrevCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinPrevCount - 1) : 0f;
+                            color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinPrevMinAlpha, rate);
+                            oso.SetColor(color);
+                        }
+                    }
+                    #endregion
+                    #endregion
                 }
-                #endregion
-                #endregion
             }
-            else if (vaw.editorSettings.settingExtraOnionSkinMode == EditorSettings.OnionSkinMode.Frames)
+
+            foreach (var pair in onionSkinObjects)
             {
-                #region Frames
-                #region Next
-                {
-                    var frame = va.uAw.GetCurrentFrame();
-                    for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinNextCount; i++)
-                    {
-                        frame += vaw.editorSettings.settingExtraOnionSkinFrameIncrement;
-                        if (frame < 0 || frame > lastFrame) break;
-                        var oso = SetFrame((i + 1), va.GetFrameTime(frame));
-                        var color = vaw.editorSettings.settingExtraOnionSkinNextColor;
-                        var rate = vaw.editorSettings.settingExtraOnionSkinNextCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinNextCount - 1) : 0f;
-                        color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinNextMinAlpha, rate);
-                        oso.SetColor(color);
-                    }
-                }
-                #endregion
-                #region Prev
-                {
-                    var frame = va.uAw.GetCurrentFrame();
-                    for (int i = 0; i < vaw.editorSettings.settingExtraOnionSkinPrevCount; i++)
-                    {
-                        frame -= vaw.editorSettings.settingExtraOnionSkinFrameIncrement;
-                        if (frame < 0 || frame > lastFrame) break;
-                        var oso = SetFrame(-(i + 1), va.GetFrameTime(frame));
-                        var color = vaw.editorSettings.settingExtraOnionSkinPrevColor;
-                        var rate = vaw.editorSettings.settingExtraOnionSkinPrevCount > 1 ? i / (float)(vaw.editorSettings.settingExtraOnionSkinPrevCount - 1) : 0f;
-                        color.a = Mathf.Lerp(color.a, vaw.editorSettings.settingExtraOnionSkinPrevMinAlpha, rate);
-                        oso.SetColor(color);
-                    }
-                }
-                #endregion
-                #endregion
+                if (pair.Value.active)
+                    continue;
+                pair.Value.dummyObject.gameObject.SetActive(false);
             }
         }
 
@@ -161,7 +172,7 @@ namespace VeryAnimation
             OnionSkinObject oso;
             if(!onionSkinObjects.TryGetValue(frame, out oso))
             {
-                oso = new OnionSkinObject(va.editGameObject);
+                oso = new OnionSkinObject(vaw.gameObject);
                 {
                     const int StartOffset = 20;
                     var offset = Math.Abs(frame * 2) + (frame > 0 ? 0 : 1);
@@ -171,9 +182,14 @@ namespace VeryAnimation
             }
 
             oso.active = true;
-            oso.dummyObject.SetSource();
+            if (!oso.dummyObject.gameObject.activeSelf)
+                oso.dummyObject.gameObject.SetActive(true);
             oso.dummyObject.UpdateState();
+            oso.dummyObject.SetTransformStart();
             oso.dummyObject.SampleAnimation(va.currentClip, time);
+
+            if (EditorApplication.isPlaying && EditorApplication.isPaused) //Is there a bug that will not be updated while pausing? Therefore, it forcibly updates it.
+                oso.dummyObject.RendererForceUpdate();
 
             return oso;
         }

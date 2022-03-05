@@ -6,7 +6,16 @@ using System.Collections.Generic; //Listに必要
 
 public class ResourceFiles : MonoBehaviour
 {
+    //EV_C_系PrefabなどをResouces読み込みから退避（それぞれのシステム起動時に読み込んでいたもの）
+    public GameObject
+        EV_C_KaijuBattle,
+        EV_C_KakureOni,
+        KO_SimplePointObj,
+        MenuFolder,
+        yd_loadClothsWindowCanvas;//ゆろーどさん着替えシステムテスト環境用
+
     #region SE_BGM
+    public UnityEngine.Audio.AudioMixer audioMixer;
     public Dictionary<string, AudioClip>//ファイル名で指定するためにDictionary化
         SE = new Dictionary<string, AudioClip>(),
         BGM = new Dictionary<string, AudioClip>();
@@ -52,7 +61,6 @@ public class ResourceFiles : MonoBehaviour
     public string testString01;
     public AudioClip testAudioClip01, testAudioClip02;
     #endregion
-
 
     void Awake()
     {

@@ -1,5 +1,5 @@
 // Toony Colors Pro+Mobile 2
-// (c) 2014-2019 Jean Moreno
+// (c) 2014-2021 Jean Moreno
 
 //Enable this to display the default Inspector (in case the custom Inspector is broken)
 //#define SHOW_DEFAULT_INSPECTOR
@@ -7,6 +7,8 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using ToonyColorsPro.Utilities;
+using ToonyColorsPro.Legacy;
 
 // Custom material inspector for generated shader
 
@@ -49,7 +51,7 @@ public class TCP2_MaterialInspector_SG : ShaderGUI
 		if(materialEditor.isVisible && !mShader.hasMultipleDifferentValues && mShader.objectReferenceValue != null)
 		{
 			//Retina display fix
-			EditorGUIUtility.labelWidth = TCP2_Utils.ScreenWidthRetina - 120f;
+			EditorGUIUtility.labelWidth = Utils.ScreenWidthRetina - 120f;
 			EditorGUIUtility.fieldWidth = 64f;
 
 			EditorGUI.BeginChangeCheck();

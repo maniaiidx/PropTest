@@ -1,5 +1,5 @@
 // Toony Colors Pro+Mobile 2
-// (c) 2014-2019 Jean Moreno
+// (c) 2014-2021 Jean Moreno
 
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +7,8 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using ToonyColorsPro.Utilities;
+using Gradient = UnityEngine.Gradient;
 
 // Utility to generate ramp textures
 
@@ -18,7 +20,7 @@ namespace ToonyColorsPro
 		const float WINDOW_HEIGHT = 200f;
 		//const float WINDOW_HEIGHT = 256f;
 
-		[MenuItem(TCP2_Menu.MENU_PATH + "Ramp Generator", false, 500)]
+		[MenuItem(Menu.MENU_PATH + "Ramp Generator", false, 600)]
 		static void OpenTool()
 		{
 			GetWindowTCP2();
@@ -126,7 +128,7 @@ namespace ToonyColorsPro
 			linkedTexture = texture;
 			linkedImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture));
 			linkedMaterials = materials;
-			var gradientList = TCP2_GradientManager.GetGradientsFromUserData(linkedImporter.userData);
+			var gradientList = GradientManager.GetGradientsFromUserData(linkedImporter.userData);
 
 			if (gradientList.Count == 1)
 			{
@@ -168,9 +170,13 @@ namespace ToonyColorsPro
 
 		void OnGUI()
 		{
+			TCP2_GUI.UseNewHelpIcon = true;
+
 			EditorGUILayout.BeginHorizontal();
-			TCP2_GUI.HeaderBig(editMode ? "TCP 2 - RAMP EDITOR" : "TCP 2 - RAMP GENERATOR");
-			TCP2_GUI.HelpButton("Ramp Generator");
+			{
+				TCP2_GUI.HeaderBig(editMode ? "TCP 2 - RAMP EDITOR" : "TCP 2 - RAMP GENERATOR");
+				TCP2_GUI.HelpButton("Ramp Generator");
+			}
 			EditorGUILayout.EndHorizontal();
 			TCP2_GUI.Separator();
 
@@ -270,11 +276,11 @@ namespace ToonyColorsPro
 					//Update linked texture
 					if (editedTextureIs2d)
 					{
-						TCP2_GradientManager.SetPixelsFromGradients(linkedTexture, m2dGradients, linkedTexture.width, linkedTexture.height);
+						GradientManager.SetPixelsFromGradients(linkedTexture, m2dGradients, linkedTexture.width, linkedTexture.height);
 					}
 					else
 					{
-						var pixels = TCP2_GradientManager.GetPixelsFromGradient(mGradient, linkedTexture.width, linkedTexture.height);
+						var pixels = GradientManager.GetPixelsFromGradient(mGradient, linkedTexture.width, linkedTexture.height);
 						linkedTexture.SetPixels(pixels);
 						linkedTexture.Apply(true, false);
 					}
@@ -316,10 +322,10 @@ namespace ToonyColorsPro
 			EditorGUI.EndDisabledGroup();
 			if (saveButton)
 			{
-				var path = EditorUtility.SaveFilePanel("Save Generated Ramp", TCP2_GradientManager.LAST_SAVE_PATH, editMode ? linkedTexture.name : "TCP2_CustomRamp", "png");
+				var path = EditorUtility.SaveFilePanel("Save Generated Ramp", GradientManager.LAST_SAVE_PATH, editMode ? linkedTexture.name : "TCP2_CustomRamp", "png");
 				if (!string.IsNullOrEmpty(path))
 				{
-					TCP2_GradientManager.LAST_SAVE_PATH = Path.GetDirectoryName(path);
+					GradientManager.LAST_SAVE_PATH = Path.GetDirectoryName(path);
 					var projectPath = path.Replace(Application.dataPath, "Assets");
 					GenerateAndSaveTexture(projectPath, isRamp2d);
 
@@ -352,6 +358,8 @@ namespace ToonyColorsPro
 				}
 				EditorGUILayout.EndHorizontal();
 			}
+
+			TCP2_GUI.UseNewHelpIcon = false;
 		}
 
 		//--------------------------------------------------------------------------------------------------
@@ -379,10 +387,10 @@ namespace ToonyColorsPro
 
 		private void LoadTexture()
 		{
-			var path = EditorUtility.OpenFilePanel("TCP2 Gradient Texture", TCP2_GradientManager.LAST_SAVE_PATH, "png");
+			var path = EditorUtility.OpenFilePanel("TCP2 Gradient Texture", GradientManager.LAST_SAVE_PATH, "png");
 			if (!string.IsNullOrEmpty(path))
 			{
-				TCP2_GradientManager.LAST_SAVE_PATH = Path.GetDirectoryName(path);
+				GradientManager.LAST_SAVE_PATH = Path.GetDirectoryName(path);
 				var assetPath = path.Replace(Application.dataPath, "Assets");
 				var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
 				if (texture != null)
@@ -399,11 +407,11 @@ namespace ToonyColorsPro
 
 			if (is2dRamp)
 			{
-				TCP2_GradientManager.SaveGradientTexture2D(m2dGradients, textureWidth, textureHeight, path);
+				GradientManager.SaveGradientTexture2D(m2dGradients, textureWidth, textureHeight, path);
 			}
 			else
 			{
-				TCP2_GradientManager.SaveGradientTexture(mGradient, textureWidth, path);
+				GradientManager.SaveGradientTexture(mGradient, textureWidth, path);
 			}
 		}
 
@@ -417,11 +425,11 @@ namespace ToonyColorsPro
 				//Update linked texture userData
 				if (editedTextureIs2d)
 				{
-					linkedImporter.userData = TCP2_GradientManager.GradientToUserData(m2dGradients);
+					linkedImporter.userData = GradientManager.GradientToUserData(m2dGradients);
 				}
 				else
 				{
-					linkedImporter.userData = TCP2_GradientManager.GradientToUserData(mGradient);
+					linkedImporter.userData = GradientManager.GradientToUserData(mGradient);
 				}
 			}
 			textureIsDirty = false;

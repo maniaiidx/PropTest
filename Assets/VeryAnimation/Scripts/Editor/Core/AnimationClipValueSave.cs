@@ -64,15 +64,7 @@ namespace VeryAnimation
                     if (t == null)
                         continue;
 
-                    Component comp = null;
-                    try
-                    {
-                        comp = t.GetComponent(bindings[i].type);
-                    }
-                    catch
-                    {
-                        continue;
-                    }
+                    var comp = t.GetComponent(bindings[i].type);
                     if (comp == null)
                         continue;
 
@@ -112,15 +104,7 @@ namespace VeryAnimation
                     if (t == null)
                         continue;
 
-                    Component comp = null;
-                    try
-                    {
-                        comp = t.GetComponent(refBindings[i].type);
-                    }
-                    catch
-                    {
-                        continue;
-                    }
+                    var comp = t.GetComponent(refBindings[i].type);
                     if (comp == null)
                         continue;
 

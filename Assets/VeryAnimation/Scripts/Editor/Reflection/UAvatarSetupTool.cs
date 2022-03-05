@@ -3,19 +3,26 @@ using UnityEngine.Assertions;
 using UnityEditor;
 using UnityEditorInternal;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace VeryAnimation
 {
     public class UAvatarSetupTool
     {
-        private MethodInfo mi_SampleBindPose;
+        protected MethodInfo m_SampleBindPose;
+        protected MethodInfo m_GetModelBones;
+        protected MethodInfo m_GetHumanBones;
+        protected MethodInfo m_MakePoseValid;
 
         public UAvatarSetupTool()
         {
             var asmUnityEditor = Assembly.LoadFrom(InternalEditorUtility.GetEditorAssemblyPath());
             var avatarSetupToolType = asmUnityEditor.GetType("UnityEditor.AvatarSetupTool");
-            Assert.IsNotNull(mi_SampleBindPose = avatarSetupToolType.GetMethod("SampleBindPose", BindingFlags.Public | BindingFlags.Static));
+            Assert.IsNotNull(m_SampleBindPose = avatarSetupToolType.GetMethod("SampleBindPose", BindingFlags.Public | BindingFlags.Static));
+            Assert.IsNotNull(m_GetModelBones = avatarSetupToolType.GetMethod("GetModelBones", BindingFlags.Public | BindingFlags.Static));
+            m_GetHumanBones = avatarSetupToolType.GetMethod("GetHumanBones", new Type[] { typeof(SerializedObject), typeof(Dictionary<Transform, bool>) });
+            Assert.IsNotNull(m_MakePoseValid = avatarSetupToolType.GetMethod("MakePoseValid", BindingFlags.Public | BindingFlags.Static));
         }
 
         public bool SampleBindPose(GameObject go)
@@ -40,11 +47,43 @@ namespace VeryAnimation
             }
             try
             {
-                mi_SampleBindPose.Invoke(null, new object[] { go });
+                m_SampleBindPose.Invoke(null, new object[] { go });
             }
             catch
             {
                 Debug.LogError(Language.GetText(Language.Help.LogSampleBindPoseUnknownError));
+                return false;
+            }
+            return true;
+        }
+        public virtual bool SampleTPose(GameObject go)
+        {
+            try
+            {
+                var modelBones = m_GetModelBones.Invoke(null, new object[] { go.transform, false, null });
+                if (modelBones == null)
+                    return false;
+
+                object bones = null;
+                {
+                    var animator = go.GetComponent<Animator>();
+                    if (animator == null || animator.avatar == null)
+                        return false;
+                    var assetPath = AssetDatabase.GetAssetPath(animator.avatar);
+                    var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
+                    if (importer == null)
+                        return false;
+                    var so = new SerializedObject(importer);
+                    bones = m_GetHumanBones.Invoke(null, new object[] { so, modelBones });
+                    if (bones == null)
+                        return false;
+                }
+
+                m_MakePoseValid.Invoke(null, new object[] { bones });
+            }
+            catch
+            {
+                Debug.LogError(Language.GetText(Language.Help.LogSampleTPoseUnknownError));
                 return false;
             }
             return true;

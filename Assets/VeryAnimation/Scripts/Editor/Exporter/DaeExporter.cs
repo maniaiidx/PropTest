@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Globalization;
 using VeryAnimation.grendgine_collada;
 
 namespace VeryAnimation
@@ -52,6 +53,8 @@ namespace VeryAnimation
             }
             #endregion
 
+            var numberFormatInfo = CultureInfo.InvariantCulture.NumberFormat;
+
             try
             {
                 exportedFiles.Clear();
@@ -64,7 +67,7 @@ namespace VeryAnimation
 
                 Func<UnityEngine.Object, string> MakeID = (o) =>
                 {
-                    var id = o.GetInstanceID().ToString();
+                    var id = o.GetInstanceID().ToString(numberFormatInfo);
                     return id.Replace('-', 'n');
                 };
                 Func<Transform, Mesh> MeshFromTransform = (t) =>
@@ -146,7 +149,7 @@ namespace VeryAnimation
                     var sb = new StringBuilder();
                     for (int r = 0; r < 4; r++)
                         for (int c = 0; c < 4; c++)
-                            sb.AppendFormat("{0} ", mat[r, c]);
+                            sb.AppendFormat(numberFormatInfo, "{0} ", mat[r, c]);
                     sb.Remove(sb.Length - 1, 1);
                     MatrixIdentity.Value_As_String = sb.ToString();
                 }
@@ -237,7 +240,7 @@ namespace VeryAnimation
                             if (singleImage)
                                 texpath = path.Remove(path.Length - EXT.Length, EXT.Length) + EXT;
                             else
-                                texpath = string.Format("{0}/{1}_tex{2}{3}", Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path), imagesDic.Count, EXT);
+                                texpath = string.Format(numberFormatInfo, "{0}/{1}_tex{2}{3}", Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path), imagesDic.Count, EXT);
 
                             Texture2D tex2D = null;
                             bool created = false;
@@ -383,7 +386,7 @@ namespace VeryAnimation
                                     Color = new Grendgine_Collada_Color()
                                     {
                                         sID = "diffuse",
-                                        Value_As_String = string.Format("{0} {1} {2} {3}", color.r, color.g, color.b, color.a),
+                                        Value_As_String = string.Format(numberFormatInfo, "{0} {1} {2} {3}", color.r, color.g, color.b, color.a),
                                     },
                                 };
                             }
@@ -509,7 +512,7 @@ namespace VeryAnimation
                                 foreach (var v in mesh.vertices)
                                 {
                                     var mv = matMirrorX.MultiplyPoint(v);
-                                    sb.AppendFormat("\n{0} {1} {2}", mv.x, mv.y, mv.z);
+                                    sb.AppendFormat(numberFormatInfo, "\n{0} {1} {2}", mv.x, mv.y, mv.z);
                                 }
                                 array = new Grendgine_Collada_Float_Array()
                                 {
@@ -549,7 +552,7 @@ namespace VeryAnimation
                             {
                                 var sb = new StringBuilder();
                                 foreach (var uv in mesh.uv)
-                                    sb.AppendFormat("\n{0} {1}", uv.x, uv.y);
+                                    sb.AppendFormat(numberFormatInfo, "\n{0} {1}", uv.x, uv.y);
                                 array = new Grendgine_Collada_Float_Array()
                                 {
                                     ID = "UVArray_" + MakeID(mesh),
@@ -589,7 +592,7 @@ namespace VeryAnimation
                                 foreach (var n in mesh.normals)
                                 {
                                     var mn = matMirrorX.MultiplyVector(n);
-                                    sb.AppendFormat("\n{0} {1} {2}", mn.x, mn.y, mn.z);
+                                    sb.AppendFormat(numberFormatInfo, "\n{0} {1} {2}", mn.x, mn.y, mn.z);
                                 }
                                 array = new Grendgine_Collada_Float_Array()
                                 {
@@ -660,7 +663,7 @@ namespace VeryAnimation
                                 var sb = new StringBuilder();
                                 {
                                     for (int i = 0; i < ts.Length; i += 3)
-                                        sb.AppendFormat("\n{0} {0} {0} {1} {1} {1} {2} {2} {2}", ts[i + 0], ts[i + 2], ts[i + 1]);
+                                        sb.AppendFormat(numberFormatInfo, "\n{0} {0} {0} {1} {1} {1} {2} {2} {2}", ts[i + 0], ts[i + 2], ts[i + 1]);
                                 }
                                 triangles[subMesh] = new Grendgine_Collada_Triangles()
                                 {
@@ -739,7 +742,7 @@ namespace VeryAnimation
                             var sb = new StringBuilder();
                             for (int r = 0; r < 4; r++)
                                 for (int c = 0; c < 4; c++)
-                                    sb.AppendFormat("{0} ", mat[r, c]);
+                                    sb.AppendFormat(numberFormatInfo, "{0} ", mat[r, c]);
                             sb.Remove(sb.Length - 1, 1);
                             node.Matrix = new Grendgine_Collada_Matrix[]
                             {
@@ -863,9 +866,9 @@ namespace VeryAnimation
                             }
                             if (offset.sqrMagnitude <= 0f)
                                 enable = false;
-                            Data[0].InnerText = offset.x.ToString();
-                            Data[1].InnerText = offset.y.ToString();
-                            Data[2].InnerText = offset.z.ToString();
+                            Data[0].InnerText = offset.x.ToString(numberFormatInfo);
+                            Data[1].InnerText = offset.y.ToString(numberFormatInfo);
+                            Data[2].InnerText = offset.z.ToString(numberFormatInfo);
                         }
                         Grendgine_Collada_Node joint = new Grendgine_Collada_Node()
                         {
@@ -974,9 +977,9 @@ namespace VeryAnimation
                                     foreach (var bone in bones)
                                     {
                                         if (bone != null && jointsDic.ContainsKey(bone))
-                                            names.AppendFormat("\n{0}", jointsDic[bone].ID);
+                                            names.AppendFormat(numberFormatInfo, "\n{0}", jointsDic[bone].ID);
                                         else
-                                            names.AppendFormat("\n{0}", 0);
+                                            names.AppendFormat(numberFormatInfo, "\n{0}", 0);
                                     }
                                     Joints_Name_Array.Value_Pre_Parse = names.ToString();
                                 }
@@ -1021,9 +1024,9 @@ namespace VeryAnimation
                                             if (!weightList.Contains(boneWeights[i].weight0))
                                             {
                                                 weightList.Add(boneWeights[i].weight0);
-                                                sb.AppendFormat("\n{0}", boneWeights[i].weight0);
+                                                sb.AppendFormat(numberFormatInfo, "\n{0}", boneWeights[i].weight0);
                                             }
-                                            weightsVString.AppendFormat("\n{0} {1}", boneWeights[i].boneIndex0, weightList.IndexOf(boneWeights[i].weight0));
+                                            weightsVString.AppendFormat(numberFormatInfo, "\n{0} {1}", boneWeights[i].boneIndex0, weightList.IndexOf(boneWeights[i].weight0));
                                             count++;
                                         }
                                         if (boneWeights[i].weight1 > 0f)
@@ -1031,9 +1034,9 @@ namespace VeryAnimation
                                             if (!weightList.Contains(boneWeights[i].weight1))
                                             {
                                                 weightList.Add(boneWeights[i].weight1);
-                                                sb.AppendFormat("\n{0}", boneWeights[i].weight1);
+                                                sb.AppendFormat(numberFormatInfo, "\n{0}", boneWeights[i].weight1);
                                             }
-                                            weightsVString.AppendFormat(" {0} {1}", boneWeights[i].boneIndex1, weightList.IndexOf(boneWeights[i].weight1));
+                                            weightsVString.AppendFormat(numberFormatInfo, " {0} {1}", boneWeights[i].boneIndex1, weightList.IndexOf(boneWeights[i].weight1));
                                             count++;
                                         }
                                         if (boneWeights[i].weight2 > 0f)
@@ -1041,9 +1044,9 @@ namespace VeryAnimation
                                             if (!weightList.Contains(boneWeights[i].weight2))
                                             {
                                                 weightList.Add(boneWeights[i].weight2);
-                                                sb.AppendFormat("\n{0}", boneWeights[i].weight2);
+                                                sb.AppendFormat(numberFormatInfo, "\n{0}", boneWeights[i].weight2);
                                             }
-                                            weightsVString.AppendFormat(" {0} {1}", boneWeights[i].boneIndex2, weightList.IndexOf(boneWeights[i].weight2));
+                                            weightsVString.AppendFormat(numberFormatInfo, " {0} {1}", boneWeights[i].boneIndex2, weightList.IndexOf(boneWeights[i].weight2));
                                             count++;
                                         }
                                         if (boneWeights[i].weight3 > 0f)
@@ -1051,12 +1054,12 @@ namespace VeryAnimation
                                             if (!weightList.Contains(boneWeights[i].weight3))
                                             {
                                                 weightList.Add(boneWeights[i].weight3);
-                                                sb.AppendFormat("\n{0}", boneWeights[i].weight3);
+                                                sb.AppendFormat(numberFormatInfo, "\n{0}", boneWeights[i].weight3);
                                             }
-                                            weightsVString.AppendFormat(" {0} {1}", boneWeights[i].boneIndex3, weightList.IndexOf(boneWeights[i].weight3));
+                                            weightsVString.AppendFormat(numberFormatInfo, " {0} {1}", boneWeights[i].boneIndex3, weightList.IndexOf(boneWeights[i].weight3));
                                             count++;
                                         }
-                                        weightsVCountString.AppendFormat("\n{0}", count);
+                                        weightsVCountString.AppendFormat(numberFormatInfo, "\n{0}", count);
                                     }
                                     Weights_Float_Array.Count = weightList.Count;
                                     Weights_Float_Array.Value_As_String = sb.ToString();
@@ -1114,7 +1117,7 @@ namespace VeryAnimation
                                                                 scale);
                                         }
                                         for (int r = 0; r < 4; r++)
-                                            sb.AppendFormat("\n{0} {1} {2} {3}", mat[r, 0], mat[r, 1], mat[r, 2], mat[r, 3]);
+                                            sb.AppendFormat(numberFormatInfo, "\n{0} {1} {2} {3}", mat[r, 0], mat[r, 1], mat[r, 2], mat[r, 3]);
                                     }
                                     Inv_Bind_Mats_Float_Array.Count = bindposes.Length * 16;
                                     Inv_Bind_Mats_Float_Array.Value_As_String = sb.ToString();
@@ -1221,7 +1224,7 @@ namespace VeryAnimation
                                 {
                                     var names = new StringBuilder();
                                     {
-                                        names.AppendFormat("\n{0}", jointsDic[t].ID);
+                                        names.AppendFormat(numberFormatInfo, "\n{0}", jointsDic[t].ID);
                                     }
                                     Joints_Name_Array.Value_Pre_Parse = names.ToString();
                                 }
@@ -1269,12 +1272,12 @@ namespace VeryAnimation
                                             if (!weightList.Contains(weight0))
                                             {
                                                 weightList.Add(weight0);
-                                                sb.AppendFormat("\n{0}", weight0);
+                                                sb.AppendFormat(numberFormatInfo, "\n{0}", weight0);
                                             }
-                                            weightsVString.AppendFormat("\n{0} {1}", 0, index0);
+                                            weightsVString.AppendFormat(numberFormatInfo, "\n{0} {1}", 0, index0);
                                             count++;
                                         }
-                                        weightsVCountString.AppendFormat("\n{0}", count);
+                                        weightsVCountString.AppendFormat(numberFormatInfo, "\n{0}", count);
                                     }
                                     Weights_Float_Array.Count = weightList.Count;
                                     Weights_Float_Array.Value_As_String = sb.ToString();
@@ -1314,7 +1317,7 @@ namespace VeryAnimation
                                     {
                                         Matrix4x4 mat = Matrix4x4.identity;
                                         for (int r = 0; r < 4; r++)
-                                            sb.AppendFormat("\n{0} {1} {2} {3}", mat[r, 0], mat[r, 1], mat[r, 2], mat[r, 3]);
+                                            sb.AppendFormat(numberFormatInfo, "\n{0} {1} {2} {3}", mat[r, 0], mat[r, 1], mat[r, 2], mat[r, 3]);
                                     }
                                     Inv_Bind_Mats_Float_Array.Count = boneCount * 16;
                                     Inv_Bind_Mats_Float_Array.Value_As_String = sb.ToString();
@@ -1865,7 +1868,7 @@ namespace VeryAnimation
                                                     var sb = new StringBuilder();
                                                     for (int i = 0; i < frameTimes.Length; i++)
                                                     {
-                                                        sb.AppendFormat("\n{0}", frameTimes[i]);
+                                                        sb.AppendFormat(numberFormatInfo, "\n{0}", frameTimes[i]);
                                                     }
                                                     Input_Float_Array.Value_As_String = sb.ToString();
                                                 }
@@ -1923,7 +1926,7 @@ namespace VeryAnimation
                                                                                 scale);
                                                         }
                                                         for (int r = 0; r < 4; r++)
-                                                            sb.AppendFormat("\n{0} {1} {2} {3}", mat[r, 0], mat[r, 1], mat[r, 2], mat[r, 3]);
+                                                            sb.AppendFormat(numberFormatInfo, "\n{0} {1} {2} {3}", mat[r, 0], mat[r, 1], mat[r, 2], mat[r, 3]);
                                                     }
                                                     Output_Float_Array.Value_As_String = sb.ToString();
                                                 }
@@ -1963,7 +1966,7 @@ namespace VeryAnimation
                                                     var sb = new StringBuilder();
                                                     for (int i = 0; i < frameTimes.Length; i++)
                                                     {
-                                                        sb.AppendFormat("\n{0}", "LINEAR");
+                                                        sb.AppendFormat(numberFormatInfo, "\n{0}", "LINEAR");
                                                     }
                                                     Interpolation_Name_Array.Value_Pre_Parse = sb.ToString();
                                                 }
@@ -2084,15 +2087,15 @@ namespace VeryAnimation
                                     var Doc = new System.Xml.XmlDocument();
                                     var frame_rate = Doc.CreateElement("frame_rate");
                                     {
-                                        frame_rate.InnerText = tmpClip.frameRate.ToString();
+                                        frame_rate.InnerText = tmpClip.frameRate.ToString(numberFormatInfo);
                                     }
                                     var start_time = Doc.CreateElement("start_time");
                                     {
-                                        start_time.InnerText = 0f.ToString();
+                                        start_time.InnerText = 0f.ToString(numberFormatInfo);
                                     }
                                     var end_time = Doc.CreateElement("end_time");
                                     {
-                                        end_time.InnerText = totalTime.ToString();
+                                        end_time.InnerText = totalTime.ToString(numberFormatInfo);
                                     }
                                     gCollada.Library_Visual_Scene.Visual_Scene[0].Extra = new Grendgine_Collada_Extra[]
                                     {
@@ -2163,7 +2166,8 @@ namespace VeryAnimation
                             #region ModelImporter
                             var modelImporter = importer as ModelImporter;
                             modelImporter.animationType = settings_animationType;
-                            modelImporter.sourceAvatar = sourceAvatar;
+                            if (settings_animationType == ModelImporterAnimationType.Generic || settings_animationType == ModelImporterAnimationType.Human)
+                                modelImporter.sourceAvatar = sourceAvatar;
                             if (clips != null)
                             {
                                 if (sourceObjects.ContainsKey(p))
@@ -2477,7 +2481,8 @@ namespace VeryAnimation
                             #endregion
                         }
                     }
-                    AssetDatabase.Refresh();
+                    if (settings_AssetDatabaseRefresh)
+                        AssetDatabase.Refresh();
                 }
                 #endregion
             }
@@ -2503,6 +2508,8 @@ namespace VeryAnimation
         public ModelImporterAnimationType settings_animationType;
         public Avatar settings_avatar;
         public string settings_motionNodePath;
+
+        public bool settings_AssetDatabaseRefresh = true;
         #endregion
 
         public List<string> exportedFiles = new List<string>();

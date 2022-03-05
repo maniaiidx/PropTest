@@ -139,7 +139,6 @@ namespace VeryAnimation
 
             public HierarchyTreeView(TreeViewState state) : base(state)
             {
-                showBorder = true;
                 extraSpaceBeforeIconAndLabel = 18f;
             }
 
@@ -695,6 +694,24 @@ namespace VeryAnimation
                     {
                         guiAnimatorIkHelp = !guiAnimatorIkHelp;
                     }
+#if VERYANIMATION_ANIMATIONRIGGING
+                    if (EditorGUILayout.DropdownButton(vaw.uEditorGUI.GetTitleSettingsIcon(), FocusType.Passive, vaw.guiStyleIconButton, GUILayout.Width(19)))
+                    {
+                        var rigEnable = va.animationRigging.isValid;
+                        GenericMenu menu = new GenericMenu();
+                        menu.AddItem(Language.GetContent(Language.Help.AnimatorIKAnimationRiggingEnable), rigEnable, () =>
+                        {
+                            Undo.RecordObject(vaw, "Animation Rigging Enable");
+                            va.animationRigging.Enable();
+                        });
+                        menu.AddItem(Language.GetContent(Language.Help.AnimatorIKAnimationRiggingDisable), !rigEnable, () =>
+                        {
+                            Undo.RecordObject(vaw, "Animation Rigging Disable");
+                            va.animationRigging.Disable();
+                        });
+                        menu.ShowAsContext();
+                    }
+#endif
                 }
                 EditorGUILayout.EndHorizontal();
                 {
@@ -1280,12 +1297,13 @@ namespace VeryAnimation
                     {
                         GUILayout.Space(2f);
                     }
+                    HierarchyToolBarGUI();
                     {
                         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
                         hierarchyTreeView.searchString = hierarchyTreeSearchField.OnToolbarGUI(hierarchyTreeView.searchString);
+                        EditorGUILayout.LabelField(new GUIContent(string.Format("{0} / {1}", va.boneShowCount, va.boneShowFlags.Length), "Show / All"), vaw.guiStyleMiddleRightMiniLabel, GUILayout.Width(60f));
                         EditorGUILayout.EndHorizontal();
                     }
-                    HierarchyToolBarGUI();
                     {
                         var rect = EditorGUILayout.GetControlRect(false, 0);
                         rect.height = Math.Max(position.height - rect.y, 0);
@@ -1351,7 +1369,6 @@ namespace VeryAnimation
                         if (va.selectionSetList != null)
                         {
                             selectionSetList = new ReorderableList(va.selectionSetList, typeof(VeryAnimationSaveSettings.SelectionData), true, true, true, true);
-                            selectionSetList.elementHeight = 20;
                             selectionSetList.drawHeaderCallback = (Rect rect) =>
                             {
                                 float x = rect.x;
@@ -1419,12 +1436,10 @@ namespace VeryAnimation
                                 va.SelectGameObjects(va.selectionSetList[list.index].bones, va.selectionSetList[list.index].virtualBones);
                                 InternalEditorUtility.RepaintAllViews();
                             };
-#if UNITY_2017_1_OR_NEWER
                             selectionSetList.onCanAddCallback = (ReorderableList list) =>
                             {
                                 return (va.selectionGameObjects != null && va.selectionGameObjects.Count > 0) || (va.selectionHumanVirtualBones != null && va.selectionHumanVirtualBones.Count > 0);
                             };
-#endif
                             selectionSetList.onAddCallback = (ReorderableList list) =>
                             {
                                 if ((va.selectionGameObjects == null || va.selectionGameObjects.Count <= 0) && (va.selectionHumanVirtualBones == null || va.selectionHumanVirtualBones.Count <= 0))
