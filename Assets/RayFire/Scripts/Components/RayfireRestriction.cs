@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace RayFire
 {
@@ -30,14 +32,14 @@ namespace RayFire
             Outside = 2
         }
         
-        public                   bool               enable;
-        public                   RFBoundActionType  breakAction;
-        public                   float              actionDelay;
-        public                   float              checkInterval;
-        public                   float              distance;
-        public                   RFDistanceType     position;
-        public                   Transform          target; 
-        public Collider Collider;
+        public bool               enable;
+        public RFBoundActionType  breakAction;
+        public float              actionDelay;
+        public float              checkInterval;
+        public float              distance;
+        public RFDistanceType     position;
+        public Transform          target; 
+        public Collider           Collider;
         public RFBoundTriggerType region;
 
         public bool broke;
@@ -84,6 +86,14 @@ namespace RayFire
         public void Reset()
         {
             broke = false;
+        }
+
+        void Awake()
+        {
+            // Set rigid
+            RayfireRigid rigid = GetComponent<RayfireRigid>();
+            if (rigid != null)
+                rigid.restriction = this;
         }
 
         /// /////////////////////////////////////////////////////////

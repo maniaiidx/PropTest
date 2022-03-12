@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
-
 
 namespace RayFire
 {
-    [Serializable]
+    //[Serializable]
     public class RFTriangle
     {
         public int       id;
@@ -14,52 +12,57 @@ namespace RayFire
         public Vector3   pos;
         public List<int> neibs;
 
+        static int[]     triangles;
+        static Vector3[] vertices;
+        static Vector3[] normals;
+
         // Constructor
-        public RFTriangle (int Id, float Area, Vector3 Normal, Vector3 Pos)
+        RFTriangle (float Area, Vector3 Normal, Vector3 Pos)
         {
-            id     = Id;
             area   = Area;
             normal = Normal;
             pos    = Pos;
-            neibs  = new List<int>();
         }
 
         // Set mesh triangles
-        public static void SetTriangles (RFShard shard, MeshFilter mf)
+        public static void SetTriangles (RFShard shard)
         {
             // Check if triangles already calculated
             if (shard.tris != null)
                 return;
-
-            // Debug.Log (mf);
             
             // Cached Vars
-            int[] triangles = mf.sharedMesh.triangles;
-            Vector3[] vertices = mf.sharedMesh.vertices;
+            triangles = shard.mf.sharedMesh.triangles;
+            vertices  = shard.mf.sharedMesh.vertices;
+            normals   = shard.mf.sharedMesh.normals;
             
             // Collect tris
-            int i1, i2, i3;
-            Vector3 v1, v2, v3, cross, pos;
+            int v1, v2, v3;
+            Vector3 p1, p2, p3, cross, pos;
             shard.tris = new List<RFTriangle>();
             for (int i = 0; i < triangles.Length; i += 3)
             {
                 // Vertex indexes
-                i1 = triangles[i];
-                i2 = triangles[i + 1];
-                i3 = triangles[i + 2];
+                v1 = triangles[i];
+                v2 = triangles[i + 1];
+                v3 = triangles[i + 2];
 
                 // Get vertices position and area
-                v1    = shard.tm.TransformPoint (vertices[i1]);
-                v2    = shard.tm.TransformPoint (vertices[i2]);
-                v3    = shard.tm.TransformPoint (vertices[i3]);
-                cross = Vector3.Cross (v1 - v2, v1 - v3);
+                p1    = shard.tm.TransformPoint (vertices[v1]);
+                p2    = shard.tm.TransformPoint (vertices[v2]);
+                p3    = shard.tm.TransformPoint (vertices[v3]);
+                cross = Vector3.Cross (p1 - p2, p1 - p3);
 
                 // Set position
-                pos = (v1 + v2 + v3) / 3f;
+                pos = (p1 + p2 + p3) / 3f;
 
                 // Create triangle and collect it
-                shard.tris.Add (new RFTriangle (i / 3, (cross.magnitude * 0.5f), mf.sharedMesh.normals[i1], pos));
+                shard.tris.Add (new RFTriangle ((cross.magnitude * 0.5f), normals[v1], pos));
             }
+
+            triangles = null;
+            vertices  = null;
+            normals   = null;
         }
         
         // Clear

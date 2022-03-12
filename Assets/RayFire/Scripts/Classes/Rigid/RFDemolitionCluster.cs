@@ -14,66 +14,32 @@ namespace RayFire
             WorldUnits  = 3
         }
 
-        [Header ("  Properties")]
-        [Space (3)]
-        
-        [Tooltip ("Defines Connectivity algorithm for clusters.")]
+
         public ConnectivityType connectivity; 
+        public float            minimumArea;
+        public float            minimumSize;
+        public int              percentage;
+        public int              seed;
+        public RFDetachType     type;
+        public int              ratio;
+        public float            units;
+        public int              shardArea;
+        public bool             shardDemolition;
+        public int              minAmount;
+        public int              maxAmount;
+        public bool             demolishable;
+        public RFCollapse       collapse;
         
-        [Header ("  Connection Filters")]
-        [Space (3)]
-
-        [Range (0, 1f)] public float minimumArea;
-        [Space (2)]
-        [Range (0, 10f)] public float minimumSize;
-        [Space (2)]
-        [Range (0, 100)] public int percentage;
-        [Space (2)]
-        [Range (0, 100)] public int seed;
-        
-        [Header ("  Demolition Distance")]
-        [Space (3)]
-
-        public RFDetachType type;
-        
-        [Space (2)]
-        [Tooltip ("Defines distance from contact point in percentage relative to object's size which will be detached at contact.")]
-        [Range (1, 100)] public int ratio;
-        [Space (2)]
-        [Range (0, 10)]  public float units;
-
-        [Header ("  Shards")]
-        [Space (3)]
-
-        [Range (0, 100)] public int shardArea;
-        [Space (2)]
-        public bool shardDemolition;
-        
-        [Header ("  Clusters")]
-        [Space (3)]
-        
-        [Range (2, 20)] public int minAmount;
-        [Space (2)]
-        [Range (2, 20)] public int maxAmount;
-        [Space (2)]
-        public bool demolishable;
-        
-        [Header ("  Collapse")]
-        [Space (3)]
-        
-        public RFCollapse collapse;
-        
-        [HideInInspector] public int             clsCount;
-        [HideInInspector] public RFCluster       cluster;
-        [HideInInspector] public List<RFCluster> minorClusters;
-        [HideInInspector] public bool            cn;
-        [HideInInspector] public bool            nd;
-        [HideInInspector] public int             am; // initial amount, for amount integrity getter
+        public int              clsCount;
+        public RFCluster        cluster;
+        public List<RFCluster>  minorClusters;
+        public bool             cn;
+        public bool             nd;
+        public int              am; // initial amount, for amount integrity getter
         
         [NonSerialized] public RFBackupCluster backup;
         [NonSerialized] public float           damageRadius;
         
-        //[NonSerialized] public float           scaleFactor;
         //[NonSerialized] public int             edgeShardArea;
         
         // New cluster name appendix
@@ -96,7 +62,6 @@ namespace RayFire
             units       = 1f;
 
             shardArea       = 100;
-            //scaleFactor     = 1f;
             shardDemolition = false;
             //edgeShardArea   = 0;
 
@@ -128,7 +93,6 @@ namespace RayFire
             
             shardArea       = demolition.shardArea;
             shardDemolition = demolition.shardDemolition;
-            //scaleFactor     = demolition.scaleFactor;
 
             maxAmount       = demolition.maxAmount;
             minAmount       = demolition.minAmount;
@@ -556,15 +520,8 @@ namespace RayFire
             RFPhysic.SetFragmentsVelocity (scr);
             
             // Fading
-            if (scr.fading.onDemolition == true)
-            {
-                // Fading for detached fragments and child clusters
-                scr.fading.DemolitionFade (scr.fragments);
-                
-                // Self fade for main cluster
-                scr.Fade();
-            }
-
+            RFFade.FadeClusterShards(scr, detachShards);
+            
             // Init particles
             RFParticles.InitDemolitionParticles(scr);
             
@@ -1363,10 +1320,6 @@ namespace RayFire
             
             // Update depth level and amount
             shard.rigid.limitations.currentDepth = scr.limitations.currentDepth + 1;
-
-            // Scale factor
-            //if (scr.clusterDemolition.scaleFactor != 1f)
-            //    shard.rigid.transform.localScale *= scr.clusterDemolition.scaleFactor;
             
             // Turn on
             shard.rigid.Initialize();

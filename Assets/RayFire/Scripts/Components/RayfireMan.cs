@@ -11,7 +11,7 @@ namespace RayFire
     {
         public static RayfireMan             inst;
         public static int                    buildMajor = 1;
-        public static int                    buildMinor = 47;
+        public static int                    buildMinor = 48;
         public        bool                   setGravity;
         public        float                  multiplier         = 1f;
         public        RigidbodyInterpolation interpolation      = RigidbodyInterpolation.None;

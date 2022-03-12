@@ -27,7 +27,7 @@ namespace RayFire
             // TODO check vars by type: slice list, etc
             
             // Min face filter for internal slice ops
-            int minFaceFilter = 4;
+            int removeMinFaceFilter = 4;
             
             // Turn off fast mode for tets and slices:
             // 0:classic:      Custom, tets, clustering: old original algorithm. 
@@ -48,7 +48,7 @@ namespace RayFire
             if (scrShatter.type == FragType.Slices)
             {
                 fragmentMode  = FragmentMode.Runtime;
-                minFaceFilter = 1;
+                removeMinFaceFilter = 1;
             }
             
             // Set up shatter
@@ -67,7 +67,7 @@ namespace RayFire
                 scrShatter.advanced.inner,
                 scrShatter.advanced.smooth,
                 scrShatter.advanced.elementSizeThreshold,
-                minFaceFilter,
+                removeMinFaceFilter,
                 scrShatter.advanced.postWeld);
             
             // Failed input
@@ -106,6 +106,7 @@ namespace RayFire
                 ref origSubMeshIds, 
                 scrShatter);
             
+            // TODO GCALLOC
             // Create RF dictionary
             origSubMeshIdsRf = new List<RFDictionary>();
             for (int i = 0; i < origSubMeshIds.Count; i++)
@@ -123,9 +124,11 @@ namespace RayFire
             // Filter out meshes by size
             RemoveBySize (ref meshes, ref pivots, ref origSubMeshIdsRf, scrShatter);
             
-            // Set name
+            // TODO GCALLOC
+            // Set name 
+            string nameApp = scrShatter.name + "_";
             for (int i = 0; i < meshes.Length; i++)
-                meshes[i].name = scrShatter.name + "_" + i;
+                meshes[i].name = nameApp + i;
         }
 
         // Filter out planar meshes
@@ -249,8 +252,9 @@ namespace RayFire
                     false,
                     false,
                     false,
-                    3,
-                    4);
+                    3, // RemoveMinFaceFilter
+                    4,
+                    true);
             }
             
             // Failed input. Instant bad mesh.
@@ -344,6 +348,8 @@ namespace RayFire
                 scrRigid.meshDemolition.badMesh++;
                 Debug.Log("Bad mesh: " + scrRigid.name);
             }
+            
+            // TODO GCALLOC
             else
                 for (int i = 0; i < meshes.Length; i++)
                     meshes[i].name = scrRigid.name + "_" + i;
@@ -397,8 +403,9 @@ namespace RayFire
                 false,
                 false,
                 false,
-                3,
-                1);
+                3, // RemoveMinFaceFilter
+                1,
+                true);
 
             // Debug.Log ("slice");
             
@@ -524,6 +531,10 @@ namespace RayFire
             for (int i = 0; i < meshes.Length; i++)
             {
                 meshes[i].RecalculateTangents();
+                // meshes[i].SetUVs (3, meshes[i].uv.ToList());
+                //meshes[i].SetUVs (7, meshes[i].uv.ToList());
+                // Debug.Log (meshes[i].uv8.Length);
+                // Debug.Log (meshes[i].uv8[0]);
             }
 
             return true;
@@ -691,16 +702,16 @@ namespace RayFire
             Transform    transform,     
             RFSurface    interior, 
             bool         decompose,     
-            bool         deleteCol,      
-            int          seed          = 1,
-            bool         preCap        = true, 
-            bool         remCap        = false, 
-            bool         remDbl        = true, 
-            bool         inner         = false, 
-            bool         smooth        = false,
-            int          percSize      = 3,
-            int          minFaceFilter = 4,
-            bool         postWeld      = true
+            bool         delete_collinear               = false,      
+            int          seed                           = 1,
+            bool         pre_cap                        = true, 
+            bool         remove_cap_faces               = false, 
+            bool         remove_double_faces            = true, 
+            bool         exclude_inside                 = false, 
+            bool         post_normals_smooth            = false,
+            int          min_bbox_diag_size_filter_perc = 3,
+            int          meshRemoveMinFaceFilter        = 4,
+            bool         postWeld                       = true
             )
         {
             // Creating shatter
@@ -709,12 +720,12 @@ namespace RayFire
             // Safe/unsafe properties
             if (fragmentMode == FragmentMode.Editor)
             {
-                float sizeFilter = mesh.bounds.size.magnitude * percSize / 100f; // TODO check render bound size
-                SetShatterEditorMode(shatter, sizeFilter, preCap, remCap, remDbl, inner, minFaceFilter);
+                float min_bbox_diag_size_filter = mesh.bounds.size.magnitude * min_bbox_diag_size_filter_perc / 100f; // TODO check render bound size
+                SetShatterEditorMode(shatter, min_bbox_diag_size_filter, pre_cap, remove_cap_faces, remove_double_faces, exclude_inside, meshRemoveMinFaceFilter);
             }
             else
             {
-                SetShatterRuntimeMode (shatter, preCap, minFaceFilter);
+                SetShatterRuntimeMode (shatter, pre_cap, meshRemoveMinFaceFilter);
             }
 
             // Detach by elements
@@ -730,8 +741,8 @@ namespace RayFire
             // Set properties
             shatter.SetFragmentParameter(RFShatter.FragmentParams.seed, seed);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.pre_weld_threshold,  0.001f);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.delete_collinear,    deleteCol);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.post_normals_smooth, smooth);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.delete_collinear,    delete_collinear);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.post_normals_smooth, post_normals_smooth);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.post_weld,           false);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.maping_scale,        interior.mappingScale);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.restore_normals,     true);
@@ -750,31 +761,37 @@ namespace RayFire
         }
 
         // Set Shatter Editor Mode properties
-        static void SetShatterEditorMode(RFShatter shatter, float sizeFilter, bool preCap, bool remCap, bool remDbl, bool exInside, int minFaceFilter)
+        static void SetShatterEditorMode(
+            RFShatter shatter, 
+            float min_bbox_diag_size_filter, 
+            bool pre_cap, 
+            bool remove_cap_faces, 
+            bool remove_double_faces, 
+            bool exclude_inside, 
+            int  meshRemoveMinFaceFilter)
         {
             shatter.EditorMode(true);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_pre_cap,                          preCap);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_remove_cap_faces,                 remCap);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_pre_cap,                          pre_cap);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_remove_cap_faces,                 remove_cap_faces);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_separate_only,                    false);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_elliminateCollinears_maxIterFuse, 150);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_min_bbox_diag_size_filter,        sizeFilter);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_exclude_inside,                   exInside);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_remove_double_faces,              remDbl);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_remove_inversed_double_faces,     remDbl);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_min_bbox_diag_size_filter,        min_bbox_diag_size_filter);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_exclude_inside,                   exclude_inside);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_remove_double_faces,              remove_double_faces);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_remove_inversed_double_faces,     remove_double_faces);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.minFacesFilter,                               0);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_meshRemoveMinFaceFilter,          minFaceFilter);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.editor_mode_meshRemoveMinFaceFilter,          meshRemoveMinFaceFilter); // Minimum amount of triangles for element to be fragmented, will be removed otherwise
         }
         
-        
         // Set Shatter Runtime Mode properties
-        static void SetShatterRuntimeMode(RFShatter shatter, bool preCap, int minFaceFilter)
+        static void SetShatterRuntimeMode(RFShatter shatter, bool pre_cap, int meshRemoveMinFaceFilter)
         {
             shatter.EditorMode(false);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.pre_shatter,             true);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.pre_cap,                 preCap);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.pre_cap,                 pre_cap);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.pre_weld,                true);
             shatter.SetGeneralParameter(RFShatter.GeneralParams.minFacesFilter,          3);
-            shatter.SetGeneralParameter(RFShatter.GeneralParams.meshRemoveMinFaceFilter, minFaceFilter);
+            shatter.SetGeneralParameter(RFShatter.GeneralParams.meshRemoveMinFaceFilter, meshRemoveMinFaceFilter);
         }
         
         /// /////////////////////////////////////////////////////////

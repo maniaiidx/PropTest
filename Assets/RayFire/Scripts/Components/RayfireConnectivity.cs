@@ -57,6 +57,8 @@ namespace RayFire
         [NonSerialized]        bool            connectivityCorState;
         [NonSerialized]        bool            corState;
 
+        public RFConnectivityEvent connectivityEvent = new RFConnectivityEvent();
+        
         /// /////////////////////////////////////////////////////////
         /// Common
         /// ///////////////////////////////////////////////////////// 
@@ -332,10 +334,8 @@ namespace RayFire
                 SetExpand();
 
                 // Set faces data for connectivity
-                if (type == ConnectivityType.ByMesh || type == ConnectivityType.ByBoundingBoxAndMesh)
-                    for (int i = 0; i < cluster.shards.Count; i++)
-                        RFTriangle.SetTriangles(cluster.shards[i], cluster.shards[i].mf); 
-                
+                RFShard.SetMeshData (cluster.shards, type);
+
                 // Set shard neibs
                 RFShard.SetShardNeibs (cluster.shards, type, minimumArea, minimumSize, percentage, seed);
                 
@@ -361,7 +361,9 @@ namespace RayFire
         void SetExpand()
         {
             if (expand > 0)
-                if (type == ConnectivityType.ByBoundingBox || type == ConnectivityType.ByBoundingBoxAndMesh)
+                if (type == ConnectivityType.ByBoundingBox || 
+                    type == ConnectivityType.ByBoundingBoxAndTriangles ||
+                    type == ConnectivityType.ByBoundingBoxAndPolygons )
                     for (int i = 0; i < cluster.shards.Count; i++)
                         cluster.shards[i].bnd.Expand (expand);
         }
@@ -611,6 +613,13 @@ namespace RayFire
         // Activate solo shards or/and clusterize not connected groups
         void ActivateShards(List<RFShard> soloShards)
         {
+            // Event
+            if (soloShards.Count > 0 || cluster.HasChildClusters == true)
+            {
+                connectivityEvent.InvokeLocalEvent (this);
+                RFConnectivityEvent.InvokeGlobalEvent (this);  
+            }
+            
             // Activate not connected shards. 
             if (soloShards.Count > 0)
                 for (int i = 0; i < soloShards.Count; i++)

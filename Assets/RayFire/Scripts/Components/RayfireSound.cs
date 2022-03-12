@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace RayFire
 {
@@ -36,13 +37,36 @@ namespace RayFire
             minimumSize    = 0f;
             cameraDistance = 0;
         }
+
+        // Start
+        void Start()
+        {
+            SetComponents();
+        }
         
+        // Initialize 
+        void SetComponents()
+        {
+            // Set rigid
+            rigid = GetComponent<RayfireRigid>();
+            if (rigid != null)
+                rigid.sound = this;
+            
+            // Set rigidroot
+            rigidRoot = GetComponent<RayfireRigidRoot>();
+            if (rigidRoot != null)
+                rigidRoot.sound = this;
+            
+            // Checks
+            WarningCheck();
+        }
+
         /// /////////////////////////////////////////////////////////
         /// Methods
         /// ///////////////////////////////////////////////////////// 
-
+        
         // Initialize
-        public void WarningCheck()
+        void WarningCheck()
         {
             if (rigid == null && rigidRoot == null)
                 Debug.Log ("RayFire Sound: " + name + " Warning. Sound component has no attached Rigid or RigidRoot component", gameObject);

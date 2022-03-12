@@ -8,52 +8,17 @@ namespace RayFire
     [Serializable]
     public class RFActivation
     {
-        [Header ("  Activation")]
-        [Space (3)]
-        
-        [Tooltip ("Activation By Local Offset relative to parent.")]
         public bool local;
-        
-        [Space (1)]
-        [Tooltip ("Inactive object will be activated if will be pushed from it's original position farther than By Offset value.")]
         public float byOffset;
-        
-        [Space (3)]
-        [Tooltip ("Inactive object will be activated when it's velocity will be higher than By Velocity value when pushed by other dynamic objects.")]
         public float byVelocity;
-        
-        [Space (1)]
-        [Tooltip ("Inactive object will be activated if will get total damage higher than this value.")]
         public float byDamage;
-
-        [Space (1)]
-        [Tooltip ("Inactive object will be activated by overlapping with object with RayFire Activator component.")]
         public bool byActivator;
-
-        [Space (1)]
-        [Tooltip ("Inactive object will be activated when it will be shot by RayFireGun component.")]
         public bool byImpact;
-
-        [Space (1)]
-        [Tooltip ("Inactive object will be activated by Connectivity component if it will not be connected with Unyielding zone.")]
         public bool byConnectivity;
-
-        [Header ("  Connectivity")]
-        [Space (3)]
-        [Tooltip ("Allows to define Inactive/Kinematic object as Unyielding to check for connection with other Inactive/Kinematic objects with enabled By Connectivity activation type.")]
         public bool unyielding;
-        [Space (1)]
-        [Tooltip ("Unyielding object can not be activate by default. When On allows to activate Unyielding objects as well.")]
         public bool activatable;
-
-        [Header ("  Post Activation")]
-        [Space (2)]
-		
-        [Tooltip ("Custom layer for fragments")]
         public string layer;
-        
-        // Nom serialized
-        [HideInInspector] public RayfireConnectivity connect;
+        public RayfireConnectivity connect;
         
         [NonSerialized] public bool                activated;
         [NonSerialized] public bool                inactiveCorState;

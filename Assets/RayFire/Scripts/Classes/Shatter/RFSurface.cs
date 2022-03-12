@@ -9,9 +9,8 @@ namespace RayFire
         public Material innerMaterial;
         public float    mappingScale;
         public Material outerMaterial;
-        [HideInInspector] public bool needNewMat;
-
-
+        public bool needNewMat;
+        
         // static public Material[] newMaterials;
                     
         /// /////////////////////////////////////////////////////////

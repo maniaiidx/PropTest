@@ -148,4 +148,27 @@ namespace RayFire
                 LocalEvent.Invoke(blade);
         }
     }
+    
+    // Connectivity Event
+    public class RFConnectivityEvent
+    {
+        // Delegate & events
+        public delegate void            EventAction(RayfireConnectivity connectivity);
+        public static event EventAction GlobalEvent;
+        public event        EventAction LocalEvent;
+       
+        // Global
+        public static void InvokeGlobalEvent(RayfireConnectivity connectivity)
+        {
+            if (GlobalEvent != null)
+                GlobalEvent.Invoke(connectivity);
+        }
+        
+        // Local
+        public void InvokeLocalEvent(RayfireConnectivity connectivity)
+        {
+            if (LocalEvent != null)
+                LocalEvent.Invoke(connectivity);
+        }
+    }
 }

@@ -78,7 +78,6 @@ namespace RayFire
     [Serializable]
     public class RFDemolitionMesh
     {
-        // Mesh input types
         public enum MeshInputType
         {
             //InEditor         = 0,
@@ -87,52 +86,16 @@ namespace RayFire
             AtDemolition     = 9
         }
 
-            [Header ("  Fragments")]
-            [Space (3)]
-
-        [Tooltip ("Defines amount of new fragments after demolition.")]
-        [Range (2, 300)]
         public int amount;
-
-        [Space (2)]
-        [Tooltip ("Defines additional amount variation for object in percents.")]
-        [Range (0, 100)]
         public int variation;
-
-        [Space (2)]
-        [Tooltip ("Amount multiplier for next Depth level. Allows to decrease fragments amount of every next demolition level.")]
-        [Range (0.01f, 1f)]
         public float depthFade;
-
-        [Space (3)]
-        [Tooltip ("Higher value allows to create more tiny fragments closer to collision contact point and bigger fragments far from it.")]
-        [Range (0f, 1f)]
         public float contactBias;
-
-        [Space (2)]
-        [Tooltip ("Defines Seed for fragmentation algorithm. Same Seed will produce same fragments for same object every time.")]
-        [Range (0, 50)]
         public int seed;
-
-        [Tooltip ("Allows to use RayFire Shatter properties for fragmentation. Works only if object has RayFire Shatter component.")]
         public bool useShatter;
-
-            [Header ("  Advanced")]
-            [Space (3)]
-
         public bool clusterize;
-        [Space (3)]
-
         public FragSimType simType;
-        [Space (3)]
-
-        [Tooltip ("Allows to decrease runtime demolition time for mid and hi poly objects.")]
         public MeshInputType meshInput;
-        [Space (3)]
-
         public RFFragmentProperties properties;
-        [Space (3)]
-
         public RFRuntimeCaching runtimeCaching;
 
         // Non serialized
@@ -146,9 +109,9 @@ namespace RayFire
 
 
         // TODO MOve to non serialized
-        [HideInInspector] public Mesh           mesh;
-        [HideInInspector] public RFShatter      rfShatter;
-        [HideInInspector] public RayfireShatter scrShatter;
+        public Mesh           mesh;
+        public RFShatter      rfShatter;
+        public RayfireShatter scrShatter;
 
         static string fragmentStr = "_fr_";
 
@@ -570,7 +533,7 @@ namespace RayFire
             // Vars 
             int    baseLayer = scr.meshDemolition.GetLayer(scr);
             string baseTag   = scr.gameObject.tag;
-            string baseName  = scr.gameObject.name + fragmentStr;
+            string baseName  = scr.gameObject.name + "_";
 
             // Get original mats
             Material[] mats = scr.skinnedMeshRend != null
@@ -616,10 +579,7 @@ namespace RayFire
 
                 // Update depth level and amount
                 rfScr.limitations.currentDepth = scr.limitations.currentDepth + 1;
-                //rfScr.meshDemolition.amount = (int)(rfScr.meshDemolition.amount * rfScr.meshDemolition.depthFade);
-                //if (rfScr.meshDemolition.amount < 2)
-                //    rfScr.meshDemolition.amount = 2;
-                
+
                 // Disable outer mat for depth fragments.
                 if (rfScr.limitations.currentDepth >= 1)
                     rfScr.materials.outerMaterial = null;
@@ -634,7 +594,10 @@ namespace RayFire
                 // Add in array
                 scrArray.Add (rfScr);
             }
-
+            
+            // Set root to manager
+            RayfireMan.SetParentByManager (scr.rootChild);
+            
             // Empty lists
             scr.DeleteCache();
 
@@ -865,6 +828,11 @@ namespace RayFire
                     childScr = child.gameObject.AddComponent<RayfireRigid>();
                     childScr.initialization = RayfireRigid.InitType.ByMethod;
                     scr.CopyPropertiesTo (childScr);
+                    
+                    // Enable use shatter
+                    childScr.meshDemolition.scrShatter = child.GetComponent<RayfireShatter>();
+                    if (childScr.meshDemolition.scrShatter != null)
+                        childScr.meshDemolition.useShatter = true;
                 }
                 
                 // Set custom fragment simulation type if not inherited
@@ -879,8 +847,8 @@ namespace RayFire
                 // Update depth level and amount
                 childScr.limitations.currentDepth = scr.limitations.currentDepth + 1;
                 
-                Debug.Log (scr.name, scr.gameObject);
-                Debug.Log (scr.objectType, scr.gameObject);
+                //Debug.Log (childScr.name,                      scr.gameObject);
+                //Debug.Log (childScr.meshDemolition.useShatter, scr.gameObject);
                 
                 // Collect
                 scr.fragments.Add (childScr);

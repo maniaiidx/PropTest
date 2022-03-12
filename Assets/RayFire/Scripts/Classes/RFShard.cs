@@ -52,6 +52,7 @@ namespace RayFire
         
         // Need only during calc to set neib data
         [NonSerialized] public List<RFTriangle> tris;
+        [NonSerialized] public List<RFFace> poly;
         
         // Reinit in awake from cluster
         [NonSerialized] public RFCluster cluster;
@@ -171,7 +172,27 @@ namespace RayFire
         /// /////////////////////////////////////////////////////////
         /// Set Shards
         /// /////////////////////////////////////////////////////////
-                
+
+        // Set Triangles and Faces data
+        public static void SetMeshData (List<RFShard> shards, ConnectivityType type)
+        {
+            if (type != ConnectivityType.ByBoundingBox)
+                for (int i = 0; i < shards.Count; i++)
+                    RFTriangle.SetTriangles(shards[i]);
+            if (type == ConnectivityType.ByPolygons || type == ConnectivityType.ByBoundingBoxAndPolygons)
+                for (int i = 0; i < shards.Count; i++)
+                    RFFace.SetPolys(shards[i]);
+        }
+        
+        // Set Triangles and Faces data
+        public static void SetMeshData (RFShard shard, ConnectivityType type)
+        {
+            if (type != ConnectivityType.ByBoundingBox)
+                RFTriangle.SetTriangles(shard);
+            if (type == ConnectivityType.ByPolygons || type == ConnectivityType.ByBoundingBoxAndPolygons)
+                RFFace.SetPolys(shard);
+        }
+
         // Prepare shards. Set bounds, set neibs
         public static void SetShards(RFCluster cluster, ConnectivityType connectivity, bool setRigid = false)
         {
@@ -203,9 +224,8 @@ namespace RayFire
                 shard.id      = i;
                 shard.cluster = cluster;
                 
-                // Set faces data for connectivity
-                if (connectivity == ConnectivityType.ByMesh || connectivity == ConnectivityType.ByBoundingBoxAndMesh)
-                    RFTriangle.SetTriangles(shard, shard.mf);
+                // Set mesh data
+                SetMeshData (shard, connectivity);
 
                 // Collect shard
                 cluster.shards.Add(shard);
@@ -227,9 +247,8 @@ namespace RayFire
                 shard.cluster = cluster;
                 shard.id      = i;
                 
-                // Set faces data for connectivity
-                if (connectivity == ConnectivityType.ByMesh || connectivity == ConnectivityType.ByBoundingBoxAndMesh)
-                    RFTriangle.SetTriangles(shard, shard.mf);
+                // Set mesh data
+                SetMeshData (shard, connectivity);
                 
                 // Collect shard
                 cluster.shards.Add(shard);
@@ -240,40 +259,47 @@ namespace RayFire
         /// Neibs
         /// /////////////////////////////////////////////////////////
         
-        // Check if other shard has shared face TODO check speed by normal
-        bool TrisNeib(RFShard otherShard)
+        // Get shared area with another shard
+        float NeibAreaByPoly(RFShard otherShard)
         {
-            for (int i = 0; i < tris.Count; i++)
+            float areaDif;
+            float area = 0f;
+            for (int i = 0; i < poly.Count; i++)
             {
-                for (int j = 0; j < otherShard.tris.Count; j++)
+                for (int j = 0; j < otherShard.poly.Count; j++)
                 {
                     // Area check
-                    float areaDif = Mathf.Abs (tris[i].area - otherShard.tris[j].area);
+                    areaDif = Mathf.Abs (poly[i].area - otherShard.poly[j].area);
                     if (areaDif < 0.001f)
                     {
-                        // Position check
-                        float posDif = Vector3.Distance (tris[i].pos, otherShard.tris[j].pos);
-                        if (posDif < 0.01f)
-                            return true;
+                        if (poly[i].normal == -otherShard.poly[j].normal)
+                        {
+                            area += poly[i].area;
+                            break;
+                        }
                     }
                 }
             }
 
-            return false;
+            return area;
         }
-
-        // Get shared area with another shard TODO not accurate with opposite triangles. use Face class to fix
-        float NeibArea(RFShard otherShard)
+        
+        // Get shared area with another shard
+        float NeibAreaByTris(RFShard otherShard)
         {
+            float posDif;
+            float areaDif;
             float area = 0f;
             for (int i = 0; i < tris.Count; i++)
             {
                 for (int j = 0; j < otherShard.tris.Count; j++)
                 {
-                    float areaDif = Mathf.Abs (tris[i].area - otherShard.tris[j].area);
+                    // Area check
+                    areaDif = Mathf.Abs (tris[i].area - otherShard.tris[j].area);
                     if (areaDif < 0.001f)
                     {
-                        float posDif = Vector3.Distance (tris[i].pos, otherShard.tris[j].pos);
+                        // Position check
+                        posDif = Vector3.Distance (tris[i].pos, otherShard.tris[j].pos);
                         if (posDif < 0.01f)
                         {
                             area += tris[i].area;
@@ -298,6 +324,8 @@ namespace RayFire
                 shards[i].nAm = 0;
             }
 
+            //float t1 = Time.realtimeSinceStartup;
+            
             // Set neib and area info
             for (int i = 0; i < shards.Count; i++)
             {
@@ -331,14 +359,17 @@ namespace RayFire
                         {
                             // Get areas
                             float area = 0;
-                            if (type == ConnectivityType.ByMesh || type == ConnectivityType.ByBoundingBoxAndMesh)
-                                area = shards[i].NeibArea (shards[s]);
-                            else
+                            if (type == ConnectivityType.ByBoundingBox)
                                 area = (shards[i].sz + shards[s].sz) / 4f;
+                            else if (type == ConnectivityType.ByTriangles || type == ConnectivityType.ByBoundingBoxAndTriangles)
+                                area = shards[i].NeibAreaByTris (shards[s]);
+                            else if (type == ConnectivityType.ByPolygons || type == ConnectivityType.ByBoundingBoxAndPolygons)
+                                area = shards[i].NeibAreaByPoly(shards[s]);
                             
                             // Area still 0, get by bounds if ByBoundingBoxAndMesh
-                            if (type == ConnectivityType.ByBoundingBoxAndMesh && area == 0)
-                                area = (shards[i].sz + shards[s].sz) / 4f;
+                            if (area == 0)
+                                if (type == ConnectivityType.ByBoundingBoxAndTriangles || type == ConnectivityType.ByBoundingBoxAndPolygons)
+                                    area = (shards[i].sz + shards[s].sz) / 4f;
 
                             // Skip low area neibs TODO filter after all connected, leave one biggest ??
                             if (minArea > 0 && area < minArea)
@@ -348,7 +379,7 @@ namespace RayFire
                             if (area > 0)
                             {
                                 // Roundup for 3 digits after comma
-                                area = (int)(area* 1000.0f) / 1000.0f;
+                                area = (int)(area * 1000.0f) / 1000.0f;
                                 
                                 shards[i].neibShards.Add (shards[s]);
                                 shards[i].nArea.Add (area);
@@ -366,10 +397,17 @@ namespace RayFire
                 shards[i].nAm = shards[i].nIds.Count;
             }
             
+            //float t2 = Time.realtimeSinceStartup;
+            //Debug.Log ("Time " + (t2 - t1));
+            //Debug.Log ("Checks " + checks);
+            
             // Clear triangles data
-            if (type == ConnectivityType.ByMesh || type == ConnectivityType.ByBoundingBoxAndMesh)
+            if (type == ConnectivityType.ByTriangles || type == ConnectivityType.ByBoundingBoxAndTriangles)
                 for (int i = 0; i < shards.Count; i++)
                     RFTriangle.Clear (shards[i]);
+            if (type == ConnectivityType.ByPolygons || type == ConnectivityType.ByBoundingBoxAndPolygons)
+                for (int i = 0; i < shards.Count; i++)
+                    RFFace.Clear (shards[i]);
         }
 
         // Remove neib shards which are not in current cluster anymore

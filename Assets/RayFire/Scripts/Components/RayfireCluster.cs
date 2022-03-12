@@ -239,12 +239,12 @@ namespace RayFire
             SetSoloShardToCluster(soloShards, childClusters);
 
             // Roughness pass. Remove shards from cluster and add to another.
-            if (smoothPass > 0 && connectivity == ConnectivityType.ByMesh)
+            if (smoothPass > 0 && connectivity == ConnectivityType.ByTriangles)
                 for (int i = 0; i < smoothPass; i++)
                     RoughnessPassShards(childClusters);
 
             // Create clusters by connectivity check
-            if (connectivity == ConnectivityType.ByMesh)
+            if (connectivity == ConnectivityType.ByTriangles)
                 ConnectivityCheck(childClusters);
 
             // Check if only one cluster left
@@ -382,11 +382,11 @@ namespace RayFire
                 Random.InitState(seed);
 
                 // Create Base cluster and collect
-                RFCluster mainCluster = SetupMainCluster(ConnectivityType.ByMesh);
+                RFCluster mainCluster = SetupMainCluster(ConnectivityType.ByTriangles);
                 allClusters.Add(mainCluster);
 
                 // Set shard neibs
-                RFShard.SetShardNeibs(mainCluster.shards, ConnectivityType.ByMesh);
+                RFShard.SetShardNeibs(mainCluster.shards, ConnectivityType.ByTriangles);
 
                 // Clusterize base shards to clusters
                 List<RFCluster> childClusters = ClusterizeRangeShards(mainCluster);

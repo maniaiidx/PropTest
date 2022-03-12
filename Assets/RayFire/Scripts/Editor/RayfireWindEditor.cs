@@ -143,12 +143,12 @@ namespace RayFire
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
-            wind.maximum = EditorGUILayout.Slider (gui_nsLength, wind.maximum, 1f, 300f);
+            wind.lengthScale = EditorGUILayout.Slider (gui_nsLength, wind.lengthScale, 1f, 300f);
             if (EditorGUI.EndChangeCheck() == true)
             {
                 foreach (RayfireWind scr in targets)
                 {
-                    scr.maximum = wind.maximum;
+                    scr.lengthScale = wind.lengthScale;
                     SetDirty (scr);
                 }
             }
@@ -156,12 +156,12 @@ namespace RayFire
             GUILayout.Space (space);
            
             EditorGUI.BeginChangeCheck();
-            wind.torque = EditorGUILayout.Slider (gui_nsWidth, wind.torque, 1f, 300f);
+            wind.widthScale = EditorGUILayout.Slider (gui_nsWidth, wind.widthScale, 1f, 300f);
             if (EditorGUI.EndChangeCheck() == true)
             {
                 foreach (RayfireWind scr in targets)
                 {
-                    scr.torque = wind.torque;
+                    scr.widthScale = wind.widthScale;
                     SetDirty (scr);
                 }
             }
@@ -169,12 +169,12 @@ namespace RayFire
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
-            wind.torque = EditorGUILayout.Slider (gui_nsSpeed, wind.torque, -200f, 200f);
+            wind.speed = EditorGUILayout.Slider (gui_nsSpeed, wind.speed, -200f, 200f);
             if (EditorGUI.EndChangeCheck() == true)
             {
                 foreach (RayfireWind scr in targets)
                 {
-                    scr.torque = wind.torque;
+                    scr.speed = wind.speed;
                     SetDirty (scr);
                 }
             }
@@ -366,6 +366,10 @@ namespace RayFire
             color = Color.red;
             color.b = 0.0f;
 
+           
+
+
+            
 
             // Gizmo preview
             if (wind.showGizmo == true)
@@ -392,7 +396,7 @@ namespace RayFire
                 // Gizmo properties
                 Gizmos.color  = wireColor;
                 Gizmos.matrix = wind.transform.localToWorldMatrix;
-
+                
                 // Gizmo Lines
                 Gizmos.DrawLine (p1, p2);
                 Gizmos.DrawLine (p3, p4);
@@ -423,7 +427,7 @@ namespace RayFire
                 Gizmos.DrawSphere (new Vector3 (-x, ySph, 0f), sphereSize);
                 Gizmos.DrawSphere (new Vector3 (0f, ySph, z),  sphereSize);
                 Gizmos.DrawSphere (new Vector3 (0f, ySph, -z), sphereSize);
-
+                
                 // Force preview
                 if (wind.showNoise == true)
                 {
@@ -449,8 +453,8 @@ namespace RayFire
                             windStr = wind.WindStrength (perlinVal);
 
                             // Get vector for current point
-                            vector = wind.GetVectorLocal (localPos) * wind.previewSize;
-
+                            vector = wind.GetVectorLocalPreview (localPos) * wind.previewSize;
+                            
                             // Set color
                             if (windStr >= 0)
                             {
@@ -473,7 +477,7 @@ namespace RayFire
                 }
             }
         }
-        
+
         /// /////////////////////////////////////////////////////////
         /// Common
         /// /////////////////////////////////////////////////////////

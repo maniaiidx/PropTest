@@ -58,3 +58,5 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+Assets/RayFire/Plugins/Ios/libRF_CNative_ios.a
+Assets/RayFire/Plugins/Ios/libRF_CNative_ios.a.meta

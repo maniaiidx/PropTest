@@ -1,89 +1,63 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 namespace RayFire
 {
-
-    [Serializable]
     public class RFFace
     {
-        public int       id;
-        public float     area;
-        public Vector3   pos;
-        public Vector3   normal;
-        public List<int> tris;
+        public float   area;
+        public Vector3 normal;
 
         // Constructor
-        public RFFace (int Id, float Area, Vector3 Normal)
+        RFFace (float Area, Vector3 Normal)
         {
-            id     = Id;
             area   = Area;
             normal = Normal;
-            tris   = new List<int>();
         }
 
-        // Get all face in mesh by triangles. IMPORTANT turn on triangle neib calculation in RFTriangle
-        List<RFFace> GetFaces (List<RFTriangle> Triangles)
+        // Set poly data
+        public static void SetPolys (RFShard shard)
         {
-            List<int>    checkedTris = new List<int>();
-            List<RFFace> localFaces  = new List<RFFace>();
-
-            // Check every triangle
-            int faceId = 0;
-            foreach (RFTriangle tri in Triangles)
+            // Check if faces already calculated
+            if (shard.poly != null)
+                return;
+            
+            // Check if triangles already calculated
+            if (shard.tris == null)
+                return;
+            
+            // Create first poly
+            RFFace face = new RFFace (shard.tris[0].area, shard.tris[0].normal);
+            
+            // Set faces list with first face
+            shard.poly = new List<RFFace>();
+            shard.poly.Add (face);
+            for (int t = 1; t < shard.tris.Count; t++)
             {
-                // Skip triangle if it is already part of face
-                if (checkedTris.Contains (tri.id) == false)
+                // Check if tri belong to any face
+                bool alreadyHasPoly = false;
+                for (int f = 0; f < shard.poly.Count; f++)
                 {
-                    // Mark tri as checked
-                    checkedTris.Add (tri.id);
-
-                    // Create face
-                    RFFace face = new RFFace (faceId, tri.area, tri.normal);
-                    face.pos = tri.pos;
-                    faceId++;
-                    face.tris.Add (tri.id);
-
-                    // List of all triangles to check
-                    List<RFTriangle> trisToCheck = new List<RFTriangle>();
-                    trisToCheck.Add (tri);
-
-                    // Check all neibs
-                    while (trisToCheck.Count > 0)
+                    if (shard.poly[f].normal == shard.tris[t].normal)
                     {
-                        // Check neib tris
-                        foreach (int neibId in trisToCheck[0].neibs)
-                        {
-                            if (checkedTris.Contains (neibId) == false)
-                            {
-                                // Get neib tri
-                                RFTriangle neibTri = Triangles[neibId];
-
-                                // Compare normals
-                                if (tri.normal == neibTri.normal)
-                                {
-                                    face.area += neibTri.area;
-                                    face.pos  += neibTri.pos;
-                                    face.tris.Add (neibId);
-                                    checkedTris.Add (neibId);
-                                    trisToCheck.Add (neibTri);
-                                }
-                            }
-                        }
-
-                        trisToCheck.RemoveAt (0);
+                        shard.poly[f].area += shard.tris[t].area;
+                        alreadyHasPoly     =  true;
+                        break;
                     }
-
-                    // Set pos
-                    face.pos /= face.tris.Count;
-
-                    // Collect face
-                    localFaces.Add (face);
                 }
-            }
 
-            return localFaces;
+                // New face
+                if (alreadyHasPoly == false)
+                    shard.poly.Add (new RFFace (shard.tris[t].area, shard.tris[t].normal));
+            }
+        }
+        
+        // Clear
+        public static void Clear(RFShard shard)
+        {
+            if (shard.poly != null)
+                shard.poly.Clear();
+            shard.poly = null;
         }
     }
 }

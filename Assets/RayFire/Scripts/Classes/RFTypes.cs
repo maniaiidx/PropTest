@@ -128,9 +128,11 @@
     // Cluster Type
     public enum ConnectivityType
     {
-        ByBoundingBox        = 0,
-        ByMesh               = 1,
-        ByBoundingBoxAndMesh = 2
+        ByBoundingBox             = 0,
+        ByTriangles               = 1,
+        ByPolygons                = 3,
+        ByBoundingBoxAndTriangles = 2,
+        ByBoundingBoxAndPolygons  = 4,
     }
     
     // Cluster Type

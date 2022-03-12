@@ -179,9 +179,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -445,9 +451,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -713,9 +725,15 @@ MonoBehaviour:
     meshCollider: {fileID: 172303162}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -727,7 +745,7 @@ MonoBehaviour:
   limitations:
     byCollision: 1
     solidity: 0.1
-    tag: 
+    tag: Untagged
     depth: 1
     time: 0.3
     size: 0.1
@@ -1009,9 +1027,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -1275,9 +1299,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -1562,9 +1592,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -1881,9 +1917,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -2147,9 +2189,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -2415,9 +2463,15 @@ MonoBehaviour:
     meshCollider: {fileID: 1071595759}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -2429,7 +2483,7 @@ MonoBehaviour:
   limitations:
     byCollision: 1
     solidity: 0.1
-    tag: 
+    tag: Untagged
     depth: 1
     time: 0.3
     size: 0.1
@@ -2711,9 +2765,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -2977,9 +3037,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -3260,9 +3326,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -3526,9 +3598,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -3792,9 +3870,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -4043,9 +4127,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -4057,7 +4147,7 @@ MonoBehaviour:
   limitations:
     byCollision: 1
     solidity: 0.4
-    tag: 
+    tag: Untagged
     depth: 1
     time: 0.3
     size: 0.1
@@ -4350,9 +4440,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -4654,9 +4750,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0
@@ -4920,9 +5022,15 @@ MonoBehaviour:
     meshCollider: {fileID: 0}
     clusterColliders: []
     ignoreList: 
+    rec: 0
+    exclude: 0
+    solidity: 1
+    destructible: 0
+    physicsDataCorState: 0
   activation:
-    byVelocity: 0
+    local: 0
     byOffset: 0
+    byVelocity: 0
     byDamage: 0
     byActivator: 0
     byImpact: 0

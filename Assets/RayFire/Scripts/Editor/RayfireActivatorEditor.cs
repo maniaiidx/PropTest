@@ -21,12 +21,12 @@ namespace RayFire
         static int   space     = 3;
         static bool  expand;
         
-        static GUIContent gui_gizmoShow   = new GUIContent ("Show",          "");
-        static GUIContent gui_gizmoType   = new GUIContent ("Type:",         "Gizmo which will be used to create collider to activate objects.");
-        static GUIContent gui_gizmoSphere = new GUIContent ("Sphere Radius", "Defines size of Sphere gizmo.");
-        static GUIContent gui_gizmoBox    = new GUIContent ("Box Size",      "Defines size of Box gizmo.");
-        static GUIContent gui_compRigid   = new GUIContent ("Rigid",         "Activate objects with Rigid component with Inactive or Kinematic simulation type.");
-        static GUIContent gui_compRoot    = new GUIContent ("RigidRoot",     "Activate RigidRoot component objects with Inactive or Kinematic simulation type.");
+        static GUIContent gui_gizmoShow      = new GUIContent ("Show",          "");
+        static GUIContent gui_gizmoType      = new GUIContent ("Type:",         "Gizmo which will be used to create collider to activate objects.");
+        static GUIContent gui_gizmoSphere    = new GUIContent ("Radius", "Defines size of Sphere gizmo.");
+        static GUIContent gui_gizmoBox       = new GUIContent ("Size",      "Defines size of Box gizmo.");
+        static GUIContent gui_compRigid      = new GUIContent ("Rigid",         "Activate objects with Rigid component with Inactive or Kinematic simulation type.");
+        static GUIContent gui_compRoot       = new GUIContent ("RigidRoot",     "Activate RigidRoot component objects with Inactive or Kinematic simulation type.");
         static GUIContent gui_activationType = new GUIContent ("Type:",          " On Enter: Object will be activated when Activator trigger collider will enter object's collider.\n" +
                                                                                  " On Exit: Object will be activated when Activator trigger collider will exit object's collider.");
         static GUIContent gui_activationDelay    = new GUIContent ("Delay",            "Activation Delay in seconds.");
@@ -91,25 +91,21 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.checkRigid     = GUILayout.Toggle (activator.checkRigid,     gui_compRigid, "Button", GUILayout.Height (22));
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.checkRigid     = activator.checkRigid;
                     SetDirty (scr);
                 }
-            }
-            
+
             EditorGUI.BeginChangeCheck();
             activator.checkRigidRoot = GUILayout.Toggle (activator.checkRigidRoot, gui_compRoot,  "Button", GUILayout.Height (22));
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.checkRigidRoot = activator.checkRigidRoot;
                     SetDirty (scr);
                 }
-            }
-            
+
             GUILayout.EndHorizontal();
         }
         
@@ -120,16 +116,19 @@ namespace RayFire
         void UI_Gizmo()
         {
             GUILayout.Label ("  Gizmo", EditorStyles.boldLabel);
-
-            UI_GizmoShow();
-            
-            GUILayout.Space (space);
             
             UI_GizmoType();
-
+            
             GUILayout.Space (space);
 
             UI_GizmoProperties();
+            
+            if (activator.gizmoType == RayfireActivator.GizmoType.Box ||
+                activator.gizmoType == RayfireActivator.GizmoType.Sphere)
+            {
+                GUILayout.Space (space);
+                UI_GizmoShow();
+            }
         }
         
         void UI_GizmoShow()
@@ -137,13 +136,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.showGizmo = EditorGUILayout.Toggle (gui_gizmoShow, activator.showGizmo);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.showGizmo = activator.showGizmo;
                     SetDirty (scr);
                 }
-            }
         }
         
         void UI_GizmoType()
@@ -199,10 +196,14 @@ namespace RayFire
         {
             GUILayout.Label ("  Activation", EditorStyles.boldLabel);
 
-            UI_ActivationType();
-            
-            GUILayout.Space (space);
-                
+            // Enter Exit not supported by particle system
+            if (activator.gizmoType != RayfireActivator.GizmoType.ParticleSystem)
+            {
+                UI_ActivationType();
+
+                GUILayout.Space (space);
+            }
+
             UI_ActivationDelay();
 
             GUILayout.Space (space);
@@ -215,13 +216,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.type = (RayfireActivator.ActivationType)EditorGUILayout.EnumPopup (gui_activationType, activator.type);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.type = activator.type;
                     SetDirty (scr);
                 }
-            }
         }
         
         void UI_ActivationDelay()
@@ -229,13 +228,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.delay = EditorGUILayout.Slider (gui_activationDelay, activator.delay, 0f, 100f);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.delay = activator.delay;
                     SetDirty (scr);
                 }
-            }
         }
         
         void UI_ActivationDemolish()
@@ -243,13 +240,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.demolishCluster = EditorGUILayout.Toggle (gui_activationDemolish, activator.demolishCluster);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.demolishCluster = activator.demolishCluster;
                     SetDirty (scr);
                 }
-            }
         }
         
         /// /////////////////////////////////////////////////////////
@@ -279,13 +274,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.apply = EditorGUILayout.Toggle (gui_forceApply, activator.apply);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.apply = activator.apply;
                     SetDirty (scr);
                 }
-            }
         }
         
         void UI_ForceVelocitySpin()
@@ -293,26 +286,22 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.velocity = EditorGUILayout.Vector3Field (gui_forceVelocity, activator.velocity);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.velocity = activator.velocity;
                     SetDirty (scr);
                 }
-            }
-            
+
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
             activator.spin = EditorGUILayout.Vector3Field (gui_forceSpin, activator.spin);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.spin = activator.spin;
                     SetDirty (scr);
                 }
-            }
         }
         
         void UI_ForceMode()
@@ -320,13 +309,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.mode = (ForceMode)EditorGUILayout.EnumPopup (gui_forceMode, activator.mode);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.mode = activator.mode;
                     SetDirty (scr);
                 }
-            }
         }
         
         /// /////////////////////////////////////////////////////////
@@ -363,13 +350,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.showAnimation = EditorGUILayout.Toggle (gui_animShow, activator.showAnimation);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireActivator script in targets)
                 {
                     script.showAnimation = activator.showAnimation;
                     SetDirty (script);
                 }
-            }
         }
         
         void UI_AnimationDurationScale()
@@ -377,26 +362,22 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             activator.duration       = EditorGUILayout.Slider (gui_animDuration, activator.duration, 0.1f, 100f);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.duration       = activator.duration;
                     SetDirty (scr);
                 }
-            }
 
             GUILayout.Space (space);
            
             EditorGUI.BeginChangeCheck();
             activator.scaleAnimation = EditorGUILayout.Slider (gui_animScale, activator.scaleAnimation, 1f, 50f);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireActivator scr in targets)
                 {
                     scr.scaleAnimation = activator.scaleAnimation;
                     SetDirty (scr);
                 }
-            }
         }
         
         void UI_AnimationType()
@@ -425,14 +406,12 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 expand = EditorGUILayout.Foldout (expand, gui_animList, true);
                 if (expand == true && activator.positionList != null && activator.positionList.Count > 0)
-                {
                     for (int i = 0; i < activator.positionList.Count; i++)
                     {
                         activator.positionList[i] = EditorGUILayout.Vector3Field ("  " + (i+1).ToString(), activator.positionList[i]); 
                         GUILayout.Space (space);
                     }
-                }
-                
+
                 if (EditorGUI.EndChangeCheck() == true)
                     SetDirty (activator);
             }

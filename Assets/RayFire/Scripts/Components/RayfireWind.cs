@@ -110,8 +110,12 @@ namespace RayFire
             // Decrease array if too much
             if (colliders.Length > colAmount + 50)
             {
-                colliders = new Collider[colAmount - 30];
-                Physics.OverlapBoxNonAlloc (center, halfExtents, colliders, transForm.rotation, mask);
+                int newCol = colAmount - 30;
+                if (newCol > 0)
+                {
+                    colliders = new Collider[newCol];
+                    Physics.OverlapBoxNonAlloc (center, halfExtents, colliders, transForm.rotation, mask);
+                }
             }
         }
 
@@ -197,14 +201,34 @@ namespace RayFire
         // Get vector for global position
         Vector3 GetVectorGlobal (Vector3 worldPos)
         {
-            return GetVectorLocal (transForm.InverseTransformPoint (worldPos));
+            return GetVectorLocal (transform.InverseTransformPoint (worldPos));
         }
-
+        
         // Get vector for local position
         public Vector3 GetVectorLocal (Vector3 localPos)
         {
             // Initial vector TODO optimise for runtime. slow because of editor
             Vector3 vector = transform.forward;
+
+            // Add divergency
+            if (divergency > 0)
+            {
+                // Get perlin noise for rotation vector
+                float perlinCustomVal = PerlinCustomLocal (localPos, gizmoSize.x, gizmoSize.z, widthScale, lengthScale, globalScale * turbulence, offset + gizmoSize.z);
+                float ang             = Mathf.Lerp (-divergency, divergency, perlinCustomVal);
+
+                // Get wind vector
+                vector = Quaternion.Euler (0, ang, 0) * vector;
+            }
+
+            return vector;
+        }
+        
+        // Get vector for local position
+        public Vector3 GetVectorLocalPreview (Vector3 localPos)
+        {
+            // Initial vector TODO optimise for runtime. slow because of editor
+            Vector3 vector = Vector3.forward;
 
             // Add divergency
             if (divergency > 0)

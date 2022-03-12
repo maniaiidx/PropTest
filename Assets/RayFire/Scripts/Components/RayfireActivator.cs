@@ -14,8 +14,9 @@ namespace RayFire
     {
         public enum ActivationType
         {
-            OnEnter = 0,
-            OnExit  = 1
+            OnTriggerEnter = 0,
+            OnTriggerExit  = 1,
+            OnCollision    = 2
         }
 
         public enum AnimationType
@@ -28,44 +29,47 @@ namespace RayFire
 
         public enum GizmoType
         {
-            Sphere   = 0,
-            Box      = 1,
-            Collider = 2
+            Box            = 1, 
+            Sphere         = 0,
+            Collider       = 2,
+            ParticleSystem = 5
         }
         
-        public GizmoType      gizmoType;
-        public float          sphereRadius   = 5f;
-        public Vector3        boxSize        = new Vector3 (5f, 2f, 5f);
-        public bool           checkRigid     = true;
-        public bool           checkRigidRoot = true;
-        public ActivationType type;
-        public float          delay;
-        public bool           demolishCluster;
-        public bool           apply;
-        public Vector3        velocity;
-        public Vector3        spin;
-        public ForceMode      mode;
-        public bool           showAnimation;
-        public float          duration       = 3f;
-        public float          scaleAnimation = 1f;
-        public AnimationType  positionAnimation;
-        public LineRenderer   line;
-        public List<Vector3>  positionList;
-        public bool           showGizmo = true;
-        public Collider       activatorCollider;
+        public  GizmoType                    gizmoType;
+        public  float                        sphereRadius   = 5f;
+        public  Vector3                      boxSize        = new Vector3 (5f, 2f, 5f);
+        public  bool                         checkRigid     = true;
+        public  bool                         checkRigidRoot = true;
+        public  ActivationType               type;
+        public  float                        delay;
+        public  bool                         demolishCluster;
+        public  bool                         apply;
+        public  Vector3                      velocity;
+        public  Vector3                      spin;
+        public  ForceMode                    mode;
+        public  bool                         showAnimation;
+        public  float                        duration       = 3f;
+        public  float                        scaleAnimation = 1f;
+        public  AnimationType                positionAnimation;
+        public  LineRenderer                 line;
+        public  List<Vector3>                positionList;
+        public  bool                         showGizmo = true;
+        public  Collider                     activatorCollider;
+        public  ParticleSystem               ps;
+        public  List<ParticleCollisionEvent> collisionEvents;
         
-        private bool        animating;
-        private float       pathRatio;
-        private float       lineLength;
-        private List<float> checkpoints = new List<float>();
-        private float       delta;
-        private float       deltaRatioStep;
-        private float       distDeltaStep;
-        private float       distRatio;
-        private float       timePassed;
-        private int         activeSegment;
-        private Vector3     positionStart;
-        private Vector3     scaleStart;
+        private bool                         animating;
+        private float                        pathRatio;
+        private float                        lineLength;
+        private List<float>                  checkpoints = new List<float>();
+        private float                        delta;
+        private float                        deltaRatioStep;
+        private float                        distDeltaStep;
+        private float                        distRatio;
+        private float                        timePassed;
+        private int                          activeSegment;
+        private Vector3                      positionStart;
+        private Vector3                      scaleStart;
 
         // TODO list of objects to check or all colliders objects
 
@@ -77,19 +81,44 @@ namespace RayFire
         void Awake()
         {
             // Check collider and triggers
-            ColliderCheck();
-
+            if (gizmoType != GizmoType.ParticleSystem)
+                SetCollider();
+            else
+                SetParticleSystem();
+            
             // TODO no target check
             
             positionStart = transform.position;
             scaleStart    = transform.localScale;
         }
+
+        /// /////////////////////////////////////////////////////////
+        /// Collision
+        /// /////////////////////////////////////////////////////////
         
+        // Collider collision activation
+        void OnCollisionEnter (Collision collision)
+        {
+            if (type == ActivationType.OnCollision && gizmoType != GizmoType.ParticleSystem)
+                ActivationCheck (collision.collider);
+        }
+        
+        // Particle collision activation
+        void OnParticleCollision (GameObject other)
+        {
+            if (type == ActivationType.OnCollision && gizmoType == GizmoType.ParticleSystem)
+            {
+                int numCollisionEvents = ps.GetCollisionEvents (other, collisionEvents);
+                for (int i = 0; i < numCollisionEvents; i++)
+                    ActivationCheck (collisionEvents[i].colliderComponent as Collider);
+            }
+        }
+
         /// /////////////////////////////////////////////////////////
         /// Trigger
         /// /////////////////////////////////////////////////////////
 
-        // Activate on enter
+        // Activate on collider enter
         void OnTriggerEnter (Collider coll)
         {
             // TODO to avoid multiple checks at one frame
@@ -98,17 +127,79 @@ namespace RayFire
             // Add Target list to compare colliders with target colliders.
             // use for massive sims.
             
-            if (type == ActivationType.OnEnter)
+            if (type == ActivationType.OnTriggerEnter)
                     ActivationCheck (coll);
         }
 
-        // Activate on exit
+        // Activate on collider exit
         void OnTriggerExit (Collider coll)
         {
-            if (type == ActivationType.OnExit)
-                    ActivationCheck (coll);
+            if (type == ActivationType.OnTriggerExit)
+                ActivationCheck (coll);
         }
-        
+
+        /// /////////////////////////////////////////////////////////
+        /// Set 
+        /// /////////////////////////////////////////////////////////
+
+        // Prepare collider and triggers
+        void SetCollider()
+        {
+            // Sphere collider
+            if (gizmoType == GizmoType.Sphere)
+            {
+                SphereCollider col = gameObject.AddComponent<SphereCollider>();
+                col.isTrigger     = type != ActivationType.OnCollision;
+                col.radius        = sphereRadius;
+                activatorCollider = col;
+                
+            }
+
+            // Box collider
+            if (gizmoType == GizmoType.Box)
+            {
+                BoxCollider col = gameObject.AddComponent<BoxCollider>();
+                col.isTrigger     = type != ActivationType.OnCollision;
+                col.size          = boxSize;
+                activatorCollider = col;
+            }
+
+            // Custom colliders
+            if (gizmoType == GizmoType.Collider)
+            {
+                Collider[] colliders = GetComponents<Collider>();
+                if (colliders.Length == 0)
+                    Debug.Log ("RayFire Activator: " + name + " has no activation collider", gameObject);
+                if (type != ActivationType.OnCollision)
+                    for (int i = 0; i < colliders.Length; i++)
+                        colliders[i].isTrigger = type != ActivationType.OnCollision;
+            }
+        }
+
+        // Prepare particle system
+        void SetParticleSystem()
+        {
+            collisionEvents = new List<ParticleCollisionEvent>();
+            ps              = GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                ParticleSystem.CollisionModule cm = ps.collision;
+                cm.enabled                = true;
+                cm.enableDynamicColliders = true;
+                cm.sendCollisionMessages  = true;
+            }
+
+            if (type != ActivationType.OnCollision)
+            {
+                type = ActivationType.OnCollision;
+                Debug.Log ("Rayfire Activator: " + name + " Particle System Gizmo Type supports only On Collision Activation type. Set Activation Type to On Collision." , gameObject);
+            }
+        }
+
+        /// /////////////////////////////////////////////////////////
+        /// Activation
+        /// /////////////////////////////////////////////////////////
+
         // Check for activation
         void ActivationCheck (Collider coll)
         {
@@ -117,7 +208,7 @@ namespace RayFire
             if (checkRigidRoot == true)
                 RigidRootActivationCheck (coll);
         }
-
+        
         /// /////////////////////////////////////////////////////////
         /// Rigid Activation
         /// /////////////////////////////////////////////////////////
@@ -285,42 +376,6 @@ namespace RayFire
             }
         }
         
-        /// /////////////////////////////////////////////////////////
-        /// Collider
-        /// /////////////////////////////////////////////////////////
-
-        // Check collider and triggers
-        void ColliderCheck()
-        {
-            // Sphere collider
-            if (gizmoType == GizmoType.Sphere)
-            {
-                SphereCollider col = gameObject.AddComponent<SphereCollider>();
-                col.isTrigger     = true;
-                col.radius        = sphereRadius;
-                activatorCollider = col;
-            }
-
-            // Box collider
-            if (gizmoType == GizmoType.Box)
-            {
-                BoxCollider col = gameObject.AddComponent<BoxCollider>();
-                col.isTrigger     = true;
-                col.size          = boxSize;
-                activatorCollider = col;
-            }
-
-            // Custom colliders
-            if (gizmoType == GizmoType.Collider)
-            {
-                Collider[] colliders = GetComponents<Collider>();
-                if (colliders.Length == 0)
-                    Debug.Log ("RayFire Activator: " + name + " has no activation collider", gameObject);
-                for (int i = 0; i < colliders.Length; i++)
-                    colliders[i].isTrigger = true;
-            }
-        }
-
         /// /////////////////////////////////////////////////////////
         /// Animation
         /// /////////////////////////////////////////////////////////
@@ -596,7 +651,7 @@ namespace RayFire
                     Destroy (activatorCollider);
                 
                 // Set new collider
-                ColliderCheck();
+                SetCollider();
             }
         }
         

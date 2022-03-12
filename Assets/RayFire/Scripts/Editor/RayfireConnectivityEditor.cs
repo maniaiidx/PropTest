@@ -126,6 +126,7 @@ namespace RayFire
                 {
                     scr.showConnections = conn.showConnections;
                     SetDirty (scr);
+                    SceneView.RepaintAll();
                 }
             }
             
@@ -177,7 +178,7 @@ namespace RayFire
                 }
             }
 
-            if (conn.type != ConnectivityType.ByMesh)
+            if (conn.type != ConnectivityType.ByTriangles && conn.type != ConnectivityType.ByPolygons)
             {
                 GUILayout.Space (space);
 
@@ -219,13 +220,11 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 conn.minimumArea = EditorGUILayout.Slider (gui_filt_area, conn.minimumArea, 0, 1f);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.minimumArea = conn.minimumArea;
                         SetDirty (scr);
                     }
-                }
 
                 GUILayout.Space (space);
             }
@@ -233,39 +232,33 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             conn.minimumSize = EditorGUILayout.Slider (gui_filt_size, conn.minimumSize, 0, 10f);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.minimumSize = conn.minimumSize;
                     SetDirty (scr);
                 }
-            }
-            
+
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
             conn.percentage = EditorGUILayout.IntSlider (gui_filt_perc, conn.percentage, 0, 100);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.percentage = conn.percentage;
                     SetDirty (scr);
                 }
-            }
-            
+
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
             conn.seed = EditorGUILayout.IntSlider (gui_filt_seed, conn.seed, 0, 100);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.seed = conn.seed;
                     SetDirty (scr);
                 }
-            }
         }
 
         /// /////////////////////////////////////////////////////////
@@ -279,14 +272,12 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             conn.clusterize = EditorGUILayout.Toggle (gui_cls_cst, conn.clusterize);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.clusterize = conn.clusterize;
                     SetDirty (scr);
                 }
-            }
-            
+
             if (conn.clusterize == true)
             {
                 GUILayout.Space (space);
@@ -294,13 +285,11 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 conn.demolishable = EditorGUILayout.Toggle (gui_cls_dml, conn.demolishable);
                 if (EditorGUI.EndChangeCheck())
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.demolishable = conn.demolishable;
                         SetDirty (scr);
                     }
-                }
             }
         }
         
@@ -315,13 +304,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             conn.startCollapse = (RayfireConnectivity.RFConnInitType)EditorGUILayout.EnumPopup (gui_clp_init, conn.startCollapse);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.startCollapse = conn.startCollapse;
                     SetDirty (scr);
                 }
-            }
 
             if (conn.startCollapse == RayfireConnectivity.RFConnInitType.ByIntegrity)
             {
@@ -330,13 +317,11 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 conn.collapseByIntegrity = EditorGUILayout.IntSlider (gui_clp_intg, conn.collapseByIntegrity, 1, 99);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.collapseByIntegrity = conn.collapseByIntegrity;
                         SetDirty (scr);
                     }
-                }
             }
 
             GUILayout.Space (space);
@@ -351,66 +336,56 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 conn.collapse.type = (RFCollapse.RFCollapseType)EditorGUILayout.EnumPopup (gui_clp_type, conn.collapse.type);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.collapse.type = conn.collapse.type;
                         SetDirty (scr);
                     }
-                }
-                
+
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
                 conn.collapse.start = EditorGUILayout.IntSlider (gui_clp_str, conn.collapse.start, 0, 99);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.collapse.start = conn.collapse.start;
                         SetDirty (scr);
                     }
-                }
-                
+
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
                 conn.collapse.end = EditorGUILayout.IntSlider (gui_clp_end, conn.collapse.end, 1, 100);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.collapse.end = conn.collapse.end;
                         SetDirty (scr);
                     }
-                }
-                
+
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
                 conn.collapse.steps = EditorGUILayout.IntSlider (gui_clp_step, conn.collapse.steps, 1, 100);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.collapse.steps = conn.collapse.steps;
                         SetDirty (scr);
                     }
-                }
-                
+
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
                 conn.collapse.duration = EditorGUILayout.Slider (gui_clp_dur, conn.collapse.duration, 0, 60f);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.collapse.duration = conn.collapse.duration;
                         SetDirty (scr);
                     }
-                }
-                
+
                 EditorGUI.indentLevel--;
             }
             
@@ -509,13 +484,11 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             conn.stress.enable = EditorGUILayout.Toggle (gui_str_enab, conn.stress.enable);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.enable = conn.stress.enable;
                     SetDirty (scr);
                 }
-            }
 
             if (conn.stress.enable == false)
                 return;
@@ -525,26 +498,22 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             conn.showStress = EditorGUILayout.Toggle (gui_str_prev, conn.showStress);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.showStress = conn.showStress;
                     SetDirty (scr);
                 }
-            }
-            
+
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
             conn.startStress = (RayfireConnectivity.RFConnInitType)EditorGUILayout.EnumPopup (gui_str_init, conn.startStress);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.startStress = conn.startStress;
                     SetDirty (scr);
                 }
-            }
 
             if (conn.startStress == RayfireConnectivity.RFConnInitType.ByIntegrity)
             {
@@ -553,13 +522,11 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 conn.stressByIntegrity = EditorGUILayout.IntSlider (gui_clp_intg, conn.stressByIntegrity, 1, 99);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.stressByIntegrity = conn.stressByIntegrity;
                         SetDirty (scr);
                     }
-                }
             }
 
             GUILayout.Space (space);
@@ -602,79 +569,67 @@ namespace RayFire
             EditorGUI.BeginChangeCheck();
             conn.stress.threshold = EditorGUILayout.IntSlider (gui_str_thr, conn.stress.threshold, 1, 1000);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.threshold = conn.stress.threshold;
                     SetDirty (scr);
                 }
-            }
-                
+
             GUILayout.Space (space);
                 
             EditorGUI.BeginChangeCheck();
             conn.stress.erosion = EditorGUILayout.Slider (gui_str_ero, conn.stress.erosion, 0, 10f);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.erosion = conn.stress.erosion;
                     SetDirty (scr);
                 }
-            }
-                
+
             GUILayout.Space (space);
                 
             EditorGUI.BeginChangeCheck();
             conn.stress.interval = EditorGUILayout.Slider (gui_str_int, conn.stress.interval, 0.1f, 10f);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.interval = conn.stress.interval;
                     SetDirty (scr);
                 }
-            }
-            
+
             GUILayout.Label ("      Shards", EditorStyles.boldLabel);
             
             EditorGUI.BeginChangeCheck();
             conn.stress.support = EditorGUILayout.IntSlider (gui_str_sup, conn.stress.support, 0, 90);
             if (EditorGUI.EndChangeCheck() == true)
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.support = conn.stress.support;
                     SetDirty (scr);
                 }
-            }
-                
+
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
             conn.stress.exposed = EditorGUILayout.Toggle (gui_str_exp, conn.stress.exposed);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.exposed = conn.stress.exposed;
                     SetDirty (scr);
                 }
-            }
 
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
             conn.stress.bySize = EditorGUILayout.Toggle (gui_str_siz, conn.stress.bySize);
             if (EditorGUI.EndChangeCheck())
-            {
                 foreach (RayfireConnectivity scr in targets)
                 {
                     scr.stress.bySize = conn.stress.bySize;
                     SetDirty (scr);
                 }
-            }
-            
+
             EditorGUI.indentLevel--;
         }
         
@@ -698,13 +653,11 @@ namespace RayFire
                 EditorGUI.BeginChangeCheck();
                 conn.triggerDebris = EditorGUILayout.IntSlider (gui_trg_deb, conn.triggerDebris, 0, 50);
                 if (EditorGUI.EndChangeCheck() == true)
-                {
                     foreach (RayfireConnectivity scr in targets)
                     {
                         scr.triggerDebris = conn.triggerDebris;
                         SetDirty (scr);
                     }
-                }
             }
 
             if (Application.isPlaying == true && conn.triggerCollider != null)

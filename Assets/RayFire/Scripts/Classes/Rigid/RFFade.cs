@@ -10,52 +10,20 @@ namespace RayFire
     [Serializable]
     public class RFFade
     {
-        [Header ("  Initiate")]
-        
-        public bool onDemolition;
-        [Space (2)]
-        
-        public bool  onActivation;
-        [Space (2)]
-        
-        
-        [Range (0f, 20f)] public float byOffset;
-
-        [Header ("  Life")]
-        [Space (2)]
-
+        public bool           onDemolition;
+        public bool           onActivation; 
+        public float          byOffset;
         public RFFadeLifeType lifeType;
-        [Space (2)]
+        public float          lifeTime;
+        public float          lifeVariation;
+        public FadeType       fadeType;
+        public float          fadeTime;
+        public float          sizeFilter;
+        public int            shardAmount;
         
-        [Tooltip ("Time which object will be simulated before start to fade.")]
-        [Range (0f, 90f)] public float lifeTime;
-        [Space (2)]
-        
-        [Range (0f, 20f)] public float lifeVariation;
-        
-        [Header("  Fade")]
-        [Space(2)]
-        
-        public FadeType fadeType;
-        [Space (2)]
-        
-        [Tooltip ("Fade duration time.")]
-        [Range (1f, 20f)] public float fadeTime;
-
-        [Header("  Filters")]
-        [Space(2)]
-        
-        [Tooltip ("Fade won't affect objects with size bigger than this value. Disabled if set to 0.")]
-        [Range (0f, 20f)] public float sizeFilter;
-        [Space(2)]
-        
-        [Tooltip ("Fade won't affect Connected clusters with shard amount bigger than this value. Disabled if set to 0.")]
-        [Range (0, 50)] public int shardAmount;
-        
-        [NonSerialized] public int         state;   // 1-Living, 2-Fading, 3-Faded
+        [NonSerialized] public int         state; // 1-Living, 2-Fading, 3-Faded
         [NonSerialized] public bool        stop;
         [NonSerialized] public Vector3     position;
-        
         [NonSerialized] public bool        offsetCorState;
         [NonSerialized] public IEnumerator offsetEnum;
         
@@ -284,6 +252,25 @@ namespace RayFire
             scr.StartCoroutine (LivingCor (scr, shard));
         }
 
+        // Fade Cluster's detached rigid fragments or Shards if cluster has RigidRoot parent
+        public static void FadeClusterShards(RayfireRigid scr, List<RFShard> fadeShards)
+        {
+            if (scr.fading.onDemolition == true)
+            {
+                // Fading for detached fragments
+                if (scr.rigidRoot == null)
+                    scr.fading.DemolitionFade (scr.fragments);
+
+                // Fading for detached shards because has Rigid Root
+                else
+                    for (int i = 0; i < fadeShards.Count; i++)
+                        FadeShard (scr.rigidRoot, fadeShards[i]);
+                
+                // Self fade for main cluster
+                scr.Fade();
+            }
+        }
+        
         /// /////////////////////////////////////////////////////////
         /// Living
         /// /////////////////////////////////////////////////////////

@@ -29,47 +29,25 @@ namespace RayFire
             ByMethod = 0,
             AtStart  = 1
         }
-        
-        [Space (2)]
-        public InitType initialization = InitType.AtStart;
-        
-            [Header ("  Simulation")]
-            [Space (3)]
-        
-        public SimType simulationType = SimType.Dynamic;
-        [Space (2)]
-        
-        public RFPhysic     physics    = new RFPhysic();
-        [Space (2)]
-        
-        public RFActivation activation = new RFActivation();
-        [Space (2)]
-        
-            [Header ("  Demolition")]
-            [Space (3)]
 
-        public RFRigidRootDemolition demolition = new RFRigidRootDemolition();
-        
-            [Header ("  Common")]
-            [Space (3)]
-        
-        public RFFade       fading     = new RFFade();
-        [Space (2)]
-        public RFReset      reset      = new RFReset();
-        
-        // Components
-        [HideInInspector] public Transform          tm;
-        [HideInInspector] public RayfireSound       sound;
-        [HideInInspector] public RFCluster          cluster;
-        [HideInInspector] public List<RayfireRigid> meshRoots;
-        [HideInInspector] public bool               initialized;
-        [HideInInspector] public bool               cached;
-        [HideInInspector] public float              sizeBox;
-        [HideInInspector] public float              sizeSum;
-        [HideInInspector] public List<Collider>     collidersList;
-        
-        [HideInInspector] public List<RFShard>      meshRootShards;
-        [HideInInspector] public List<RFShard>      rigidRootShards;
+        public InitType              initialization = InitType.AtStart;
+        public SimType               simulationType = SimType.Dynamic;
+        public RFPhysic              physics        = new RFPhysic();
+        public RFActivation          activation     = new RFActivation();
+        public RFRigidRootDemolition demolition     = new RFRigidRootDemolition();
+        public RFFade                fading         = new RFFade();
+        public RFReset               reset          = new RFReset();
+        public Transform             tm;
+        public RayfireSound          sound;
+        public RFCluster             cluster;
+        public List<RayfireRigid>    meshRoots;
+        public bool                  initialized;
+        public bool                  cached;
+        public float                 sizeBox;
+        public float                 sizeSum;
+        public List<Collider>        collidersList;
+        public List<RFShard>         meshRootShards;
+        public List<RFShard>         rigidRootShards;
         
         [NonSerialized] public List<RFCluster>         clusters;
         [NonSerialized] public List<RFShard>           inactiveShards;
@@ -357,14 +335,6 @@ namespace RayFire
             // Components
             tm                 = GetComponent<Transform>();
             unyList            = GetComponents<RayfireUnyielding>().ToList();
-
-            // Set sound
-            sound = GetComponent<RayfireSound>();
-            if (sound != null)
-            {
-                sound.rigidRoot = this;
-                sound.WarningCheck();
-            }
         }
 
         // Check MeshRoots

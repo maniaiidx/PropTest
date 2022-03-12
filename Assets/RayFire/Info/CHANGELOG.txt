@@ -1,4 +1,25 @@
 
+ [1.48]
+
+ - Rigid. New UI.
+ - Rigid. Limitations Tag changed to TagField.
+ - Rigid. Children with Shatter component get Use Shatter enabled when get Rigid component at parent demolition.
+ - Rigid. Connected cluster By Mesh connectivity type renamed to By Triangles.
+ - Rigid. New By Polygons and ByBoundingBoxAndPolygons connectivity types.
+ - RigidRoot. New UI.
+ - RigidRoot. Limitations Tag changed to TagField.
+ - RigidRoot. Fading fix for shards which were clusterized and then demolished. 
+ - Activator. Activation by Collider collision.
+ - Activator. Activation by Particle System collision.
+ - Connectivity. Connectivity activation event, tutorial script and scene.
+ - Connectivity. By Mesh connectivity type renamed to By Triangles.
+ - Connectivity. New By Polygons and ByBoundingBoxAndPolygons connectivity types.
+ - Blade. Fix for not removed empty roots.
+ - Blade. Removed "_fr_" name appendix for slices to avoid very long names.
+ - Wind. UI fix.
+ - Wind. Noise Scale preview fix.
+ - Linux build fix.
+ 
  [1.47]
 
  - Rigid. Activation By Local Offset relative to parent.

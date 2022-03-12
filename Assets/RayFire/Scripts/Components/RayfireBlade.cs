@@ -20,7 +20,6 @@ namespace RayFire
     [HelpURL ("https://rayfirestudios.com/unity-online-help/components/unity-blade-component/")]
     public class RayfireBlade : MonoBehaviour
     {
-        // Cut Type
         public enum CutType
         {
             Enter     = 0,
@@ -28,7 +27,6 @@ namespace RayFire
             EnterExit = 2
         }
         
-        // Cut Type
         public enum ActionType
         {
             Slice     = 0,
@@ -46,21 +44,16 @@ namespace RayFire
         public int              mask      = -1;
         public string           tagFilter = "Untagged";
         public List<GameObject> targets;
-        
-        [HideInInspector] public RayfireRigid rigid;
-        [HideInInspector] public Transform    transForm;
-        [HideInInspector] public Vector3[]    enterPlane;
-        [HideInInspector] public Vector3[]    exitPlane;
-        [HideInInspector] public Collider     colLider;
-        public Vector3[]    slicePlanes;
-
-        RFSliceData sliceData;
-        
-        Vector3 posEnter;
-        Vector3 posExit;
-        
-
-        [HideInInspector] public bool coolDownState;
+        public RayfireRigid     rigid;
+        public Transform        transForm;
+        public Vector3[]        enterPlane;
+        public Vector3[]        exitPlane;
+        public Collider         colLider;
+        public Vector3[]        slicePlanes;
+        public bool             coolDownState;
+        RFSliceData             sliceData;
+        Vector3                 posEnter;
+        Vector3                 posExit;
         
         // Event
         public RFSliceEvent sliceEvent = new RFSliceEvent();

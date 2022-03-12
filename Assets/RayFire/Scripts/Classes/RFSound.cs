@@ -92,7 +92,7 @@ namespace RayFire
                 Object.Destroy (audioObject, clip.length + 1f);
                 audioObject.transform.position = scr.gameObject.transform.position;
                 AudioSource audioSource = audioObject.AddComponent<AudioSource>();
-
+                
                 // Setup
                 audioSource.clip                  = clip;
                 audioSource.playOnAwake           = false;

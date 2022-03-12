@@ -6,29 +6,11 @@ namespace RayFire
     [Serializable]
     public class RFDamage
     {
-        [Header ("  Properties")]
-        [Space (2)]
-        
-        [Tooltip("Allows to demolish object by it's own floating Damage value.")]
-        public bool enable;
-        [Space (2)]
-        
-        [Tooltip("Defines maximum allowed damage for object to be demolished.")]
+        public bool  enable;
         public float maxDamage;
-        [Space (2)]
-        
-        [Tooltip("Shows current damage value. Can be increased by public method: \nApplyDamage(float damageValue, Vector3 damagePosition)")]
         public float currentDamage;
-
-        [Header ("  Collisions")]
-        [Space (2)]
-
-        [Tooltip("Allows to accumulate damage value by collisions during dynamic simulation.")]
-        public bool collect;
-        [Space (2)]
-        
-        [Tooltip("Multiplier for every collision damage.")]
-        [Range(0.01f, 5f)]public float multiplier; 
+        public bool  collect;
+        public float multiplier;
         
         /// /////////////////////////////////////////////////////////
         /// Constructor

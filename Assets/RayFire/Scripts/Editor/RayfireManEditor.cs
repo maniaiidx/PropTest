@@ -226,7 +226,7 @@ namespace RayFire
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
-            man.maximumMass = EditorGUILayout.Slider (gui_mat_max, man.maximumMass, 0f, 400f);
+            man.maximumMass = EditorGUILayout.Slider (gui_mat_max, man.maximumMass, 0f, 4000f);
             if (EditorGUI.EndChangeCheck() == true)
                 SetDirty (man);
 

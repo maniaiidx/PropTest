@@ -17,85 +17,43 @@ namespace RayFire
             AtStart  = 1
         }
 
-        
-        [Space (2)]
-        public InitType initialization = InitType.ByMethod;
-
-            [Header ("  Main")]
-            [Space (3)]
-        
-        [Tooltip ("Defines behaviour of object during simulation.")]
-        public SimType simulationType = SimType.Dynamic;
-        [Space (2)]
-
-        public ObjectType objectType = ObjectType.Mesh;
-        [Space (2)]
-        
-        [Tooltip ("Defines when and how object will be demolished.")]
-        public DemolitionType demolitionType = DemolitionType.None;
-        
-            [Header ("  Simulation")]
-            [Space (3)]
-        
-        [Tooltip ("Defines all physics properties for simulated object.")]
-        public RFPhysic     physics    = new RFPhysic();
-        [Space (2)]
-        
-        [Tooltip ("Allows to activate ( make dynamic ) inactive and kinematic objects.")]
-        public RFActivation activation = new RFActivation();
-        
-            [Header ("  Demolition")]
-            [Space (3)]
-        
+        public InitType              initialization      = InitType.ByMethod;
+        public SimType               simulationType      = SimType.Dynamic;
+        public ObjectType            objectType          = ObjectType.Mesh;
+        public DemolitionType        demolitionType      = DemolitionType.None;
+        public RFPhysic              physics             = new RFPhysic();
+        public RFActivation          activation          = new RFActivation();
         public RFLimitations         limitations         = new RFLimitations();
-        [Space (2)]
-        
         public RFDemolitionMesh      meshDemolition      = new RFDemolitionMesh();
-        [Space (2)]
-        
         public RFDemolitionCluster   clusterDemolition   = new RFDemolitionCluster();
-        [Space (2)]
-        
         public RFReferenceDemolition referenceDemolition = new RFReferenceDemolition();
-        [Space (2)]
-        
         public RFSurface             materials           = new RFSurface();
-        [Space (2)]
-        
         public RFDamage              damage              = new RFDamage();
-        
-            [Header ("  Common")]
-            [Space (3)]
-        
         public RFFade                fading              = new RFFade();
-        [Space (2)]
-
         public RFReset               reset               = new RFReset();
-
-        [Header ("  Info")]
 
         /// /////////////////////////////////////////////////////////
         /// Hidden
         /// /////////////////////////////////////////////////////////
         
-        [HideInInspector] public bool                initialized;
-        [HideInInspector] public bool                corState;
-        [HideInInspector] public Mesh[]              meshes;
-        [HideInInspector] public Vector3[]           pivots;
-        [HideInInspector] public RFMesh[]            rfMeshes;
-        [HideInInspector] public List<RFDictionary>  subIds;
-        [HideInInspector] public List<RayfireRigid>  fragments;
-        [HideInInspector] public Quaternion          cacheRotation; // NOTE. Should be public, otherwise rotation error on demolition.
-        [HideInInspector] public Transform           transForm;
-        [HideInInspector] public Transform           rootChild;
-        [HideInInspector] public Transform           rootParent;
-        [HideInInspector] public MeshFilter          meshFilter;
-        [HideInInspector] public MeshRenderer        meshRenderer;
-        [HideInInspector] public SkinnedMeshRenderer skinnedMeshRend;
-        [HideInInspector] public List<RayfireDebris> debrisList;
-        [HideInInspector] public List<RayfireDust>   dustList;
-        [HideInInspector] public RayfireRestriction  restriction;
-        [HideInInspector] public RayfireSound        sound;
+        public bool                initialized;
+        public bool                corState;
+        public Mesh[]              meshes;
+        public Vector3[]           pivots;
+        public RFMesh[]            rfMeshes;
+        public List<RFDictionary>  subIds;
+        public List<RayfireRigid>  fragments;
+        public Quaternion          cacheRotation; // NOTE. Should be public, otherwise rotation error on demolition.
+        public Transform           transForm;
+        public Transform           rootChild;
+        public Transform           rootParent;
+        public MeshFilter          meshFilter;
+        public MeshRenderer        meshRenderer;
+        public SkinnedMeshRenderer skinnedMeshRend;
+        public List<RayfireDebris> debrisList;
+        public List<RayfireDust>   dustList;
+        public RayfireRestriction  restriction;
+        public RayfireSound        sound;
         
         [NonSerialized] public RayfireRigidRoot rigidRoot;
 
@@ -106,7 +64,7 @@ namespace RayFire
         public RFDemolitionEvent  demolitionEvent  = new RFDemolitionEvent();
         public RFActivationEvent  activationEvent  = new RFActivationEvent();
         public RFRestrictionEvent restrictionEvent = new RFRestrictionEvent();
-
+        
         /// /////////////////////////////////////////////////////////
         /// Common
         /// /////////////////////////////////////////////////////////
@@ -279,20 +237,21 @@ namespace RayFire
                 ? GetComponent<RayfireShatter>() 
                 : null;
             
-            // Other
-            transForm          = GetComponent<Transform>();
-            meshFilter         = GetComponent<MeshFilter>();
-            meshRenderer       = GetComponent<MeshRenderer>();
-            skinnedMeshRend    = GetComponent<SkinnedMeshRenderer>(); 
-            restriction        = GetComponent<RayfireRestriction>();
+            // Tm
+            transForm = GetComponent<Transform>();
             
-            // Set sound
-            sound = GetComponent<RayfireSound>();
-            if (sound != null)
+            // Mesh components
+            if (objectType == ObjectType.Mesh)
             {
-                sound.rigid = this;
-                sound.WarningCheck();
+                meshFilter   = GetComponent<MeshFilter>();
+                meshRenderer = GetComponent<MeshRenderer>();
             }
+
+            // Skinned mesh
+            if (objectType == ObjectType.SkinnedMesh)
+                skinnedMeshRend = GetComponent<SkinnedMeshRenderer>();
+            
+            restriction = GetComponent<RayfireRestriction>();
 
             // Add missing mesh renderer
             if (meshFilter != null && meshRenderer == null)
@@ -704,8 +663,8 @@ namespace RayFire
             if (limitations.byCollision == false)
                 return;
             
-            // Tag check. Can/t be replaced by CompareTag because not used tags can be defined
-            if (limitations.tag.Length > 0 && collision.collider.CompareTag (limitations.tag) == false)
+            // Tag check. IMPORTANT keep length check for compatibility with older builds
+            if (limitations.tag.Length > 0 && limitations.tag != "Untagged" && collision.collider.CompareTag (limitations.tag) == false)
                 return;
             
             // Demolish object check

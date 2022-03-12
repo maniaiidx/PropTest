@@ -1,24 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
-
-// Instantiate preserved
 
 namespace RayFire
 {
     [Serializable]
     public class RFReset
     {
-        // Post dml object 
         public enum PostDemolitionType
         {
             DestroyWithDelay  = 0,
             DeactivateToReset = 1
         }
         
-        // Mesh reuse
         public enum MeshResetType
         {
             Destroy              = 0,
@@ -26,7 +21,6 @@ namespace RayFire
             ReuseFragmentMeshes  = 4
         }
         
-        // Fragments reuse
         public enum FragmentsResetType
         {
             Destroy     = 0,
@@ -34,38 +28,14 @@ namespace RayFire
             Preserve    = 4
         }
         
-        [Header ("  Reset")]
-
-        [Tooltip ("Reset transform to position and rotation when object was initialized.")]
-        public bool transform;
-        [Space (2)]
-        
-        [Tooltip ("Reset damage value.")]
-        public bool damage;
-        [Space (3)]
-        
-        [Tooltip ("Reset Connectivity.")]
-        public bool connectivity;
-
-        [Header ("  Post Demolition")]
-        [Space (3)]
-        
+        public bool               transform;
+        public bool               damage;
+        public bool               connectivity;
         public PostDemolitionType action;
-        [Space (2)]
-        
-        [Tooltip ("Object will be destroyed after defined delay.")]
-        [Range (0, 60)] public float destroyDelay;
-
-        [Header ("  Reuse")]
-        [Space (3)]
-        
-        public MeshResetType mesh;
-        [Space (2)]
-        
+        public float              destroyDelay;
+        public MeshResetType      mesh;
         public FragmentsResetType fragments;
-        [Space (2)]
 
-        
         [NonSerialized] public bool toBeDestroyed;
 
         /// /////////////////////////////////////////////////////////

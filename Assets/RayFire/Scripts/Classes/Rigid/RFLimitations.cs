@@ -8,44 +8,14 @@ namespace RayFire
     [Serializable]
     public class RFLimitations
     {
-        [Header ("  Collision")]
-        
-        [Tooltip ("Enables demolition by collision.")]
-        public bool byCollision;
-        
-        [Space(2)]
-        [Tooltip ("Local Object solidity multiplier for object. Low Solidity makes object more fragile at collision.")]
-        [Range (0.0f, 10f)] public float solidity;
-        
-        [Space(2)]
-        [Tooltip ("Object will be demolished only if it will collide with other objects with defined Tag.")]
+        public bool   byCollision;
+        public float  solidity;
         public string tag;
-        
-        [Header ("  Other")]
-        
-        [Tooltip ("Defines how deep object can be demolished. Depth is limitless if set to 0.")]
-        [Range (0, 7)] public int depth;
-
-        [Space(2)]
-        [Tooltip ("Safe time. Measures in seconds and allows to prevent fragments from being demolished right after they were just created.")]
-        [Range (0.05f, 10f)] public float time;
-
-        [Space(2)]
-        [Tooltip ("Prevent objects with bounding box size less than defined value to be demolished.")]
-        [Range (0.01f, 5f)] public float size;
-
-        [Space(2)]
-        [Tooltip ("Object will be demolished only if it is visible to any camera including scene camera.")]
-        public bool visible;
-        
-        //[Tooltip ("")]
-        //[Range (1, 100)]
-        // TODO public int probability;
-        
-        
-        [Space(4)]
-        [Tooltip ("Allows object to be sliced by object with RayFire Blade component.")]
-        public bool sliceByBlade;
+        public int    depth;
+        public float  time;
+        public float  size;
+        public bool   visible;
+        public bool   sliceByBlade;
 
         // Non serialized
         [NonSerialized] public List<Vector3> slicePlanes;
@@ -73,7 +43,6 @@ namespace RayFire
         static string rootStr = "_root";
         public static string rigidStr = "RayFire Rigid: ";
         
-        
         /// /////////////////////////////////////////////////////////
         /// Constructor
         /// /////////////////////////////////////////////////////////
@@ -86,7 +55,7 @@ namespace RayFire
             depth     = 1;
             time      = 0.2f;
             size      = 0.1f;
-            tag       = "";
+            tag       = "Untagged";
             visible   = false;
             
             sliceByBlade = false;

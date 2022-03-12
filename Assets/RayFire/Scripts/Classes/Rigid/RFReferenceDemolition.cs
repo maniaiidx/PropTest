@@ -6,36 +6,21 @@ using Random = UnityEngine.Random;
 
 namespace RayFire
 {
-    [System.Serializable]
+    [Serializable]
     public class RFReferenceDemolition
     {
-        // Mass Type
         public enum ActionType
         {
             Instantiate    = 0,
             SetActive       = 1
         }
-        
-        [Header ("  Source")]
-        [Space (3)]
-        
-        public GameObject reference;
-        [Space (2)]
+
+        public GameObject       reference;
         public List<GameObject> randomList;
-        
-        [Header ("  Properties")]
-        [Space (3)]
-        
-        
-        public ActionType action;
-        [Space (2)]
-        
-        [Tooltip ("Add RayFire Rigid component to reference with mesh")]
-        public bool addRigid;
-        [Space (2)]
-        public bool inheritScale;
-        [Space (2)]
-        public bool inheritMaterials;
+        public ActionType       action;
+        public bool             addRigid;
+        public bool             inheritScale;
+        public bool             inheritMaterials;
         
         /// /////////////////////////////////////////////////////////
         /// Constructor

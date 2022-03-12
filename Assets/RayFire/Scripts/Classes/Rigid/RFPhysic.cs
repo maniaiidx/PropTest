@@ -10,71 +10,35 @@ namespace RayFire
     [Serializable]
     public class RFPhysic
     {
-        [Header("  Physic Material")]
-
-        [Tooltip("Material preset with predefined density, friction, elasticity and solidity. Can be edited in Rayfire Man component.")]
-        public MaterialType materialType;
-        
-        [Space(2)]
-        [Tooltip("Allows to define own Physic Material.")]
+        public MaterialType   materialType;
         public PhysicMaterial material;
-        
-        [Header("  Mass")]
-
-        public MassType massBy;
-        [Space (2)]
-        
-        [Tooltip("Mass which will be applied to object if Mass By set to By Mass Property.")]
-        [Range(0.1f, 100f)] public float mass;
-        
-        [Header ("  Collider")]
-
+        public MassType       massBy;
+        public float          mass;
         public RFColliderType colliderType;
-        [Space (2)]
+        public bool           planarCheck;
+        public bool           ignoreNear;
+        public bool           useGravity;
+        public int            solverIterations;
+        public float          dampening;
         
-        [Tooltip("Do not add Mesh Collider to objects with planar low poly mesh.")]
-        public bool planarCheck;
-        [Space (2)]
+        public Rigidbody      rigidBody;
+        public Collider       meshCollider;
+        public List<Collider> clusterColliders;
+        public List<int>      ignoreList;
+        public bool           rec;
+        public bool           exclude;
+        public int            solidity;
+        public bool           destructible;
+        public bool           physicsDataCorState;
         
-        [Tooltip(".")]
-        public bool ignoreNear;
-        [Space (2)]
-        
-        [Header ("  Other")]
-
-        [Tooltip("Enables gravity for simulated object.")]
-        public bool useGravity;
-        
-        [Space (2)]
-        [Range(1,20)]public int solverIterations;
-        
-        [Header ("  Fragments")]
-
-        [Tooltip("Multiplier for demolished fragments velocity.")]
-        [Range(0, 1f)] public float dampening;
-        
-        // Hidden
-        [HideInInspector] public Rigidbody      rigidBody;
-        [HideInInspector] public Collider       meshCollider;
-        [HideInInspector] public List<Collider> clusterColliders;
-        [HideInInspector] public List<int>      ignoreList;
-        
-        [NonSerialized] public bool rec;
-        [NonSerialized] public bool exclude;
-        [NonSerialized] public int  solidity;
-        [NonSerialized] public bool destructible;
-        [NonSerialized] public bool physicsDataCorState;
-        
-        [NonSerialized] public Vector3    velocity;
-        [NonSerialized] public Vector3    initScale;
-        [NonSerialized] public Vector3    initPosition;
-        [NonSerialized] public Quaternion initRotation;
-        [NonSerialized] public Vector3    localPosition;
-
+        [NonSerialized] public Vector3     velocity;
+        [NonSerialized] public Vector3     initScale;
+        [NonSerialized] public Vector3     initPosition;
+        [NonSerialized] public Quaternion  initRotation;
+        [NonSerialized] public Vector3     localPosition;
         [NonSerialized] public IEnumerator physicsEnum;
         
         public static          int       coplanarVertLimit = 30;
-
         
         /// /////////////////////////////////////////////////////////
         /// Constructor
