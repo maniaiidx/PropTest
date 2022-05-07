@@ -6,8 +6,10 @@ namespace RayFire
 {
     public class demolish : MonoBehaviour
     {
-        public float LateTime = 0f;
+        public float LateTime_Mesh = 0f;
+        public float LateTime_Particle = 0f;
         public RayfireRigid Next_RFRigid;
+        public RayfireRigid Next_RFRigid2;
         public MeshRenderer Late_Mesh;
         public ParticleSystem Late_Particle;
         private bool onece;
@@ -30,18 +32,27 @@ namespace RayFire
                 Debug.Log(other.gameObject.name);
                 if (onece == false)
                 {
-                    StartCoroutine(LateSpawn());
+                    if (Next_RFRigid != null)
+                    {
+                        Next_RFRigid.Initialize();
+                        Next_RFRigid.Demolish();
+                    }
+                    if (Next_RFRigid2 != null)
+                    {
+                        Next_RFRigid2.Initialize();
+                        Next_RFRigid2.Demolish();
+                    }
+                    StartCoroutine(LateSpawn_Mesh());
+                    StartCoroutine(LateSpawn_Particle());
                     onece = true;
                 }
             }
         }
 
-        private IEnumerator LateSpawn()
+        private IEnumerator LateSpawn_Mesh()
         {
-            Debug.Log("LateSpawn");
-            Next_RFRigid.Initialize();
-            Next_RFRigid.Demolish();
-            float time = LateTime;
+            Debug.Log("LateSpawn_Mesh");
+            float time = LateTime_Mesh;
             while (time > 0)
             {
                 time -= Time.deltaTime;
@@ -50,6 +61,21 @@ namespace RayFire
             }
             //Late_time経過後
             Late_Mesh.enabled = true;
+            //Late_Particle.Play();
+        }
+
+        private IEnumerator LateSpawn_Particle()
+        {
+            Debug.Log("LateSpawn_Mesh");
+            float time = LateTime_Particle;
+            while (time > 0)
+            {
+                time -= Time.deltaTime;
+
+                yield return null;  // 必須
+            }
+            //Late_time経過後
+            //Late_Mesh.enabled = true;
             Late_Particle.Play();
         }
     }
