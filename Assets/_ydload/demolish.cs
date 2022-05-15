@@ -6,17 +6,18 @@ namespace RayFire
 {
     public class demolish : MonoBehaviour
     {
-        public float LateTime_Mesh = 0f;
-        public float LateTime_Particle = 0f;
+        //public float LateTime_Mesh = 0f;
+        //public float LateTime_Particle = 0f;
         public RayfireRigid Next_RFRigid;
         public RayfireRigid Next_RFRigid2;
-        public MeshRenderer Late_Mesh;
-        public ParticleSystem Late_Particle;
+        //public MeshRenderer Late_Mesh;
+        //public ParticleSystem Late_Particle;
         private bool onece;
+        private Collider mycollider;
         // Start is called before the first frame update
         void Start()
         {
-
+            mycollider = gameObject.GetComponent<Collider>();
         }
 
         // Update is called once per frame
@@ -42,41 +43,42 @@ namespace RayFire
                         Next_RFRigid2.Initialize();
                         Next_RFRigid2.Demolish();
                     }
-                    StartCoroutine(LateSpawn_Mesh());
-                    StartCoroutine(LateSpawn_Particle());
+                    //StartCoroutine(LateSpawn_Mesh());
+                    //StartCoroutine(LateSpawn_Particle());
                     onece = true;
+                    mycollider.enabled = false;
                 }
             }
         }
 
-        private IEnumerator LateSpawn_Mesh()
-        {
-            Debug.Log("LateSpawn_Mesh");
-            float time = LateTime_Mesh;
-            while (time > 0)
-            {
-                time -= Time.deltaTime;
+        //private IEnumerator LateSpawn_Mesh()
+        //{
+        //    Debug.Log("LateSpawn_Mesh");
+        //    float time = LateTime_Mesh;
+        //    while (time > 0)
+        //    {
+        //        time -= Time.deltaTime;
 
-                yield return null;  // 必須
-            }
-            //Late_time経過後
-            Late_Mesh.enabled = true;
-            //Late_Particle.Play();
-        }
+        //        yield return null;  // 必須
+        //    }
+        //    //Late_time経過後
+        //    Late_Mesh.enabled = true;
+        //    //Late_Particle.Play();
+        //}
 
-        private IEnumerator LateSpawn_Particle()
-        {
-            Debug.Log("LateSpawn_Mesh");
-            float time = LateTime_Particle;
-            while (time > 0)
-            {
-                time -= Time.deltaTime;
+        //private IEnumerator LateSpawn_Particle()
+        //{
+        //    Debug.Log("LateSpawn_Mesh");
+        //    float time = LateTime_Particle;
+        //    while (time > 0)
+        //    {
+        //        time -= Time.deltaTime;
 
-                yield return null;  // 必須
-            }
-            //Late_time経過後
-            //Late_Mesh.enabled = true;
-            Late_Particle.Play();
-        }
+        //        yield return null;  // 必須
+        //    }
+        //    //Late_time経過後
+        //    //Late_Mesh.enabled = true;
+        //    Late_Particle.Play();
+        //}
     }
 }

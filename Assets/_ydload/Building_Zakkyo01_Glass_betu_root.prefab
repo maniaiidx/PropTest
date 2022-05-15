@@ -1243,6 +1243,7 @@ GameObject:
   - component: {fileID: 1115020295177308131}
   - component: {fileID: 2250510459536598606}
   - component: {fileID: 1337143085380877088}
+  - component: {fileID: 9048625695835453037}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_35
   m_TagString: Untagged
@@ -1309,6 +1310,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &9048625695835453037
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472983257681647592}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1616418518681168060
 GameObject:
   m_ObjectHideFlags: 0
@@ -1397,6 +1414,7 @@ GameObject:
   - component: {fileID: 8112548901423839225}
   - component: {fileID: 3200892664302990789}
   - component: {fileID: 1704200033130565716}
+  - component: {fileID: 6477152647926753358}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_1
   m_TagString: Untagged
@@ -1463,6 +1481,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &6477152647926753358
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656146267381796971}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1659670719746174318
 GameObject:
   m_ObjectHideFlags: 0
@@ -1474,6 +1508,7 @@ GameObject:
   - component: {fileID: 3287905462909181656}
   - component: {fileID: 7364687780453305393}
   - component: {fileID: 1295413736325993815}
+  - component: {fileID: 6626314786324211652}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_96
   m_TagString: Untagged
@@ -1540,6 +1575,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &6626314786324211652
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659670719746174318}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1712370628631670694
 GameObject:
   m_ObjectHideFlags: 0
@@ -1705,6 +1756,7 @@ GameObject:
   - component: {fileID: 2635533628381759754}
   - component: {fileID: 8075607856877851783}
   - component: {fileID: 611834490796013286}
+  - component: {fileID: 885727403194490744}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_32
   m_TagString: Untagged
@@ -1771,6 +1823,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &885727403194490744
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855202450396185288}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1895163823262952878
 GameObject:
   m_ObjectHideFlags: 0
@@ -1782,6 +1850,7 @@ GameObject:
   - component: {fileID: 3837286208721329583}
   - component: {fileID: 2390804510342475422}
   - component: {fileID: 5590380161025168219}
+  - component: {fileID: 1917870170753958092}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_38
   m_TagString: Untagged
@@ -1848,6 +1917,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &1917870170753958092
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1895163823262952878}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1952886282960523983
 GameObject:
   m_ObjectHideFlags: 0
@@ -2450,6 +2535,7 @@ GameObject:
   - component: {fileID: 8282020735019572950}
   - component: {fileID: 384561901618775826}
   - component: {fileID: 1976359068200253900}
+  - component: {fileID: 4625093992867120978}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_40
   m_TagString: Untagged
@@ -2516,6 +2602,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &4625093992867120978
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2534234655265963812}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &2637686265125818839
 GameObject:
   m_ObjectHideFlags: 0
@@ -2912,6 +3014,7 @@ GameObject:
   - component: {fileID: 1056374539252776326}
   - component: {fileID: 6926074314594094979}
   - component: {fileID: 6939885420734512391}
+  - component: {fileID: 2397752665095193811}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_26
   m_TagString: Untagged
@@ -2978,6 +3081,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &2397752665095193811
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3095224044556431677}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &3121122916382650271
 GameObject:
   m_ObjectHideFlags: 0
@@ -3066,6 +3185,7 @@ GameObject:
   - component: {fileID: 7492847442412852329}
   - component: {fileID: 5008443869105873099}
   - component: {fileID: 559033114579733546}
+  - component: {fileID: 6875117560992396091}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_30
   m_TagString: Untagged
@@ -3132,6 +3252,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &6875117560992396091
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3262625497555420121}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &3275596168935662465
 GameObject:
   m_ObjectHideFlags: 0
@@ -3143,6 +3279,7 @@ GameObject:
   - component: {fileID: 5400425815133895170}
   - component: {fileID: 981632588936845818}
   - component: {fileID: 6375923182363955965}
+  - component: {fileID: 8387963940010844953}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_31
   m_TagString: Untagged
@@ -3209,6 +3346,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &8387963940010844953
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3275596168935662465}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &3302278755784950040
 GameObject:
   m_ObjectHideFlags: 0
@@ -3374,6 +3527,7 @@ GameObject:
   - component: {fileID: 742387794694809389}
   - component: {fileID: 5604192835323464141}
   - component: {fileID: 7168735630405059486}
+  - component: {fileID: 6315926622365656330}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_33
   m_TagString: Untagged
@@ -3440,6 +3594,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &6315926622365656330
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3449427342692454516}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &3471761024023377468
 GameObject:
   m_ObjectHideFlags: 0
@@ -4760,6 +4930,7 @@ GameObject:
   - component: {fileID: 1707961291163620127}
   - component: {fileID: 8584369270146234909}
   - component: {fileID: 1139095479420567424}
+  - component: {fileID: 175911585412708779}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_81
   m_TagString: Untagged
@@ -4826,6 +4997,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &175911585412708779
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5300717532185166724}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &5401077515200277721
 GameObject:
   m_ObjectHideFlags: 0
@@ -5838,6 +6025,7 @@ GameObject:
   - component: {fileID: 9127447513209288771}
   - component: {fileID: 5118486115718732625}
   - component: {fileID: 8937973033933188732}
+  - component: {fileID: 5971894721958125640}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_28
   m_TagString: Untagged
@@ -5904,6 +6092,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &5971894721958125640
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6322852461700697244}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &6469717392252925438
 GameObject:
   m_ObjectHideFlags: 0
@@ -5915,6 +6119,7 @@ GameObject:
   - component: {fileID: 9099377861963270188}
   - component: {fileID: 7091743872243875788}
   - component: {fileID: 2484702795595829964}
+  - component: {fileID: 1637753298263307862}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_37
   m_TagString: Untagged
@@ -5981,6 +6186,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &1637753298263307862
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6469717392252925438}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &6531192608936217106
 GameObject:
   m_ObjectHideFlags: 0
@@ -6300,6 +6521,7 @@ GameObject:
   - component: {fileID: 1624875308260425722}
   - component: {fileID: 5401828669670345487}
   - component: {fileID: 7132735598084486966}
+  - component: {fileID: 602193147843554273}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_39
   m_TagString: Untagged
@@ -6366,6 +6588,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &602193147843554273
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7415638454443513919}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &7421893892130705878
 GameObject:
   m_ObjectHideFlags: 0
@@ -6531,6 +6769,7 @@ GameObject:
   - component: {fileID: 3410195940021286916}
   - component: {fileID: 7565863054093041692}
   - component: {fileID: 1876158925567253831}
+  - component: {fileID: 1578277088450143903}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_86
   m_TagString: Untagged
@@ -6597,6 +6836,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &1578277088450143903
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8022758214423997204}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &8036830445349916180
 GameObject:
   m_ObjectHideFlags: 0
@@ -6685,6 +6940,7 @@ GameObject:
   - component: {fileID: 9167345059576568343}
   - component: {fileID: 2403445452771859471}
   - component: {fileID: 8746202687918146264}
+  - component: {fileID: 235144230579495174}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_29
   m_TagString: Untagged
@@ -6751,6 +7007,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &235144230579495174
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8120003922844083295}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &8153456796588345683
 GameObject:
   m_ObjectHideFlags: 0
@@ -6839,6 +7111,7 @@ GameObject:
   - component: {fileID: 8075684152885870131}
   - component: {fileID: 9223077444570500080}
   - component: {fileID: 559419960056176976}
+  - component: {fileID: 1422093907319672165}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_27
   m_TagString: Untagged
@@ -6905,6 +7178,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &1422093907319672165
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8545944239533385926}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &8559945000114270767
 GameObject:
   m_ObjectHideFlags: 0
@@ -7455,6 +7744,7 @@ GameObject:
   - component: {fileID: 2024832897701099602}
   - component: {fileID: 8482630269910558544}
   - component: {fileID: 5692670546410238249}
+  - component: {fileID: 2636090554129362603}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_36
   m_TagString: Untagged
@@ -7521,6 +7811,22 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &2636090554129362603
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9068708763385649137}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &9110129873476226210
 GameObject:
   m_ObjectHideFlags: 0
@@ -7686,6 +7992,7 @@ GameObject:
   - component: {fileID: 666114861126408037}
   - component: {fileID: 4850746733325333243}
   - component: {fileID: 7125515981621444430}
+  - component: {fileID: 1799646472853601238}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Glass_sh_34
   m_TagString: Untagged
@@ -7752,3 +8059,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!54 &1799646472853601238
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9186261247547058476}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
