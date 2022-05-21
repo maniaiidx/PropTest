@@ -11,6 +11,8 @@ public class LocalGravity : MonoBehaviour
     { rb = this.GetComponent<Rigidbody>(); }
 
     void FixedUpdate()
-    { rb.AddForce(localGravity, ForceMode.Acceleration); }
+    { if(rb != null) rb.AddForce(localGravity, ForceMode.Acceleration); 
+    else rb = this.GetComponent<Rigidbody>();
+    }
 
 }

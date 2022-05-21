@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 561281591300479826}
   - component: {fileID: 226083964982214684}
   - component: {fileID: 4730221590846863572}
+  - component: {fileID: 1915855535799228659}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_71
   m_TagString: Untagged
@@ -77,6 +78,150 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1915855535799228659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51222941793426750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
+--- !u!1 &115719908643476698
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4296598906577118192}
+  - component: {fileID: 2984529145396717762}
+  - component: {fileID: 5952614675220514242}
+  - component: {fileID: 3547543753489447714}
+  - component: {fileID: 1049043095174529765}
+  - component: {fileID: 2779729113093708219}
+  m_Layer: 0
+  m_Name: oya
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4296598906577118192
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115719908643476698}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 5782738949069478198}
+  - {fileID: 1400085844945391970}
+  m_Father: {fileID: 5717756057732963636}
+  m_RootOrder: 90
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &2984529145396717762
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115719908643476698}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &5952614675220514242
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115719908643476698}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+--- !u!65 &3547543753489447714
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115719908643476698}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1.0000005, z: 1.0000005}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &1049043095174529765
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115719908643476698}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &2779729113093708219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115719908643476698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b87d8c7a4793aa438b34243d111534a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LateTime_Mesh: 3
+  LateTime_Particle: 1
+  MeshPrefab: {fileID: 6178202066390452748, guid: 2fe41c03da1267e4da45f7e460c7adef,
+    type: 3}
+  ParticlePrefab: {fileID: 1474546561887758, guid: c7b6c2abc3fc44f4dab4391504992087,
+    type: 3}
+  MeshSpawnTrs: {fileID: 5782738949069478198}
+  ParticleSpawnTrs: {fileID: 1400085844945391970}
 --- !u!1 &258230053019419945
 GameObject:
   m_ObjectHideFlags: 0
@@ -88,6 +233,7 @@ GameObject:
   - component: {fileID: 1415989560153361999}
   - component: {fileID: 1905331895102432233}
   - component: {fileID: 2671925591533178096}
+  - component: {fileID: 2432767601702196677}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_68
   m_TagString: Untagged
@@ -154,6 +300,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2432767601702196677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 258230053019419945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &398000950991859104
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,6 +324,7 @@ GameObject:
   - component: {fileID: 2049164062191641874}
   - component: {fileID: 2854258027296668659}
   - component: {fileID: 4215701498482788634}
+  - component: {fileID: 3950976947661864812}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_16
   m_TagString: Untagged
@@ -231,6 +391,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3950976947661864812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 398000950991859104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &416468036394289788
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,6 +415,7 @@ GameObject:
   - component: {fileID: 1162382668823580648}
   - component: {fileID: 5587272025711697001}
   - component: {fileID: 1792299153548524009}
+  - component: {fileID: 4747282717019282416}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_72
   m_TagString: Untagged
@@ -308,6 +482,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4747282717019282416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 416468036394289788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &506875874138926023
 GameObject:
   m_ObjectHideFlags: 0
@@ -319,6 +506,7 @@ GameObject:
   - component: {fileID: 3734811655710995157}
   - component: {fileID: 8694905679507788900}
   - component: {fileID: 5219424718981430818}
+  - component: {fileID: 398902506806526487}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_35
   m_TagString: Untagged
@@ -385,6 +573,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &398902506806526487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 506875874138926023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &587712478430599835
 GameObject:
   m_ObjectHideFlags: 0
@@ -396,6 +597,7 @@ GameObject:
   - component: {fileID: 5108290878614438713}
   - component: {fileID: 753650450396671360}
   - component: {fileID: 1184446462974591415}
+  - component: {fileID: 3861179002926657369}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_73
   m_TagString: Untagged
@@ -462,6 +664,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3861179002926657369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 587712478430599835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &621943470213743278
 GameObject:
   m_ObjectHideFlags: 0
@@ -473,6 +688,7 @@ GameObject:
   - component: {fileID: 6794116932227832254}
   - component: {fileID: 7493919753410846124}
   - component: {fileID: 4604778891161222570}
+  - component: {fileID: 5394498039586944442}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_15
   m_TagString: Untagged
@@ -539,6 +755,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5394498039586944442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621943470213743278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &732155225645737713
 GameObject:
   m_ObjectHideFlags: 0
@@ -550,6 +779,7 @@ GameObject:
   - component: {fileID: 201632816861467577}
   - component: {fileID: 5433226489876479431}
   - component: {fileID: 2434074171805926666}
+  - component: {fileID: 2912418771542555311}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_79
   m_TagString: Untagged
@@ -616,6 +846,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2912418771542555311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 732155225645737713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &781748661360164340
 GameObject:
   m_ObjectHideFlags: 0
@@ -627,6 +870,7 @@ GameObject:
   - component: {fileID: 7067561610596118472}
   - component: {fileID: 2017607687541479638}
   - component: {fileID: 4823434046828075660}
+  - component: {fileID: 6886622068234526435}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_46
   m_TagString: Untagged
@@ -693,6 +937,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6886622068234526435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781748661360164340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1141321994247630974
 GameObject:
   m_ObjectHideFlags: 0
@@ -704,6 +961,7 @@ GameObject:
   - component: {fileID: 5921033576403547301}
   - component: {fileID: 652067878102496920}
   - component: {fileID: 5547533869144952079}
+  - component: {fileID: 3293422166745226630}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_53
   m_TagString: Untagged
@@ -770,6 +1028,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3293422166745226630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141321994247630974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1239427744251054477
 GameObject:
   m_ObjectHideFlags: 0
@@ -781,6 +1052,7 @@ GameObject:
   - component: {fileID: 1912167362949645943}
   - component: {fileID: 7506060331672865779}
   - component: {fileID: 381489495528372812}
+  - component: {fileID: 7531010248866081996}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_40
   m_TagString: Untagged
@@ -847,6 +1119,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7531010248866081996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239427744251054477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1370878490269481630
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,6 +1143,7 @@ GameObject:
   - component: {fileID: 4846534140487129824}
   - component: {fileID: 5340137446725259745}
   - component: {fileID: 4181916771532584030}
+  - component: {fileID: 2526251042008627517}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_78
   m_TagString: Untagged
@@ -924,6 +1210,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2526251042008627517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1370878490269481630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1462546253595931027
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,6 +1234,7 @@ GameObject:
   - component: {fileID: 5208517265122588895}
   - component: {fileID: 2789456633577995307}
   - component: {fileID: 8823055722532838911}
+  - component: {fileID: 3552101461294933989}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_86
   m_TagString: Untagged
@@ -1001,6 +1301,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3552101461294933989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462546253595931027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1526517527235450640
 GameObject:
   m_ObjectHideFlags: 0
@@ -1012,6 +1325,7 @@ GameObject:
   - component: {fileID: 2479329725521283383}
   - component: {fileID: 4413482977390852482}
   - component: {fileID: 134110934873284306}
+  - component: {fileID: 5678747775826402414}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_45
   m_TagString: Untagged
@@ -1078,6 +1392,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5678747775826402414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1526517527235450640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1547162255056968518
 GameObject:
   m_ObjectHideFlags: 0
@@ -1089,6 +1416,7 @@ GameObject:
   - component: {fileID: 5777291010407795095}
   - component: {fileID: 6250425374142464888}
   - component: {fileID: 4625269920198942044}
+  - component: {fileID: 2626987905709378865}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_43
   m_TagString: Untagged
@@ -1155,6 +1483,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2626987905709378865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547162255056968518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1695454622152721934
 GameObject:
   m_ObjectHideFlags: 0
@@ -1166,6 +1507,7 @@ GameObject:
   - component: {fileID: 6416001436225254543}
   - component: {fileID: 4073084081714099212}
   - component: {fileID: 7991073696185749551}
+  - component: {fileID: 2796141540944676742}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_61
   m_TagString: Untagged
@@ -1232,6 +1574,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2796141540944676742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1695454622152721934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1784359672045533591
 GameObject:
   m_ObjectHideFlags: 0
@@ -1243,6 +1598,7 @@ GameObject:
   - component: {fileID: 3767659426001749203}
   - component: {fileID: 4301162319166183543}
   - component: {fileID: 4960194345447815215}
+  - component: {fileID: 1135175623033206685}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_23
   m_TagString: Untagged
@@ -1309,6 +1665,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1135175623033206685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1784359672045533591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &1955984382421418257
 GameObject:
   m_ObjectHideFlags: 0
@@ -1320,6 +1689,7 @@ GameObject:
   - component: {fileID: 8029510380904450194}
   - component: {fileID: 423968671818325158}
   - component: {fileID: 2611157364751562308}
+  - component: {fileID: 3510798078490511908}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_18
   m_TagString: Untagged
@@ -1386,6 +1756,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3510798078490511908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1955984382421418257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2001750666564196927
 GameObject:
   m_ObjectHideFlags: 0
@@ -1397,6 +1780,7 @@ GameObject:
   - component: {fileID: 7805107873406059053}
   - component: {fileID: 6139905301628768236}
   - component: {fileID: 4335646711658109556}
+  - component: {fileID: 3959632683646521811}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_29
   m_TagString: Untagged
@@ -1463,6 +1847,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3959632683646521811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001750666564196927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2044777721747520580
 GameObject:
   m_ObjectHideFlags: 0
@@ -1474,6 +1871,7 @@ GameObject:
   - component: {fileID: 7390989131349051330}
   - component: {fileID: 2934569955532709916}
   - component: {fileID: 7953387560566372993}
+  - component: {fileID: 2033241613564628982}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_39
   m_TagString: Untagged
@@ -1540,6 +1938,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2033241613564628982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2044777721747520580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2077859095774438882
 GameObject:
   m_ObjectHideFlags: 0
@@ -1551,6 +1962,7 @@ GameObject:
   - component: {fileID: 1927592118946538931}
   - component: {fileID: 7859516823264782493}
   - component: {fileID: 6866406642527096081}
+  - component: {fileID: 4474020983059684605}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_54
   m_TagString: Untagged
@@ -1617,6 +2029,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4474020983059684605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077859095774438882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2078731487833323707
 GameObject:
   m_ObjectHideFlags: 0
@@ -1628,6 +2053,7 @@ GameObject:
   - component: {fileID: 4007905024400447727}
   - component: {fileID: 6733613332685544979}
   - component: {fileID: 2113217506496395333}
+  - component: {fileID: 7816795231435772912}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_7
   m_TagString: Untagged
@@ -1694,6 +2120,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7816795231435772912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078731487833323707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2133385330377126468
 GameObject:
   m_ObjectHideFlags: 0
@@ -1705,6 +2144,7 @@ GameObject:
   - component: {fileID: 1255326076875138436}
   - component: {fileID: 4523006526748564918}
   - component: {fileID: 1168805803389057129}
+  - component: {fileID: 7746309149150671054}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_17
   m_TagString: Untagged
@@ -1771,6 +2211,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7746309149150671054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133385330377126468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2351945444961254975
 GameObject:
   m_ObjectHideFlags: 0
@@ -1782,6 +2235,7 @@ GameObject:
   - component: {fileID: 2395310414345984015}
   - component: {fileID: 4301137522967430662}
   - component: {fileID: 2715923083780252606}
+  - component: {fileID: 7317674093471895273}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_14
   m_TagString: Untagged
@@ -1848,6 +2302,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7317674093471895273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2351945444961254975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2427036026112098187
 GameObject:
   m_ObjectHideFlags: 0
@@ -1859,6 +2326,7 @@ GameObject:
   - component: {fileID: 5520676092016551036}
   - component: {fileID: 4457302287141827591}
   - component: {fileID: 6784728684706872823}
+  - component: {fileID: 3455243738414074591}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_2
   m_TagString: Untagged
@@ -1925,6 +2393,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3455243738414074591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2427036026112098187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2430834688473974541
 GameObject:
   m_ObjectHideFlags: 0
@@ -1936,6 +2417,7 @@ GameObject:
   - component: {fileID: 2309708151382670575}
   - component: {fileID: 5258810952426660495}
   - component: {fileID: 2686902907092881463}
+  - component: {fileID: 1623858586191690367}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_90
   m_TagString: Untagged
@@ -2002,6 +2484,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1623858586191690367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2430834688473974541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2504576701947063129
 GameObject:
   m_ObjectHideFlags: 0
@@ -2013,6 +2508,7 @@ GameObject:
   - component: {fileID: 6334640131485484620}
   - component: {fileID: 1407720915012994941}
   - component: {fileID: 2595838823203566914}
+  - component: {fileID: 5504308715487532962}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_65
   m_TagString: Untagged
@@ -2079,6 +2575,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5504308715487532962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2504576701947063129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2647796788633045094
 GameObject:
   m_ObjectHideFlags: 0
@@ -2090,6 +2599,7 @@ GameObject:
   - component: {fileID: 8823829398772122999}
   - component: {fileID: 4247935351416404530}
   - component: {fileID: 5730168764096335643}
+  - component: {fileID: 8753719657906263261}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_24
   m_TagString: Untagged
@@ -2156,6 +2666,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8753719657906263261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2647796788633045094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2852942990050287074
 GameObject:
   m_ObjectHideFlags: 0
@@ -2167,6 +2690,7 @@ GameObject:
   - component: {fileID: 8051920882366304593}
   - component: {fileID: 3060095026312732887}
   - component: {fileID: 14836106638006482}
+  - component: {fileID: 66075566808873410}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_62
   m_TagString: Untagged
@@ -2233,6 +2757,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &66075566808873410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2852942990050287074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &2979180614307750925
 GameObject:
   m_ObjectHideFlags: 0
@@ -2244,6 +2781,7 @@ GameObject:
   - component: {fileID: 7498914906157471547}
   - component: {fileID: 2788315274237830767}
   - component: {fileID: 7040378730992679973}
+  - component: {fileID: 6135504072498547988}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_84
   m_TagString: Untagged
@@ -2310,6 +2848,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6135504072498547988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2979180614307750925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3351624315240302693
 GameObject:
   m_ObjectHideFlags: 0
@@ -2321,6 +2872,7 @@ GameObject:
   - component: {fileID: 6382826583444834182}
   - component: {fileID: 8499721863070993467}
   - component: {fileID: 4273481749090471834}
+  - component: {fileID: 1387369676656716144}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_44
   m_TagString: Untagged
@@ -2387,6 +2939,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1387369676656716144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3351624315240302693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3477088336211020667
 GameObject:
   m_ObjectHideFlags: 0
@@ -2398,6 +2963,7 @@ GameObject:
   - component: {fileID: 4491525223052014114}
   - component: {fileID: 1407986758940239270}
   - component: {fileID: 4685594205110878458}
+  - component: {fileID: 6391306835256148064}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_25
   m_TagString: Untagged
@@ -2464,6 +3030,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6391306835256148064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3477088336211020667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3612525209894509826
 GameObject:
   m_ObjectHideFlags: 0
@@ -2475,6 +3054,7 @@ GameObject:
   - component: {fileID: 4606933382917821667}
   - component: {fileID: 8111691495879628973}
   - component: {fileID: 6679477470205690279}
+  - component: {fileID: 2783858991328468240}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_32
   m_TagString: Untagged
@@ -2541,6 +3121,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2783858991328468240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3612525209894509826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3654392217055369292
 GameObject:
   m_ObjectHideFlags: 0
@@ -2552,6 +3145,7 @@ GameObject:
   - component: {fileID: 893454777672076226}
   - component: {fileID: 8983083377366335133}
   - component: {fileID: 178503699990019261}
+  - component: {fileID: 1958046761513309109}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_50
   m_TagString: Untagged
@@ -2618,6 +3212,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1958046761513309109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3654392217055369292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3733859961527985549
 GameObject:
   m_ObjectHideFlags: 0
@@ -2629,6 +3236,7 @@ GameObject:
   - component: {fileID: 6596872771066495707}
   - component: {fileID: 6492911928809235388}
   - component: {fileID: 3406339108455398198}
+  - component: {fileID: 1606463877190076260}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_89
   m_TagString: Untagged
@@ -2695,6 +3303,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1606463877190076260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3733859961527985549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3810524591602579086
 GameObject:
   m_ObjectHideFlags: 0
@@ -2706,6 +3327,7 @@ GameObject:
   - component: {fileID: 4935763782004869133}
   - component: {fileID: 8098637677957157963}
   - component: {fileID: 8728803897031060524}
+  - component: {fileID: 8505480261784140249}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_9
   m_TagString: Untagged
@@ -2772,6 +3394,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8505480261784140249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3810524591602579086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3921066576653510356
 GameObject:
   m_ObjectHideFlags: 0
@@ -2783,6 +3418,7 @@ GameObject:
   - component: {fileID: 64662607241858908}
   - component: {fileID: 1406139700331083897}
   - component: {fileID: 6040481819760567103}
+  - component: {fileID: 1435966412018506142}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_38
   m_TagString: Untagged
@@ -2849,6 +3485,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1435966412018506142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3921066576653510356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &3973129425041515068
 GameObject:
   m_ObjectHideFlags: 0
@@ -2860,6 +3509,7 @@ GameObject:
   - component: {fileID: 1742628180260450732}
   - component: {fileID: 8118939171825162626}
   - component: {fileID: 5301586003265557486}
+  - component: {fileID: 1979959033969579541}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_85
   m_TagString: Untagged
@@ -2926,6 +3576,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1979959033969579541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3973129425041515068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &4110173986195304392
 GameObject:
   m_ObjectHideFlags: 0
@@ -2937,6 +3600,7 @@ GameObject:
   - component: {fileID: 7261773053739197158}
   - component: {fileID: 4677607312089141867}
   - component: {fileID: 7479602669411605298}
+  - component: {fileID: 282658502724934250}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_75
   m_TagString: Untagged
@@ -3003,6 +3667,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &282658502724934250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4110173986195304392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &4318475328573105946
 GameObject:
   m_ObjectHideFlags: 0
@@ -3014,6 +3691,7 @@ GameObject:
   - component: {fileID: 5577636748198411173}
   - component: {fileID: 8057885475203526002}
   - component: {fileID: 6784259998985030196}
+  - component: {fileID: 3478943416219035336}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_31
   m_TagString: Untagged
@@ -3080,6 +3758,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3478943416219035336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4318475328573105946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &4478464663453538478
 GameObject:
   m_ObjectHideFlags: 0
@@ -3091,6 +3782,7 @@ GameObject:
   - component: {fileID: 4831868789261193207}
   - component: {fileID: 5334475897056239766}
   - component: {fileID: 1742889089248187105}
+  - component: {fileID: 1397411155617323587}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_67
   m_TagString: Untagged
@@ -3157,6 +3849,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1397411155617323587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4478464663453538478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &4604764776014155728
 GameObject:
   m_ObjectHideFlags: 0
@@ -3168,6 +3873,7 @@ GameObject:
   - component: {fileID: 5712535674152600056}
   - component: {fileID: 7797503334169585953}
   - component: {fileID: 5128763965722107323}
+  - component: {fileID: 7100888076535988757}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_60
   m_TagString: Untagged
@@ -3234,6 +3940,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7100888076535988757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4604764776014155728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &4905922574423570888
 GameObject:
   m_ObjectHideFlags: 0
@@ -3245,6 +3964,7 @@ GameObject:
   - component: {fileID: 2486477645122263944}
   - component: {fileID: 7293876011226669184}
   - component: {fileID: 4879530819689130632}
+  - component: {fileID: 4390926570084226415}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_82
   m_TagString: Untagged
@@ -3311,6 +4031,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4390926570084226415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4905922574423570888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5227988698099226011
 GameObject:
   m_ObjectHideFlags: 0
@@ -3322,6 +4055,7 @@ GameObject:
   - component: {fileID: 7142884595266786767}
   - component: {fileID: 8662049229097164721}
   - component: {fileID: 4103517024248440514}
+  - component: {fileID: 4955055028580087672}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_87
   m_TagString: Untagged
@@ -3388,6 +4122,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4955055028580087672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5227988698099226011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5305419367381801357
 GameObject:
   m_ObjectHideFlags: 0
@@ -3399,6 +4146,7 @@ GameObject:
   - component: {fileID: 3060503011478012992}
   - component: {fileID: 6724826944130220335}
   - component: {fileID: 4538079029561423438}
+  - component: {fileID: 5891430608858910087}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_1
   m_TagString: Untagged
@@ -3465,6 +4213,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5891430608858910087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5305419367381801357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5435186116005584818
 GameObject:
   m_ObjectHideFlags: 0
@@ -3476,6 +4237,7 @@ GameObject:
   - component: {fileID: 9154245067337532630}
   - component: {fileID: 1696388661693177203}
   - component: {fileID: 5860857425882545166}
+  - component: {fileID: 2780997065808893259}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_42
   m_TagString: Untagged
@@ -3542,6 +4304,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2780997065808893259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5435186116005584818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5476484664495111124
 GameObject:
   m_ObjectHideFlags: 0
@@ -3553,6 +4328,7 @@ GameObject:
   - component: {fileID: 3156137803185847995}
   - component: {fileID: 7121278399160868652}
   - component: {fileID: 2157355744812185021}
+  - component: {fileID: 5163279905604293805}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_33
   m_TagString: Untagged
@@ -3619,6 +4395,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5163279905604293805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5476484664495111124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5532621050543487963
 GameObject:
   m_ObjectHideFlags: 0
@@ -3630,6 +4419,7 @@ GameObject:
   - component: {fileID: 6187926355051533813}
   - component: {fileID: 6027518136725361283}
   - component: {fileID: 4808155166124943993}
+  - component: {fileID: 6742149026153056465}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_3
   m_TagString: Untagged
@@ -3696,6 +4486,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6742149026153056465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5532621050543487963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5738941325213722916
 GameObject:
   m_ObjectHideFlags: 0
@@ -3707,6 +4510,7 @@ GameObject:
   - component: {fileID: 8639587023835248664}
   - component: {fileID: 4651669320805136614}
   - component: {fileID: 6864905983582011030}
+  - component: {fileID: 7176860616421655842}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_48
   m_TagString: Untagged
@@ -3773,6 +4577,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7176860616421655842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5738941325213722916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5961043262598137865
 GameObject:
   m_ObjectHideFlags: 0
@@ -3784,6 +4601,7 @@ GameObject:
   - component: {fileID: 2386982653669169251}
   - component: {fileID: 4167525406031750389}
   - component: {fileID: 1861094288097445757}
+  - component: {fileID: 4424532529359679971}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_55
   m_TagString: Untagged
@@ -3850,6 +4668,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4424532529359679971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5961043262598137865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5982810928845150448
 GameObject:
   m_ObjectHideFlags: 0
@@ -3861,6 +4692,7 @@ GameObject:
   - component: {fileID: 5307057277461895005}
   - component: {fileID: 4296348541527853543}
   - component: {fileID: 3744383563923828319}
+  - component: {fileID: 3917963037824694892}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_70
   m_TagString: Untagged
@@ -3927,6 +4759,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3917963037824694892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5982810928845150448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &5989950176723852122
 GameObject:
   m_ObjectHideFlags: 0
@@ -3938,6 +4783,7 @@ GameObject:
   - component: {fileID: 3274266234769085837}
   - component: {fileID: 4080046427864765401}
   - component: {fileID: 5088107961181841816}
+  - component: {fileID: 1282525328244107433}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_12
   m_TagString: Untagged
@@ -4004,6 +4850,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1282525328244107433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5989950176723852122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6065825630702567618
 GameObject:
   m_ObjectHideFlags: 0
@@ -4015,6 +4874,7 @@ GameObject:
   - component: {fileID: 4718636450513673991}
   - component: {fileID: 6105404915860316585}
   - component: {fileID: 5554301967474417012}
+  - component: {fileID: 8890482393580585298}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_13
   m_TagString: Untagged
@@ -4081,6 +4941,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8890482393580585298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6065825630702567618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6179874030362810631
 GameObject:
   m_ObjectHideFlags: 0
@@ -4092,6 +4965,7 @@ GameObject:
   - component: {fileID: 1536875379309038323}
   - component: {fileID: 602310722830111108}
   - component: {fileID: 8319099991531661330}
+  - component: {fileID: 8530608674939069081}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_63
   m_TagString: Untagged
@@ -4158,6 +5032,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8530608674939069081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6179874030362810631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6252232064258284369
 GameObject:
   m_ObjectHideFlags: 0
@@ -4169,6 +5056,7 @@ GameObject:
   - component: {fileID: 7477498946494856480}
   - component: {fileID: 6269056388276487859}
   - component: {fileID: 3520012351192151123}
+  - component: {fileID: 5254243484045482539}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_88
   m_TagString: Untagged
@@ -4235,6 +5123,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5254243484045482539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6252232064258284369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6263718026254984495
 GameObject:
   m_ObjectHideFlags: 0
@@ -4246,6 +5147,7 @@ GameObject:
   - component: {fileID: 2574799515838375079}
   - component: {fileID: 3613119153433190668}
   - component: {fileID: 7528763895726480043}
+  - component: {fileID: 885892274724831669}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_11
   m_TagString: Untagged
@@ -4312,6 +5214,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &885892274724831669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6263718026254984495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6284208138502409509
 GameObject:
   m_ObjectHideFlags: 0
@@ -4323,6 +5238,7 @@ GameObject:
   - component: {fileID: 4551574625078100440}
   - component: {fileID: 6938746448190254888}
   - component: {fileID: 4768434100790755472}
+  - component: {fileID: 2813264414948638900}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_69
   m_TagString: Untagged
@@ -4389,6 +5305,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2813264414948638900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6284208138502409509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6312386114296373337
 GameObject:
   m_ObjectHideFlags: 0
@@ -4400,6 +5329,7 @@ GameObject:
   - component: {fileID: 6856856159390338827}
   - component: {fileID: 1097057990395927928}
   - component: {fileID: 1957831543149484115}
+  - component: {fileID: 5695325221845872483}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_22
   m_TagString: Untagged
@@ -4466,6 +5396,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5695325221845872483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6312386114296373337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6331161572460305212
 GameObject:
   m_ObjectHideFlags: 0
@@ -4477,6 +5420,7 @@ GameObject:
   - component: {fileID: 129007251294865842}
   - component: {fileID: 7738034066633634519}
   - component: {fileID: 762220593338615726}
+  - component: {fileID: 3818804565951173288}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_83
   m_TagString: Untagged
@@ -4543,6 +5487,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3818804565951173288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6331161572460305212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6417236633571912731
 GameObject:
   m_ObjectHideFlags: 0
@@ -4554,6 +5511,7 @@ GameObject:
   - component: {fileID: 8333452711549394896}
   - component: {fileID: 2097604615085574724}
   - component: {fileID: 7564620833051125761}
+  - component: {fileID: 3247492142289891497}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_58
   m_TagString: Untagged
@@ -4620,6 +5578,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3247492142289891497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6417236633571912731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6499903666566569557
 GameObject:
   m_ObjectHideFlags: 0
@@ -4631,6 +5602,7 @@ GameObject:
   - component: {fileID: 6894540776359316098}
   - component: {fileID: 5783870559329731786}
   - component: {fileID: 1013706662017802316}
+  - component: {fileID: 4354687192141630496}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_76
   m_TagString: Untagged
@@ -4697,6 +5669,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4354687192141630496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6499903666566569557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6553182903322288577
 GameObject:
   m_ObjectHideFlags: 0
@@ -4708,6 +5693,7 @@ GameObject:
   - component: {fileID: 2070820258017657644}
   - component: {fileID: 5106400873399851961}
   - component: {fileID: 8014020998765961546}
+  - component: {fileID: 446860080547570468}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_47
   m_TagString: Untagged
@@ -4774,6 +5760,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &446860080547570468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6553182903322288577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6621841375501744586
 GameObject:
   m_ObjectHideFlags: 0
@@ -4785,6 +5784,7 @@ GameObject:
   - component: {fileID: 4544456293877513449}
   - component: {fileID: 199323173306992485}
   - component: {fileID: 785817104110961151}
+  - component: {fileID: 9073107016094426610}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_34
   m_TagString: Untagged
@@ -4851,6 +5851,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &9073107016094426610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6621841375501744586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &6715328392640233580
 GameObject:
   m_ObjectHideFlags: 0
@@ -4862,6 +5875,7 @@ GameObject:
   - component: {fileID: 1682005317358343201}
   - component: {fileID: 8902226354980227401}
   - component: {fileID: 305508916269414727}
+  - component: {fileID: 4371402549523054229}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_66
   m_TagString: Untagged
@@ -4928,6 +5942,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4371402549523054229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6715328392640233580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &7025588216583881967
 GameObject:
   m_ObjectHideFlags: 0
@@ -4939,6 +5966,7 @@ GameObject:
   - component: {fileID: 2229649164388815515}
   - component: {fileID: 1116859768213086070}
   - component: {fileID: 2364695995059681393}
+  - component: {fileID: 8174847562619994121}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_80
   m_TagString: Untagged
@@ -5005,6 +6033,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8174847562619994121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7025588216583881967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &7191676463591385859
 GameObject:
   m_ObjectHideFlags: 0
@@ -5016,6 +6057,7 @@ GameObject:
   - component: {fileID: 6893974481513966455}
   - component: {fileID: 5855787394094970948}
   - component: {fileID: 3217493633081309017}
+  - component: {fileID: 4111835733178668319}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_81
   m_TagString: Untagged
@@ -5082,6 +6124,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4111835733178668319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7191676463591385859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &7298012071982901988
 GameObject:
   m_ObjectHideFlags: 0
@@ -5093,6 +6148,7 @@ GameObject:
   - component: {fileID: 6023756159451079966}
   - component: {fileID: 703332597918886931}
   - component: {fileID: 8040156474480203918}
+  - component: {fileID: 6381545578686197503}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_28
   m_TagString: Untagged
@@ -5159,131 +6215,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!1 &7417551137094599186
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1758403271083035026}
-  - component: {fileID: 982990030815136397}
-  - component: {fileID: 3812471655869355859}
-  - component: {fileID: 2530147093528718700}
-  - component: {fileID: 6540921662182926870}
-  - component: {fileID: 8423810589229197980}
-  m_Layer: 0
-  m_Name: oya
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1758403271083035026
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7417551137094599186}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 4949246632927027219}
-  - {fileID: 838189706950994662}
-  m_Father: {fileID: 5717756057732963636}
-  m_RootOrder: 90
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &982990030815136397
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7417551137094599186}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &3812471655869355859
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7417551137094599186}
-  m_Enabled: 0
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 0
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
---- !u!65 &2530147093528718700
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7417551137094599186}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1.0000005, z: 1.0000005}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6540921662182926870
+--- !u!114 &6381545578686197503
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7417551137094599186}
+  m_GameObject: {fileID: 7298012071982901988}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b87d8c7a4793aa438b34243d111534a, type: 3}
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LateTime_Mesh: 3
-  LateTime_Particle: 1
---- !u!54 &8423810589229197980
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7417551137094599186}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &7768407587627295277
 GameObject:
   m_ObjectHideFlags: 0
@@ -5295,6 +6239,7 @@ GameObject:
   - component: {fileID: 5740950965340613381}
   - component: {fileID: 7975376244697453954}
   - component: {fileID: 9214298875700220159}
+  - component: {fileID: 4118159522987332480}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_77
   m_TagString: Untagged
@@ -5361,6 +6306,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4118159522987332480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7768407587627295277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &7775817826479388310
 GameObject:
   m_ObjectHideFlags: 0
@@ -5372,6 +6330,7 @@ GameObject:
   - component: {fileID: 3657061723507207445}
   - component: {fileID: 6202436676255168409}
   - component: {fileID: 4578043661230392085}
+  - component: {fileID: 5948623991427538184}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_6
   m_TagString: Untagged
@@ -5438,6 +6397,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5948623991427538184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7775817826479388310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &7827551879008298960
 GameObject:
   m_ObjectHideFlags: 0
@@ -5555,7 +6527,7 @@ Transform:
   - {fileID: 7477498946494856480}
   - {fileID: 6596872771066495707}
   - {fileID: 2309708151382670575}
-  - {fileID: 1758403271083035026}
+  - {fileID: 4296598906577118192}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5570,6 +6542,7 @@ GameObject:
   - component: {fileID: 4051248569818042132}
   - component: {fileID: 6919867047804023123}
   - component: {fileID: 4784366429947503708}
+  - component: {fileID: 4040115230456397417}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_20
   m_TagString: Untagged
@@ -5636,6 +6609,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4040115230456397417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7895433306672290884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8055331603699684736
 GameObject:
   m_ObjectHideFlags: 0
@@ -5647,6 +6633,7 @@ GameObject:
   - component: {fileID: 2402791022426936024}
   - component: {fileID: 7853644997113301961}
   - component: {fileID: 6206423378709834400}
+  - component: {fileID: 8616579563688582985}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_52
   m_TagString: Untagged
@@ -5713,6 +6700,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8616579563688582985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8055331603699684736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8063810551617510327
 GameObject:
   m_ObjectHideFlags: 0
@@ -5724,6 +6724,7 @@ GameObject:
   - component: {fileID: 8961749602846723113}
   - component: {fileID: 7470990218345405860}
   - component: {fileID: 5516331438470869899}
+  - component: {fileID: 2237326102831519420}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_26
   m_TagString: Untagged
@@ -5790,6 +6791,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2237326102831519420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8063810551617510327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8074191223862184727
 GameObject:
   m_ObjectHideFlags: 0
@@ -5801,6 +6815,7 @@ GameObject:
   - component: {fileID: 5363839518111493499}
   - component: {fileID: 8032994215932668454}
   - component: {fileID: 624004750075857496}
+  - component: {fileID: 6836285244482181253}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_64
   m_TagString: Untagged
@@ -5867,6 +6882,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6836285244482181253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8074191223862184727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8082408955209014709
 GameObject:
   m_ObjectHideFlags: 0
@@ -5878,6 +6906,7 @@ GameObject:
   - component: {fileID: 8997753883539674149}
   - component: {fileID: 553764798872157587}
   - component: {fileID: 160204075811107740}
+  - component: {fileID: 3044502459462136962}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_5
   m_TagString: Untagged
@@ -5944,6 +6973,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3044502459462136962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8082408955209014709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8245803036166890730
 GameObject:
   m_ObjectHideFlags: 0
@@ -5955,6 +6997,7 @@ GameObject:
   - component: {fileID: 709529042606706677}
   - component: {fileID: 3125356922672724474}
   - component: {fileID: 4262376000747862549}
+  - component: {fileID: 8103859689391476978}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_51
   m_TagString: Untagged
@@ -6021,6 +7064,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8103859689391476978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8245803036166890730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8280668260355966107
 GameObject:
   m_ObjectHideFlags: 0
@@ -6032,6 +7088,7 @@ GameObject:
   - component: {fileID: 5651861708812620715}
   - component: {fileID: 2673240394214831005}
   - component: {fileID: 1562415490530212937}
+  - component: {fileID: 333181616689738303}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_59
   m_TagString: Untagged
@@ -6098,6 +7155,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &333181616689738303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8280668260355966107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8432967436803189492
 GameObject:
   m_ObjectHideFlags: 0
@@ -6109,6 +7179,7 @@ GameObject:
   - component: {fileID: 7356279557338109788}
   - component: {fileID: 8182764893159538975}
   - component: {fileID: 2378818692285825140}
+  - component: {fileID: 4312607400227011942}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_41
   m_TagString: Untagged
@@ -6175,6 +7246,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4312607400227011942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8432967436803189492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8478731230703235265
 GameObject:
   m_ObjectHideFlags: 0
@@ -6186,6 +7270,7 @@ GameObject:
   - component: {fileID: 7733792842672857892}
   - component: {fileID: 5799307779791610053}
   - component: {fileID: 7609033843332483491}
+  - component: {fileID: 4728971528463541426}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_57
   m_TagString: Untagged
@@ -6252,6 +7337,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4728971528463541426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8478731230703235265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8566773363673866073
 GameObject:
   m_ObjectHideFlags: 0
@@ -6263,6 +7361,7 @@ GameObject:
   - component: {fileID: 5449761628622922293}
   - component: {fileID: 3190699664534377334}
   - component: {fileID: 6479627617809980926}
+  - component: {fileID: 2659450161071468224}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_56
   m_TagString: Untagged
@@ -6329,6 +7428,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2659450161071468224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8566773363673866073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8611392845897284917
 GameObject:
   m_ObjectHideFlags: 0
@@ -6340,6 +7452,7 @@ GameObject:
   - component: {fileID: 7377702619106881637}
   - component: {fileID: 516848583928530761}
   - component: {fileID: 522582048993827727}
+  - component: {fileID: 2802354814455492384}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_49
   m_TagString: Untagged
@@ -6406,6 +7519,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2802354814455492384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8611392845897284917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8650185907580553368
 GameObject:
   m_ObjectHideFlags: 0
@@ -6417,6 +7543,7 @@ GameObject:
   - component: {fileID: 3842287539180408162}
   - component: {fileID: 8970798515780289447}
   - component: {fileID: 2719449418206923806}
+  - component: {fileID: 6800418311740391623}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_27
   m_TagString: Untagged
@@ -6483,6 +7610,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6800418311740391623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8650185907580553368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &8658326651918442353
 GameObject:
   m_ObjectHideFlags: 0
@@ -6494,6 +7634,7 @@ GameObject:
   - component: {fileID: 3627082860302679008}
   - component: {fileID: 5754134151627934427}
   - component: {fileID: 3177114251491360333}
+  - component: {fileID: 8899420048831948603}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_30
   m_TagString: Untagged
@@ -6560,6 +7701,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &8899420048831948603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8658326651918442353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9007729141533326154
 GameObject:
   m_ObjectHideFlags: 0
@@ -6571,6 +7725,7 @@ GameObject:
   - component: {fileID: 886182419083960862}
   - component: {fileID: 8488904371286318356}
   - component: {fileID: 4628423988460068819}
+  - component: {fileID: 4641856925492925944}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_10
   m_TagString: Untagged
@@ -6637,6 +7792,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4641856925492925944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9007729141533326154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9014166571566080321
 GameObject:
   m_ObjectHideFlags: 0
@@ -6648,6 +7816,7 @@ GameObject:
   - component: {fileID: 3564099978160959826}
   - component: {fileID: 5576813162826173762}
   - component: {fileID: 4349578616337948684}
+  - component: {fileID: 4074547153760713200}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_37
   m_TagString: Untagged
@@ -6714,6 +7883,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &4074547153760713200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9014166571566080321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9091827227284021153
 GameObject:
   m_ObjectHideFlags: 0
@@ -6725,6 +7907,7 @@ GameObject:
   - component: {fileID: 5868101282804608510}
   - component: {fileID: 2947449950316720311}
   - component: {fileID: 4460105237247908490}
+  - component: {fileID: 3968530285781801331}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_8
   m_TagString: Untagged
@@ -6791,6 +7974,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3968530285781801331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9091827227284021153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9094261328869009458
 GameObject:
   m_ObjectHideFlags: 0
@@ -6802,6 +7998,7 @@ GameObject:
   - component: {fileID: 53052791656429118}
   - component: {fileID: 8472637449458344678}
   - component: {fileID: 3324850365886843382}
+  - component: {fileID: 3619974048856784958}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_19
   m_TagString: Untagged
@@ -6868,6 +8065,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3619974048856784958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9094261328869009458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9118182455523032201
 GameObject:
   m_ObjectHideFlags: 0
@@ -6879,6 +8089,7 @@ GameObject:
   - component: {fileID: 8932229145639849459}
   - component: {fileID: 1311268512174680952}
   - component: {fileID: 7478367131983206615}
+  - component: {fileID: 6759138890802613941}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_21
   m_TagString: Untagged
@@ -6945,6 +8156,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &6759138890802613941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9118182455523032201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9137137887436267119
 GameObject:
   m_ObjectHideFlags: 0
@@ -6956,6 +8180,7 @@ GameObject:
   - component: {fileID: 8155837002651415348}
   - component: {fileID: 5641792834497713841}
   - component: {fileID: 1109125361827277544}
+  - component: {fileID: 7651856941948121715}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_4
   m_TagString: Untagged
@@ -7022,6 +8247,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &7651856941948121715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9137137887436267119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9139195028999733119
 GameObject:
   m_ObjectHideFlags: 0
@@ -7033,6 +8271,7 @@ GameObject:
   - component: {fileID: 2607008941191080088}
   - component: {fileID: 1184507769442517628}
   - component: {fileID: 1481471214483760857}
+  - component: {fileID: 5064198438186634922}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_36
   m_TagString: Untagged
@@ -7099,6 +8338,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5064198438186634922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9139195028999733119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
 --- !u!1 &9172370896537646143
 GameObject:
   m_ObjectHideFlags: 0
@@ -7110,6 +8362,7 @@ GameObject:
   - component: {fileID: 4881848945010471481}
   - component: {fileID: 4566889005343519365}
   - component: {fileID: 2440721260244231734}
+  - component: {fileID: 5759419181530318253}
   m_Layer: 0
   m_Name: Building_Zakkyo01_Facade_sh_74
   m_TagString: Untagged
@@ -7176,12 +8429,25 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!1001 &842403395715530022
+--- !u!114 &5759419181530318253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9172370896537646143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9b5306587fe1ef4698cecf1c173b43c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localGravity: {x: 0, y: -9.81, z: 0}
+--- !u!1001 &1404862346425452194
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 1758403271083035026}
+    m_TransformParent: {fileID: 4296598906577118192}
     m_Modifications:
     - target: {fileID: 1474546561887758, guid: c7b6c2abc3fc44f4dab4391504992087, type: 3}
       propertyPath: m_Name
@@ -7259,18 +8525,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c7b6c2abc3fc44f4dab4391504992087, type: 3}
---- !u!4 &838189706950994662 stripped
+--- !u!4 &1400085844945391970 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4794369685526464, guid: c7b6c2abc3fc44f4dab4391504992087,
     type: 3}
-  m_PrefabInstance: {fileID: 842403395715530022}
+  m_PrefabInstance: {fileID: 1404862346425452194}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &5521339787275821962
+--- !u!1001 &6372759156423498415
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 1758403271083035026}
+    m_TransformParent: {fileID: 4296598906577118192}
     m_Modifications:
     - target: {fileID: 590249588672660377, guid: 2fe41c03da1267e4da45f7e460c7adef,
         type: 3}
@@ -7359,9 +8625,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2fe41c03da1267e4da45f7e460c7adef, type: 3}
---- !u!4 &4949246632927027219 stripped
+--- !u!4 &5782738949069478198 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 590249588672660377, guid: 2fe41c03da1267e4da45f7e460c7adef,
     type: 3}
-  m_PrefabInstance: {fileID: 5521339787275821962}
+  m_PrefabInstance: {fileID: 6372759156423498415}
   m_PrefabAsset: {fileID: 0}

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RayFire
 {
-    public class demolish : MonoBehaviour
+    public class WindowDemolish : MonoBehaviour
     {
         //public float LateTime_Mesh = 0f;
         //public float LateTime_Particle = 0f;
@@ -25,9 +25,34 @@ namespace RayFire
         {
 
         }
-        private void OnTriggerEnter(Collider other)
+        //private void OnTriggerEnter(Collider other)
+        //{
+        //    if(other.tag == "OnTest")
+        //    {
+        //        Debug.Log("Ontrigger");
+        //        Debug.Log(other.gameObject.name);
+        //        if (onece == false)
+        //        {
+        //            if (Next_RFRigid != null)
+        //            {
+        //                Next_RFRigid.Initialize();
+        //                Next_RFRigid.Demolish();
+        //            }
+        //            if (Next_RFRigid2 != null)
+        //            {
+        //                Next_RFRigid2.Initialize();
+        //                Next_RFRigid2.Demolish();
+        //            }
+        //            //StartCoroutine(LateSpawn_Mesh());
+        //            //StartCoroutine(LateSpawn_Particle());
+        //            onece = true;
+        //            mycollider.enabled = false;
+        //        }
+        //    }
+        //}
+        private void OnCollisionEnter(Collision other)
         {
-            if(other.tag == "OnTest")
+            if (other.gameObject.tag == "OnTest")
             {
                 Debug.Log("Ontrigger");
                 Debug.Log(other.gameObject.name);
