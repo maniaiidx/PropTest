@@ -104,14 +104,13 @@ GameObject:
   - component: {fileID: 5952614675220514242}
   - component: {fileID: 3547543753489447714}
   - component: {fileID: 1049043095174529765}
-  - component: {fileID: 2779729113093708219}
   m_Layer: 0
   m_Name: oya
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4296598906577118192
 Transform:
   m_ObjectHideFlags: 0
@@ -202,26 +201,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2779729113093708219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 115719908643476698}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b87d8c7a4793aa438b34243d111534a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  LateTime_Mesh: 3
-  LateTime_Particle: 1
-  MeshPrefab: {fileID: 6178202066390452748, guid: 2fe41c03da1267e4da45f7e460c7adef,
-    type: 3}
-  ParticlePrefab: {fileID: 1474546561887758, guid: c7b6c2abc3fc44f4dab4391504992087,
-    type: 3}
-  MeshSpawnTrs: {fileID: 5782738949069478198}
-  ParticleSpawnTrs: {fileID: 1400085844945391970}
 --- !u!1 &258230053019419945
 GameObject:
   m_ObjectHideFlags: 0

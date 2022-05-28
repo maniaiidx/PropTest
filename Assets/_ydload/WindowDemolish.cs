@@ -14,10 +14,12 @@ namespace RayFire
         //public ParticleSystem Late_Particle;
         private bool onece;
         private Collider mycollider;
+        private Late_spawn Late_spawn;
         // Start is called before the first frame update
         void Start()
         {
             mycollider = gameObject.GetComponent<Collider>();
+            Late_spawn = this.transform.parent.GetComponent<Late_spawn>();
         }
 
         // Update is called once per frame
@@ -68,9 +70,13 @@ namespace RayFire
                         Next_RFRigid2.Initialize();
                         Next_RFRigid2.Demolish();
                     }
-                    //StartCoroutine(LateSpawn_Mesh());
-                    //StartCoroutine(LateSpawn_Particle());
-                    onece = true;
+                    if (Late_spawn != null)
+                    {
+                        Late_spawn.LateStart();
+                    }
+                        //StartCoroutine(LateSpawn_Mesh());
+                        //StartCoroutine(LateSpawn_Particle());
+                        onece = true;
                     mycollider.enabled = false;
                 }
             }
