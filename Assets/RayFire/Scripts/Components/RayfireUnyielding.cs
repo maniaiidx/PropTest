@@ -18,8 +18,8 @@ namespace RayFire
         public bool       unyielding     = true;
         public bool       activatable    = false;
         public UnySimType simulationType = UnySimType.Original;
-        public Vector3 centerPosition;
-        public Vector3 size = new Vector3(1f, 1f, 1f);
+        public Vector3    centerPosition;
+        public Vector3    size = new Vector3 (1f, 1f, 1f);
         
         // Hidden
         public RayfireRigid        rigidHost;

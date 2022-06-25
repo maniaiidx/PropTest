@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,18 +9,21 @@ namespace RayFire
     [Serializable]
     public class RFActivation
     {
-        public bool local;
-        public float byOffset;
-        public float byVelocity;
-        public float byDamage;
-        public bool byActivator;
-        public bool byImpact;
-        public bool byConnectivity;
-        public bool unyielding;
-        public bool activatable;
-        public string layer;
-        public RayfireConnectivity connect;
+        public bool                local;
+        public float               byOffset;
+        public float               byVelocity;
+        public float               byDamage;
+        public bool                byActivator;
+        public bool                byImpact;
+        public bool                byConnectivity;
+        public bool                unyielding;
+        public bool                activatable;
+        public bool                l;
+        public int                 layer;
         
+        public RayfireConnectivity connect; // TODO non serialized
+        
+        [NonSerialized] public int                 lb;
         [NonSerialized] public bool                activated;
         [NonSerialized] public bool                inactiveCorState;
         [NonSerialized] public bool                velocityCorState;
@@ -60,8 +64,8 @@ namespace RayFire
             byConnectivity = act.byConnectivity;
             unyielding     = act.unyielding;
             activatable    = act.activatable;
-
-            layer = act.layer;
+            l              = act.l;
+            layer          = act.layer;
         }
 
         /// /////////////////////////////////////////////////////////
@@ -75,9 +79,8 @@ namespace RayFire
             inactiveCorState = false;
             velocityCorState = false;
             offsetCorState   = false;
-
-            velocityEnum = null;
-            offsetEnum   = null;
+            velocityEnum     = null;
+            offsetEnum       = null;
         }
 
         // Connectivity check
@@ -245,10 +248,19 @@ namespace RayFire
                         yield break;
                 }
                 
+                //Debug.Log (scr.inactiveShards.Count);
                 
                 // Stop velocity
                 for (int i = scr.inactiveShards.Count - 1; i >= 0; i--)
                 {
+                    /*
+                    if (scr.inactiveShards[i].rb == null)
+                    {
+                        Debug.Log (i);
+                        Debug.Log (scr.inactiveShards[i].tm.name);
+                    }
+                    */
+                    
                     scr.inactiveShards[i].rb.velocity        = Vector3.zero;
                     scr.inactiveShards[i].rb.angularVelocity = Vector3.zero;
                 }
@@ -320,7 +332,7 @@ namespace RayFire
                 scr.activation.CheckConnectivity();
             
             // Set layer
-            SetRigidActivationLayer (scr);
+            SetActivationLayer (scr);
             
             // Set state
             scr.activation.activated = true;
@@ -346,6 +358,8 @@ namespace RayFire
 
             // Events
             scr.activationEvent.InvokeLocalEvent (scr);
+            if (scr.meshRoot != null)
+                scr.meshRoot.activationEvent.InvokeLocalEventMeshRoot (scr, scr.meshRoot);
             RFActivationEvent.InvokeGlobalEvent (scr);
 
             // Add initial rotation if still TODO put in ui
@@ -390,6 +404,9 @@ namespace RayFire
                     shard.rb.angularVelocity = new Vector3 (
                         Random.Range (-val, val), Random.Range (-val, val), Random.Range (-val, val));
             }
+            
+            // Set activation layer
+            SetActivationLayer (shard, rigidRoot.activation);
 
             // Activation Fade TODO input Fade class by RigidRoot or MeshRoot
             if (rigidRoot.fading.onActivation == true)
@@ -410,30 +427,70 @@ namespace RayFire
             RFSound.ActivationSound (rigidRoot.sound, rigidRoot.cluster.bound.size.magnitude);
             
             // Events
-            rigidRoot.activationEvent.InvokeLocalEventRoot (rigidRoot);
-            RFActivationEvent.InvokeGlobalEventRoot (rigidRoot);
+            rigidRoot.activationEvent.InvokeLocalEventRoot (shard, rigidRoot);
+            RFActivationEvent.InvokeGlobalEventRoot (shard, rigidRoot);
             
             return true;
         }
         
         /// /////////////////////////////////////////////////////////
-        /// Activation Layer
+        /// Rigid Activation Layer
         /// /////////////////////////////////////////////////////////
         
         // Set activation layer
-        static void SetRigidActivationLayer (RayfireRigid scr)
+        static void SetActivationLayer (RayfireRigid scr)
         {
-            // Disabled
-            if (scr.activation.layer.Length == 0)
-                return;
-            
-            // No custom layer
-            if (RayfireMan.inst.layersHash.Contains (scr.activation.layer) == false)
-                return;
-
-            // Set
-            scr.gameObject.layer = LayerMask.NameToLayer (scr.activation.layer);
+            if (scr.activation.l == true)
+                scr.gameObject.layer = scr.activation.layer;
         }
         
+        // ReSet activation layer
+        public static void RestoreActivationLayer (RayfireRigid scr)
+        {
+            if (scr.activation.l == true)
+                scr.gameObject.layer = scr.activation.lb;
+        }
+        
+        // Backup original layer in case rigid will change layer after activation
+        public static void BackupActivationLayer (RayfireRigid scr)
+        {
+            if (scr.activation.l == true)
+                scr.activation.lb = scr.gameObject.layer;
+        }
+        
+        /// /////////////////////////////////////////////////////////
+        /// RigidRoot Activation Layer
+        /// /////////////////////////////////////////////////////////
+                
+        // Set activation layer
+        static void SetActivationLayer (RFShard shard, RFActivation activation)
+        {
+            if (activation.l == true)
+                shard.tm.gameObject.layer = activation.layer;
+        }
+        
+        // Set activation layer
+        public static void SetActivationLayer (List<RFShard> shards, RFActivation activation)
+        {
+            if (activation.l == true)
+                for (int s = 0; s < shards.Count; s++)
+                    shards[s].tm.gameObject.layer = activation.layer;
+        }
+
+        // ReSet layer for activated shards
+        public static void RestoreActivationLayer (RayfireRigidRoot root)
+        {
+            if (root.activation.l == true)
+                for (int i = 0; i < root.cluster.shards.Count; i++) 
+                    root.cluster.shards[i].tm.gameObject.layer = root.cluster.shards[i].lb;
+        }
+        
+        // Backup original layer in case shard will change layer after activation
+        public static void BackupActivationLayer (RayfireRigidRoot root)
+        {
+            if (root.activation.l == true)
+                for (int i = 0; i < root.cluster.shards.Count; i++)
+                    root.cluster.shards[i].lb = root.cluster.shards[i].tm.gameObject.layer;
+        }
     }
 }

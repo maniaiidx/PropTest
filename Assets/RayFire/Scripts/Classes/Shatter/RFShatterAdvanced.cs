@@ -34,20 +34,22 @@ namespace RayFire
 		// Not used
 		public bool postWeld;
 		
-        public bool smooth;
-        public bool inputPrecap;
-        public bool outputPrecap;
-        public bool removeDoubleFaces;
-        public int  elementSizeThreshold;
-        public bool combineChildren;
-        
-        public bool inner;
-        public bool planar;
-        public int relativeSize; 
+        public bool  smooth;
+        public bool  inputPrecap;
+        public bool  outputPrecap;
+        public bool  removeDoubleFaces;
+        public int   elementSizeThreshold;
+        public bool  combineChildren;
+        public bool  inner;
+        public bool  planar;
+        public int   relativeSize;
         public float absoluteSize;
-        
-        public bool vertexLimitation;
-        public int vertexAmount;
+        public bool  sizeLimitation;
+        public float sizeAmount;
+        public bool  vertexLimitation;
+        public int   vertexAmount;
+        public bool  triangleLimitation;
+        public int   triangleAmount;
         
         // Planar mesh vert offset threshold
         public static float planarThreshold = 0.01f;
@@ -59,45 +61,45 @@ namespace RayFire
 		// Constructor
 		public RFShatterAdvanced()
 		{
-			seed                  = 0;
-			decompose             = true;
-			removeCollinear       = false;
-			copyComponents        = false;
-
-			inputPrecap           = true;
-			outputPrecap          = false;
-			
-			removeDoubleFaces     = true;
-			
+			seed                 = 0;
+			decompose            = true;
+			removeCollinear      = false;
+			copyComponents       = false;
+			inputPrecap          = true;
+			outputPrecap         = false;
+			removeDoubleFaces    = true;
 			elementSizeThreshold = 5;
 			postWeld             = false;
-
-			inner        = false;
-			planar       = false;
-			absoluteSize = 0.1f;
-			relativeSize = 4;
-			
-			vertexLimitation = false;
-			vertexAmount     = 300;
+			inner                = false;
+			planar               = false;
+			absoluteSize         = 0.1f;
+			relativeSize         = 4;
+			sizeLimitation       = false;
+			sizeAmount           = 5f;
+			vertexLimitation     = false;
+			vertexAmount         = 300;
+			triangleLimitation   = false;
+			triangleAmount       = 300;
 		}
         
         // Constructor
         public RFShatterAdvanced (RFShatterAdvanced src)
         {
-	        seed            = src.seed;
-	        decompose       = src.decompose;
-	        removeCollinear = src.removeCollinear;
-	        copyComponents  = src.copyComponents;
-
-	        inputPrecap  = src.inputPrecap;
-	        outputPrecap = src.outputPrecap;
-			
-	        removeDoubleFaces     = src.removeDoubleFaces;
-	        inner = src.inner;
-	        elementSizeThreshold  = src.elementSizeThreshold;
-	        
-	        vertexLimitation = src.vertexLimitation;
-	        vertexAmount     = src.vertexAmount;
+	        seed                 = src.seed;
+	        decompose            = src.decompose;
+	        removeCollinear      = src.removeCollinear;
+	        copyComponents       = src.copyComponents;
+	        inputPrecap          = src.inputPrecap;
+	        outputPrecap         = src.outputPrecap;
+	        removeDoubleFaces    = src.removeDoubleFaces;
+	        inner                = src.inner;
+	        elementSizeThreshold = src.elementSizeThreshold;
+	        sizeLimitation       = src.sizeLimitation;
+	        sizeAmount           = src.sizeAmount;
+	        vertexLimitation     = src.vertexLimitation;
+	        vertexAmount         = src.vertexAmount;
+	        triangleLimitation   = src.triangleLimitation;
+	        triangleAmount       = src.triangleAmount;
         }
         
         /// /////////////////////////////////////////////////////////

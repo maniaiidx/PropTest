@@ -27,9 +27,10 @@ namespace RayFire
         /// Static
         /// /////////////////////////////////////////////////////////
         
-        static int   space    = 3;
-        static bool expandDebris;
-        static bool expandFilters;
+        static int  space    = 3;
+        static bool exp_deb;
+        static bool exp_lim;
+        static bool exp_fil;
         
         static GUIContent gui_tp = new GUIContent ("Type", "Defines fragmentation type for object.");
         
@@ -103,15 +104,20 @@ namespace RayFire
         static GUIContent gui_pr_adv_smooth   = new GUIContent ("Smooth",            "Smooth fragments inner surface.");
         static GUIContent gui_pr_adv_combine  = new GUIContent ("Combine",           "Combine all children meshes into one mesh and fragment this mesh.");
         static GUIContent gui_pr_adv_input    = new GUIContent ("Input Precap",      "Create extra triangles to connect open edges and close mesh volume for correct fragmentation.");
-        static GUIContent gui_pr_adv_output   = new GUIContent ("    Output Precap",   "Keep fragment's faces created by Input Precap.");
+        static GUIContent gui_pr_adv_output   = new GUIContent ("    Output Precap", "Keep fragment's faces created by Input Precap.");
         static GUIContent gui_pr_adv_remove   = new GUIContent ("Double Faces",      "Delete faces which overlap with each other.");
         static GUIContent gui_pr_adv_element  = new GUIContent ("Element Size",      "Input mesh will be separated to not connected mesh elements, every element will be fragmented separately." + "This threshold value measures in percentage relative to original objects size and prevent element from being fragmented if its size is less.");
         static GUIContent gui_pr_adv_inner    = new GUIContent ("Inner",             "Do not output inner fragments which has no outer surface.");
         static GUIContent gui_pr_adv_planar   = new GUIContent ("Planar",            "Do not output planar fragments which mesh vertices lie in the same plane.");
         static GUIContent gui_pr_adv_rel      = new GUIContent ("Relative Size",     "Do not output small fragments. Measures is percentage relative to original object size.");
         static GUIContent gui_pr_adv_abs      = new GUIContent ("Absolute Size",     "Do not output small fragments which size in world units is less than this value.");
-        static GUIContent gui_pr_adv_vert_lim = new GUIContent ("Vertex Limitation", "All fragments with vertex amount higher than Max Amount value will be fragmented to few more fragments.");
+        
+        static GUIContent gui_pr_adv_size_lim = new GUIContent ("Size",   "All fragments with size bigger than Max Size value will be fragmented to few more fragments.");
+        static GUIContent gui_pr_adv_size_am  = new GUIContent ("    Max Size",      "");
+        static GUIContent gui_pr_adv_vert_lim = new GUIContent ("Vertex",   "All fragments with vertex amount higher than Max Amount value will be fragmented to few more fragments.");
         static GUIContent gui_pr_adv_vert_am  = new GUIContent ("    Max Amount",      "");
+        static GUIContent gui_pr_adv_tri_lim  = new GUIContent ("Triangle", "All fragments with triangle amount higher than Max Amount value will be fragmented to few more fragments.");
+        static GUIContent gui_pr_adv_tri_am   = new GUIContent ("    Max Amount",      "");
         
         /// /////////////////////////////////////////////////////////
         /// Enable
@@ -1179,8 +1185,8 @@ namespace RayFire
                 
                 GUILayout.Space (space);
                 
-                expandDebris = EditorGUILayout.Foldout (expandDebris, gui_pr_cls_debris, true);
-                if (expandDebris == true)
+                exp_deb = EditorGUILayout.Foldout (exp_deb, gui_pr_cls_debris, true);
+                if (exp_deb == true)
                 {
                     GUILayout.Space (space);
 
@@ -1401,31 +1407,99 @@ namespace RayFire
         
         void UI_Advanced_Limits()
         {
-            EditorGUI.BeginChangeCheck();
-            shat.advanced.vertexLimitation = EditorGUILayout.Toggle (gui_pr_adv_vert_lim, shat.advanced.vertexLimitation);
-            if (EditorGUI.EndChangeCheck())
-            {
-                foreach (RayfireShatter scr in targets)
-                {
-                    scr.advanced.vertexLimitation = shat.advanced.vertexLimitation;
-                    SetDirty (scr);
-                }
-            }
-
-            if (shat.advanced.vertexLimitation == true)
+            exp_lim = EditorGUILayout.Foldout (exp_lim, "Limitations", true);
+            if (exp_lim == true)
             {
                 GUILayout.Space (space);
 
+                EditorGUI.indentLevel++;
+
                 EditorGUI.BeginChangeCheck();
-                shat.advanced.vertexAmount = EditorGUILayout.IntSlider (gui_pr_adv_vert_am, shat.advanced.vertexAmount, 100, 1900);
-                if (EditorGUI.EndChangeCheck() == true)
+                shat.advanced.sizeLimitation = EditorGUILayout.Toggle (gui_pr_adv_size_lim, shat.advanced.sizeLimitation);
+                if (EditorGUI.EndChangeCheck())
                 {
                     foreach (RayfireShatter scr in targets)
                     {
-                        scr.advanced.vertexAmount = shat.advanced.vertexAmount;
+                        scr.advanced.sizeLimitation = shat.advanced.sizeLimitation;
                         SetDirty (scr);
                     }
                 }
+
+                if (shat.advanced.sizeLimitation == true)
+                {
+                    GUILayout.Space (space);
+
+                    EditorGUI.BeginChangeCheck();
+                    shat.advanced.sizeAmount = EditorGUILayout.Slider (gui_pr_adv_size_am, shat.advanced.sizeAmount, 0.1f, 100f);
+                    if (EditorGUI.EndChangeCheck() == true)
+                    {
+                        foreach (RayfireShatter scr in targets)
+                        {
+                            scr.advanced.sizeAmount = shat.advanced.sizeAmount;
+                            SetDirty (scr);
+                        }
+                    }
+                }
+
+                GUILayout.Space (space);
+
+                EditorGUI.BeginChangeCheck();
+                shat.advanced.vertexLimitation = EditorGUILayout.Toggle (gui_pr_adv_vert_lim, shat.advanced.vertexLimitation);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    foreach (RayfireShatter scr in targets)
+                    {
+                        scr.advanced.vertexLimitation = shat.advanced.vertexLimitation;
+                        SetDirty (scr);
+                    }
+                }
+
+                if (shat.advanced.vertexLimitation == true)
+                {
+                    GUILayout.Space (space);
+
+                    EditorGUI.BeginChangeCheck();
+                    shat.advanced.vertexAmount = EditorGUILayout.IntSlider (gui_pr_adv_vert_am, shat.advanced.vertexAmount, 100, 1900);
+                    if (EditorGUI.EndChangeCheck() == true)
+                    {
+                        foreach (RayfireShatter scr in targets)
+                        {
+                            scr.advanced.vertexAmount = shat.advanced.vertexAmount;
+                            SetDirty (scr);
+                        }
+                    }
+                }
+
+                GUILayout.Space (space);
+
+                EditorGUI.BeginChangeCheck();
+                shat.advanced.triangleLimitation = EditorGUILayout.Toggle (gui_pr_adv_tri_lim, shat.advanced.triangleLimitation);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    foreach (RayfireShatter scr in targets)
+                    {
+                        scr.advanced.triangleLimitation = shat.advanced.triangleLimitation;
+                        SetDirty (scr);
+                    }
+                }
+
+                if (shat.advanced.triangleLimitation == true)
+                {
+                    GUILayout.Space (space);
+
+                    EditorGUI.BeginChangeCheck();
+                    shat.advanced.triangleAmount = EditorGUILayout.IntSlider (gui_pr_adv_tri_am, shat.advanced.triangleAmount, 100, 1900);
+                    if (EditorGUI.EndChangeCheck() == true)
+                    {
+                        foreach (RayfireShatter scr in targets)
+                        {
+                            scr.advanced.triangleAmount = shat.advanced.triangleAmount;
+                            SetDirty (scr);
+                        }
+                    }
+                }
+                
+                EditorGUI.indentLevel--;
             }
         }
         
@@ -1460,8 +1534,8 @@ namespace RayFire
 
         void UI_Advanced_Filters()
         {
-            expandFilters = EditorGUILayout.Foldout (expandFilters, "Filters", true);
-            if (expandFilters == true)
+            exp_fil = EditorGUILayout.Foldout (exp_fil, "Filters", true);
+            if (exp_fil == true)
             {
                 GUILayout.Space (space);
 
@@ -1931,7 +2005,6 @@ namespace RayFire
                     Undo.RecordObject (shat, "Center Rotate");
                     SetDirty (shat);
                 }
-                
             }
 
             shat.centerDirection = Quaternion.Inverse (transform.rotation) * centerWorldQuat;

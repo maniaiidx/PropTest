@@ -18,12 +18,12 @@ namespace RayFire
         /// /////////////////////////////////////////////////////////
         
         static int space = 3;
-        static bool expandEmission;
-        static bool expandDynamic;
-        static bool expandNoise;
-        static bool expandCollision;
-        static bool expandLimitations;
-        static bool expandRendering;
+        static bool exp_emit;
+        static bool exp_dyn;
+        static bool exp_noise;
+        static bool exp_coll;
+        static bool exp_lim;
+        static bool exp_rend;
         
         static GUIContent gui_emit_dml     = new GUIContent ("Demolition",     "");
         static GUIContent gui_emit_act     = new GUIContent ("Activation",     "");
@@ -69,6 +69,20 @@ namespace RayFire
         static GUIContent gui_ren_cast     = new GUIContent ("Cast",           "");
         static GUIContent gui_ren_rec      = new GUIContent ("Receive",        "");
         static GUIContent gui_ren_prob     = new GUIContent ("Light Probes",   "");
+        
+        /// /////////////////////////////////////////////////////////
+        /// Enable
+        /// /////////////////////////////////////////////////////////
+
+        private void OnEnable()
+        {
+            if (EditorPrefs.HasKey ("rf_de") == true) exp_emit  = EditorPrefs.GetBool ("rf_de");
+            if (EditorPrefs.HasKey ("rf_dd") == true) exp_dyn   = EditorPrefs.GetBool ("rf_dd");
+            if (EditorPrefs.HasKey ("rf_dn") == true) exp_noise = EditorPrefs.GetBool ("rf_dn");
+            if (EditorPrefs.HasKey ("rf_dc") == true) exp_coll  = EditorPrefs.GetBool ("rf_dc");
+            if (EditorPrefs.HasKey ("rf_dl") == true) exp_lim   = EditorPrefs.GetBool ("rf_dl");
+            if (EditorPrefs.HasKey ("rf_dr") == true) exp_rend  = EditorPrefs.GetBool ("rf_dr");
+        }
         
         /// /////////////////////////////////////////////////////////
         /// Inspector
@@ -241,8 +255,8 @@ namespace RayFire
         
         void UI_Emission()
         {
-            expandEmission = EditorGUILayout.Foldout (expandEmission, "Emission", true);
-            if (expandEmission == true)
+            SetFoldoutPref (ref exp_emit, "rf_de", "Emission", true);
+            if (exp_emit == true)
             {
                 GUILayout.Space (space);
 
@@ -378,8 +392,8 @@ namespace RayFire
         
         void UI_Dynamic()
         {
-            expandDynamic = EditorGUILayout.Foldout (expandDynamic, "Dynamic", true);
-            if (expandDynamic == true)
+            SetFoldoutPref (ref exp_dyn, "rf_dd", "Dynamic", true);
+            if (exp_dyn == true)
             {
                 GUILayout.Space (space);
 
@@ -486,8 +500,8 @@ namespace RayFire
         
         void UI_Noise()
         {
-            expandNoise = EditorGUILayout.Foldout (expandNoise, "Noise", true);
-            if (expandNoise == true)
+            SetFoldoutPref (ref exp_noise, "rf_dn", "Noise", true);
+            if (exp_noise == true)
             {
                 GUILayout.Space (space);
 
@@ -597,8 +611,8 @@ namespace RayFire
         
         void UI_Collision()
         {
-            expandCollision = EditorGUILayout.Foldout (expandCollision, "Collision", true);
-            if (expandCollision == true)
+            SetFoldoutPref (ref exp_coll, "rf_dc", "Collision", true);
+            if (exp_coll == true)
             {
                 GUILayout.Space (space);
 
@@ -747,8 +761,8 @@ namespace RayFire
 
         void UI_Limitations()
         {
-            expandLimitations = EditorGUILayout.Foldout (expandLimitations, "Limitations", true);
-            if (expandLimitations == true)
+            SetFoldoutPref (ref exp_lim, "rf_dl", "Limitations", true);
+            if (exp_lim == true)
             {
                 GUILayout.Space (space);
 
@@ -814,8 +828,8 @@ namespace RayFire
 
         void UI_Rendering()
         {
-            expandRendering = EditorGUILayout.Foldout (expandRendering, "Rendering", true);
-            if (expandRendering == true)
+            SetFoldoutPref (ref exp_rend, "rf_dr", "Rendering", true);
+            if (exp_rend == true)
             {
                 GUILayout.Space (space);
 
@@ -865,6 +879,7 @@ namespace RayFire
         /// /////////////////////////////////////////////////////////
         /// Common
         /// /////////////////////////////////////////////////////////
+        
         void SetDirty (RayfireDebris scr)
         {
             if (Application.isPlaying == false)
@@ -872,6 +887,14 @@ namespace RayFire
                 EditorUtility.SetDirty (scr);
                 EditorSceneManager.MarkSceneDirty (scr.gameObject.scene);
             }
+        }
+        
+        void SetFoldoutPref (ref bool val, string pref, string caption, bool state) 
+        {
+            EditorGUI.BeginChangeCheck();
+            val = EditorGUILayout.Foldout (val, caption, state);
+            if (EditorGUI.EndChangeCheck() == true)
+                EditorPrefs.SetBool (pref, val);
         }
     }
 }

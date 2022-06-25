@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -18,9 +19,9 @@ namespace RayFire
         static Color      wireColor   = new Color (0.58f, 0.77f, 1f);
         static Color      stressColor = Color.green;
         static int        space       = 3;
-        static bool       expandCollapse;
-        static bool       expandStress;
-        static bool       expandFilters;
+        static bool       exp_collapse;
+        static bool       exp_stress;
+        static bool       exp_filters;
         
         static GUIContent gui_con_type  = new GUIContent ("Type",                   "Define the the way connections among Shards will be calculated.");
         static GUIContent gui_con_exp   = new GUIContent ("Expand",                 "Increase size of bounding box for By Bounding Box types.");
@@ -55,6 +56,16 @@ namespace RayFire
         static GUIContent gui_str_sup  = new GUIContent ("Support",   "Angle to define which shards above Shard should be considered as supported shards.");
         static GUIContent gui_str_exp  = new GUIContent ("Exposed",   "Erode connections only for shards which lost their neighbor.");
         static GUIContent gui_str_siz  = new GUIContent ("By Size",   "");
+        
+        /// /////////////////////////////////////////////////////////
+        /// Enable
+        /// /////////////////////////////////////////////////////////
+        
+        void OnEnable()
+        {
+            if (EditorPrefs.HasKey ("rf_cc") == true) exp_collapse = EditorPrefs.GetBool ("rf_cc");
+            if (EditorPrefs.HasKey ("rf_cs") == true) exp_stress   = EditorPrefs.GetBool ("rf_cs");
+        }
         
         /// /////////////////////////////////////////////////////////
         /// Inspector
@@ -196,8 +207,8 @@ namespace RayFire
             
             GUILayout.Space (space);
             
-            expandFilters = EditorGUILayout.Foldout (expandFilters, "Filters", true);
-            if (expandFilters == true)
+            exp_filters = EditorGUILayout.Foldout (exp_filters, "Filters", true);
+            if (exp_filters == true)
             {
                 GUILayout.Space (space);
 
@@ -326,8 +337,8 @@ namespace RayFire
 
             GUILayout.Space (space);
             
-            expandCollapse = EditorGUILayout.Foldout (expandCollapse, "Properties", true);
-            if (expandCollapse == true)
+            SetFoldoutPref (ref exp_collapse, "rf_cc", "Properties");
+            if (exp_collapse == true)
             {
                 GUILayout.Space (space);
                 
@@ -531,8 +542,9 @@ namespace RayFire
 
             GUILayout.Space (space);
             
-            expandStress = EditorGUILayout.Foldout (expandStress, "Properties", true);
-            if (expandStress == true)
+            SetFoldoutPref (ref exp_stress, "rf_cs", "Properties");
+            
+            if (exp_stress == true)
                 UI_Stress_Properties();
             
             // Start/Stop
@@ -559,7 +571,7 @@ namespace RayFire
                 }
             }
         }
-
+        
         void UI_Stress_Properties()
         {
             EditorGUI.indentLevel++;
@@ -918,6 +930,14 @@ namespace RayFire
                 EditorSceneManager.MarkSceneDirty (scr.gameObject.scene);
                 SceneView.RepaintAll();
             }
+        }
+        
+        void SetFoldoutPref (ref bool val, string pref, string caption) 
+        {
+            EditorGUI.BeginChangeCheck();
+            val = EditorGUILayout.Foldout (val, caption, true);
+            if (EditorGUI.EndChangeCheck() == true)
+                EditorPrefs.SetBool (pref, val);
         }
     }
 }

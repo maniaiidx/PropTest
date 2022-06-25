@@ -20,14 +20,14 @@ namespace RayFire
         /// Static
         /// /////////////////////////////////////////////////////////
         
-        static int space    = 3;
-        static bool expandMaterials;
-        static bool expandEmission;
-        static bool expandDynamic;
-        static bool expandNoise;
-        static bool expandCollision;
-        static bool expandLimitations;
-        static bool expandRendering;
+        static int space = 3;
+        static bool exp_mat;
+        static bool exp_emit;
+        static bool exp_dyn;
+        static bool exp_noise;
+        static bool exp_coll;
+        static bool exp_lim;
+        static bool exp_rend;
         
         static GUIContent gui_emit_dml     = new GUIContent ("Demolition",     "");
         static GUIContent gui_emit_act     = new GUIContent ("Activation",     "");
@@ -78,6 +78,14 @@ namespace RayFire
             matList.drawHeaderCallback  = DrawInitHeader;
             matList.onAddCallback       = AddInit;
             matList.onRemoveCallback    = RemoveInit;
+            
+            if (EditorPrefs.HasKey ("rf_um") == true) exp_mat   = EditorPrefs.GetBool ("rf_um");
+            if (EditorPrefs.HasKey ("rf_ue") == true) exp_emit  = EditorPrefs.GetBool ("rf_ue");
+            if (EditorPrefs.HasKey ("rf_ud") == true) exp_dyn   = EditorPrefs.GetBool ("rf_ud");
+            if (EditorPrefs.HasKey ("rf_un") == true) exp_noise = EditorPrefs.GetBool ("rf_un");
+            if (EditorPrefs.HasKey ("rf_uc") == true) exp_coll  = EditorPrefs.GetBool ("rf_uc");
+            if (EditorPrefs.HasKey ("rf_ul") == true) exp_lim   = EditorPrefs.GetBool ("rf_ul");
+            if (EditorPrefs.HasKey ("rf_ur") == true) exp_rend  = EditorPrefs.GetBool ("rf_ur");
         }
         
         /// /////////////////////////////////////////////////////////
@@ -213,8 +221,8 @@ namespace RayFire
 
             GUILayout.Space (space);
 
-            expandMaterials = EditorGUILayout.Foldout (expandMaterials, "Random Materials", true);
-            if (expandMaterials == true)
+            SetFoldoutPref (ref exp_mat, "rf_um", "Random Materials", true);
+            if (exp_mat == true)
             {
                 GUILayout.Space (space);
 
@@ -261,8 +269,8 @@ namespace RayFire
         
         void UI_Emission()
         {
-            expandEmission = EditorGUILayout.Foldout (expandEmission, "Emission", true);
-            if (expandEmission == true)
+            SetFoldoutPref (ref exp_emit, "rf_ue", "Emission", true);
+            if (exp_emit == true)
             {
                 GUILayout.Space (space);
 
@@ -398,8 +406,8 @@ namespace RayFire
         
         void UI_Dynamic()
         {
-            expandDynamic = EditorGUILayout.Foldout (expandDynamic, "Dynamic", true);
-            if (expandDynamic == true)
+            SetFoldoutPref (ref exp_dyn, "rf_ud", "Dynamic", true);
+            if (exp_dyn == true)
             {
                 GUILayout.Space (space);
 
@@ -480,8 +488,8 @@ namespace RayFire
         
         void UI_Noise()
         {
-            expandNoise = EditorGUILayout.Foldout (expandNoise, "Noise", true);
-            if (expandNoise == true)
+            SetFoldoutPref (ref exp_noise, "rf_un", "Noise", true);
+            if (exp_noise == true)
             {
                 GUILayout.Space (space);
 
@@ -591,8 +599,8 @@ namespace RayFire
         
         void UI_Collision()
         {
-            expandCollision = EditorGUILayout.Foldout (expandCollision, "Collision", true);
-            if (expandCollision == true)
+            SetFoldoutPref (ref exp_coll, "rf_uc", "Collision", true);
+            if (exp_coll == true)
             {
                 GUILayout.Space (space);
 
@@ -655,8 +663,8 @@ namespace RayFire
 
         void UI_Limitations()
         {
-            expandLimitations = EditorGUILayout.Foldout (expandLimitations, "Limitations", true);
-            if (expandLimitations == true)
+            SetFoldoutPref (ref exp_lim, "rf_ul", "Limitations", true);
+            if (exp_lim == true)
             {
                 GUILayout.Space (space);
 
@@ -722,8 +730,8 @@ namespace RayFire
 
         void UI_Rendering()
         {
-            expandRendering = EditorGUILayout.Foldout (expandRendering, "Rendering", true);
-            if (expandRendering == true)
+            SetFoldoutPref (ref exp_rend, "rf_ur", "Rendering", true);
+            if (exp_rend == true)
             {
                 GUILayout.Space (space);
 
@@ -814,6 +822,14 @@ namespace RayFire
                 EditorUtility.SetDirty (scr);
                 EditorSceneManager.MarkSceneDirty (scr.gameObject.scene);
             }
+        }
+        
+        void SetFoldoutPref (ref bool val, string pref, string caption, bool state) 
+        {
+            EditorGUI.BeginChangeCheck();
+            val = EditorGUILayout.Foldout (val, caption, state);
+            if (EditorGUI.EndChangeCheck() == true)
+                EditorPrefs.SetBool (pref, val);
         }
     }
 }

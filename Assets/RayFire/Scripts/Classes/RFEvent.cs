@@ -1,7 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿
+using System.Collections.Generic;
 
-// Namespace
 namespace RayFire
 {
     // Event
@@ -11,8 +10,14 @@ namespace RayFire
         public delegate void     EventAction(RayfireRigid rigid);
         public event EventAction LocalEvent;
         
+        
+        // MeshRoot Rigid Delegate & events
+        public delegate void         EventActionMeshRoot(RayfireRigid rigid, RayfireRigid meshRoot);
+        public event EventActionMeshRoot LocalEventMeshRoot;
+        
+        
         // RigidRoot Delegate & events
-        public delegate void         EventActionRoot(RayfireRigidRoot root);
+        public delegate void         EventActionRoot(RFShard shard, RayfireRigidRoot root);
         public event EventActionRoot LocalEventRoot;
         
         // Local Rigid
@@ -22,11 +27,18 @@ namespace RayFire
                 LocalEvent.Invoke(rigid);
         }
         
+        // Local MeshRoot Rigid
+        public void InvokeLocalEventMeshRoot(RayfireRigid rigid, RayfireRigid meshRoot)
+        {
+            if (LocalEventMeshRoot != null)
+                LocalEventMeshRoot.Invoke(rigid, meshRoot);
+        }
+        
         // Local RigidRoot Shard
-        public void InvokeLocalEventRoot(RayfireRigidRoot root)
+        public void InvokeLocalEventRoot(RFShard shard, RayfireRigidRoot rigidRoot)
         {
             if (LocalEventRoot != null)
-                LocalEventRoot.Invoke(root);
+                LocalEventRoot.Invoke(shard, rigidRoot);
         }
     }
     
@@ -59,10 +71,10 @@ namespace RayFire
         }
         
         // Activation event
-        public static void InvokeGlobalEventRoot(RayfireRigidRoot root)
+        public static void InvokeGlobalEventRoot(RFShard shard, RayfireRigidRoot rigidRoot)
         {
             if (GlobalEventRoot != null)
-                GlobalEventRoot.Invoke(root);
+                GlobalEventRoot.Invoke(shard, rigidRoot);
         }
     }
     
@@ -153,22 +165,22 @@ namespace RayFire
     public class RFConnectivityEvent
     {
         // Delegate & events
-        public delegate void            EventAction(RayfireConnectivity connectivity);
+        public delegate void            EventAction(RayfireConnectivity connectivity, List<RFShard> shards, List<RFCluster> clusters);
         public static event EventAction GlobalEvent;
         public event        EventAction LocalEvent;
        
         // Global
-        public static void InvokeGlobalEvent(RayfireConnectivity connectivity)
+        public static void InvokeGlobalEvent(RayfireConnectivity connectivity, List<RFShard> shards, List<RFCluster> clusters)
         {
             if (GlobalEvent != null)
-                GlobalEvent.Invoke(connectivity);
+                GlobalEvent.Invoke(connectivity, shards, clusters);
         }
         
         // Local
-        public void InvokeLocalEvent(RayfireConnectivity connectivity)
+        public void InvokeLocalEvent(RayfireConnectivity connectivity, List<RFShard> shards, List<RFCluster> clusters)
         {
             if (LocalEvent != null)
-                LocalEvent.Invoke(connectivity);
+                LocalEvent.Invoke(connectivity, shards, clusters);
         }
     }
 }

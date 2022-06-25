@@ -1,4 +1,44 @@
 
+ [1.50]
+ 
+ - Shatter. Size limitation.
+ - Shatter. Triangle limitation.
+ - Shatter. All fragments created by limitation properties get one parent.
+ - Rigid. Demolition By Collision and By Damage with collision collection now work independently.
+ - Rigid. Nested & Connected Cluster allows to use Rigid and Shatter Components with custom properties on demolished shards.
+ - Rigid. Debris and Dust emitting for fragments clusterized by Connectivity.
+ - Rigid. New Add Children property for Mesh Demolition. Allows to add mesh children to fragments. 
+ - RigidRoot. Debris and Dust emitting for shards clusterized by Connectivity.
+ 
+ [1.49]
+
+ - RigidRoot. Local and Global Activation event returns activated Shard as well, in addition to RigidRoot parent.
+ - RigidRoot. Change Layer for activated shards with reset support.
+ - RigidRoot. Documentation and Tutorial scene.
+ - Activator. Velocity force apply in activator local space coordinates. 
+ - Connectivity. Activation event returns list of activated shards and clusters in addition to Connectivity component.
+ - Bomb. New By Curve Impulse Fade type. Allows to define explosion strength fade by curve.
+ - Rigid. Connected Cluster mass by material fix.
+ - Rigid. Connected Cluster mass after demolition fix.
+ - Rigid. Connected Cluster demolition fade life time fix. 
+ - Rigid. Connected Cluster shooting with damage apply fix.
+ - Rigid. Connected Cluster shooting with 0 impact radius fix.
+ - Rigid. Connected Cluster demolition Minimum and Maximum lower cap set to 1.
+ - Rigid. Connected Cluster per shard damage apply support by Gun and by collision.
+ - Rigid. Cluster Demolition properties can be edited with Mesh Root object type.
+ - Rigid. Local Activation event for MeshRoot Rigid. Returns Activated Rigid and its MeshRoot parent.
+ - Rigid. Inherit Tag and Custom Tag properties for demolition fragments.
+ - Rigid. Inherit Layer and Custom Layer properties for demolition fragments.
+   IMPORTANT: Rigid.meshDemolition.properties.layer field was changed from String type to Int type. 
+   Disable Inherit Layer in Mesh Demolition / Advanced Properties and define Custom Layer which was 
+   defined by string in older builds in case you defined different layer for demolition fragments.
+ - Rigid. Change Layer and Custom Layer properties for activated objects.
+   IMPORTANT: Rigid.activation.layer field was changed from String type to Int type. 
+   Enable Change Layer in Activation Properties and define Layer which was 
+   defined by string in older builds in case you defined different layer for activated objects.  
+ - Rigid. Changed layer reset for activated objects with changed Layer.
+ - UI. Opened foldouts don't close in Play Mode.
+ 
  [1.48]
 
  - Rigid. New UI.

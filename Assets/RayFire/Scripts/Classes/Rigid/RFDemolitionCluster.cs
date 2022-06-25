@@ -114,10 +114,13 @@ namespace RayFire
         /// Clusterize
         /// /////////////////////////////////////////////////////////
 
+        // Reset Connected cluster editor setup
         public static void ResetClusterize (RayfireRigid scr)
         {
-            scr.physics.ignoreList = null;
+            
             RFPhysic.DestroyColliders (scr);
+            scr.physics.ignoreList              = null;
+            scr.physics.clusterColliders        = null;
             scr.clusterDemolition.cluster       = new RFCluster();
             scr.clusterDemolition.clsCount      = 1;
             scr.clusterDemolition.minorClusters = null;
@@ -394,7 +397,23 @@ namespace RayFire
         static Collider[] GetDetachColliders (RayfireRigid scr)
         {
             // TODO instead overlap, get contact shard, go through all neibs and collect all in radius,
-            // exclude and mark all not in radius, stop when there is no grow anymore
+            // TODO exclude and mark all not in radius, stop when there is no grow anymore
+           
+            // Get damaged colliders
+            if (scr.objectType == ObjectType.ConnectedCluster && scr.damage.toShards == true)
+            {
+                List<Collider> damagedCollider = new List<Collider>();
+                for (int i = 0; i < scr.clusterDemolition.cluster.shards.Count; i++)
+                    if (scr.clusterDemolition.cluster.shards[i].dm > scr.damage.maxDamage)
+                        damagedCollider.Add (scr.clusterDemolition.cluster.shards[i].col);
+                
+                // Detach damaged shards
+                if (damagedCollider.Count > 0)
+                {
+                    scr.clusterDemolition.damageRadius = 0f;
+                    return damagedCollider.ToArray();
+                }
+            }
             
             // Get colliders by damage radius and reset it
             if (scr.clusterDemolition.damageRadius > 0)
@@ -403,7 +422,7 @@ namespace RayFire
                 scr.clusterDemolition.damageRadius = 0f;
                 return colliders;
             }
-  
+            
             // Get detach colliders by manual damage radius
             if (scr.clusterDemolition.type == RFDetachType.WorldUnits)
                 if (scr.clusterDemolition.units > 0)
@@ -1270,7 +1289,17 @@ namespace RayFire
             
             // Add new component if shard has not rigid
             if (shard.rigid == null)
+            {
+                // Add Rigid
                 shard.rigid = shard.tm.gameObject.AddComponent<RayfireRigid>();
+                
+                // Copy properties from parent to fragment node
+                scr.CopyPropertiesTo (shard.rigid);
+                
+                // Turn off demolition for solo fragments
+                if (scr.clusterDemolition.shardDemolition == false)
+                    shard.rigid.demolitionType = DemolitionType.None;
+            }
             else
             {
                 // Add rigid body to Rigid if it was deleted because of clustering
@@ -1290,10 +1319,7 @@ namespace RayFire
 
             // Collect fragment
             scr.fragments.Add (shard.rigid);
-
-            // Copy properties from parent to fragment node
-            scr.CopyPropertiesTo (shard.rigid);
-
+            
             // Set unyielding
             shard.rigid.activation.unyielding  = shard.uny;
             shard.rigid.activation.activatable = shard.act;
@@ -1309,10 +1335,6 @@ namespace RayFire
             if (shard.rigid.simulationType == SimType.Kinematic || shard.rigid.simulationType == SimType.Inactive)
                 if(shard.rigid.activation.byConnectivity == true && shard.uny == false)
                     shard.rigid.simulationType = SimType.Dynamic;
-
-            // Turn off demolition for solo fragments
-            if (scr.clusterDemolition.shardDemolition == false)
-                shard.rigid.demolitionType = DemolitionType.None;
             
             // Do not destroy fragment because cluster could be reused 
             if (scr.reset.action == RFReset.PostDemolitionType.DeactivateToReset)

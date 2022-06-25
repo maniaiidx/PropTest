@@ -8,6 +8,10 @@ namespace RayFire
     [Serializable]
     public class RFShard : IComparable<RFShard>
     {
+        // Static
+        public static float neibPosThreshold  = 0.01f;
+        public static float neibAreaThreshold = 0.01f;
+        
         // Main
         public int     id;
         public float   sz;  // Size
@@ -16,11 +20,14 @@ namespace RayFire
         public Bounds  bnd;
         public Vector3 pos; // TODO nonserialzed?
         public SimType sm;
+
+        public float dm;
         
         [NonSerialized] public Quaternion rot; 
         [NonSerialized] public Vector3    scl;
         [NonSerialized] public Vector3    los; // local position. Used for Local offset activation
         [NonSerialized] public float      m;   // Mass, calculates once
+        [NonSerialized] public int        lb;  // Layer backup to restore if shard has activation layer
         
         /*
         [NonSerialized] public float v;   // Velocity activation
@@ -28,7 +35,7 @@ namespace RayFire
         [NonSerialized] public int   imp; // Impact activation
         [NonSerialized] public int   acv; // Activator activation,
         */
-
+        
         // Neib info
         public int         nAm;   // Initial amount of neibs
         public List<int>   nIds;
@@ -254,7 +261,7 @@ namespace RayFire
                 cluster.shards.Add(shard);
             }
         }
-        
+
         /// /////////////////////////////////////////////////////////
         /// Neibs
         /// /////////////////////////////////////////////////////////
@@ -270,8 +277,9 @@ namespace RayFire
                 {
                     // Area check
                     areaDif = Mathf.Abs (poly[i].area - otherShard.poly[j].area);
-                    if (areaDif < 0.001f)
+                    if (areaDif < neibAreaThreshold)
                     {
+                        // Normal check
                         if (poly[i].normal == -otherShard.poly[j].normal)
                         {
                             area += poly[i].area;
@@ -296,11 +304,11 @@ namespace RayFire
                 {
                     // Area check
                     areaDif = Mathf.Abs (tris[i].area - otherShard.tris[j].area);
-                    if (areaDif < 0.001f)
+                    if (areaDif < neibAreaThreshold)
                     {
                         // Position check
                         posDif = Vector3.Distance (tris[i].pos, otherShard.tris[j].pos);
-                        if (posDif < 0.01f)
+                        if (posDif < neibPosThreshold)
                         {
                             area += tris[i].area;
                             break;

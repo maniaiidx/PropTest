@@ -35,28 +35,29 @@ namespace RayFire
             ParticleSystem = 5
         }
         
-        public  GizmoType                    gizmoType;
-        public  float                        sphereRadius   = 5f;
-        public  Vector3                      boxSize        = new Vector3 (5f, 2f, 5f);
-        public  bool                         checkRigid     = true;
-        public  bool                         checkRigidRoot = true;
-        public  ActivationType               type;
-        public  float                        delay;
-        public  bool                         demolishCluster;
-        public  bool                         apply;
-        public  Vector3                      velocity;
-        public  Vector3                      spin;
-        public  ForceMode                    mode;
-        public  bool                         showAnimation;
-        public  float                        duration       = 3f;
-        public  float                        scaleAnimation = 1f;
-        public  AnimationType                positionAnimation;
-        public  LineRenderer                 line;
-        public  List<Vector3>                positionList;
-        public  bool                         showGizmo = true;
-        public  Collider                     activatorCollider;
-        public  ParticleSystem               ps;
-        public  List<ParticleCollisionEvent> collisionEvents;
+        public GizmoType                    gizmoType;
+        public float                        sphereRadius   = 5f;
+        public Vector3                      boxSize        = new Vector3 (5f, 2f, 5f);
+        public bool                         checkRigid     = true;
+        public bool                         checkRigidRoot = true;
+        public ActivationType               type;
+        public float                        delay;
+        public bool                         demolishCluster;
+        public bool                         apply;
+        public Vector3                      velocity;
+        public Vector3                      spin;
+        public ForceMode                    mode;
+        public bool                         coord;
+        public bool                         showAnimation;
+        public float                        duration       = 3f;
+        public float                        scaleAnimation = 1f;
+        public AnimationType                positionAnimation;
+        public LineRenderer                 line;
+        public List<Vector3>                positionList;
+        public bool                         showGizmo = true;
+        public Collider                     activatorCollider;
+        public ParticleSystem               ps;
+        public List<ParticleCollisionEvent> collisionEvents;
         
         private bool                         animating;
         private float                        pathRatio;
@@ -363,15 +364,16 @@ namespace RayFire
                 // Velocity
                 if (velocity != Vector3.zero)
                 {
-                    rb.AddForce (velocity, mode);
-                    //new Vector3 (Random.Range (-val, val), Random.Range (-val, val), Random.Range (-val, val));
+                    if (coord == false)
+                        rb.AddForce (velocity, mode);
+                    else
+                        rb.AddForce (transform.TransformDirection (velocity), mode);
                 }
 
                 // Angular velocity
                 if (spin != Vector3.zero)
                 {
                     rb.AddTorque (spin, mode);
-                    // new Vector3 ( Random.Range (-spin, spin), Random.Range (-spin, spin), Random.Range (-spin, val));
                 }
             }
         }

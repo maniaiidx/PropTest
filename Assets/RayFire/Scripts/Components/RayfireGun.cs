@@ -193,9 +193,10 @@ namespace RayFire
 
                     // Apply damage and return new demolished rigid fragment over shooting line
                     rigidScr = ApplyDamage (rigidScr, hit, shootPos, shootVector, impactPoint);
-                    
+
                     // Impact hit to rigid bodies. Activated inactive, detach clusters
-                    ImpactRigid(rigidScr, hit, impactPoint, shootVector);
+                    if (rigidScr != null)
+                        ImpactRigid(rigidScr, hit, impactPoint, shootVector);
                 }
             }
             
@@ -239,7 +240,7 @@ namespace RayFire
         {
             // Prepare impact list
             List<Rigidbody> impactRbList = new List<Rigidbody>();
-           
+            
             // Hit object Impact activation and detach before impact force
             if (radius == 0)
             {
@@ -250,9 +251,8 @@ namespace RayFire
                             rigidScr.Activate();
 
                 // Connected cluster one fragment detach
-                if (rigidScr.objectType == ObjectType.ConnectedCluster)
-                    if (demolishCluster == true)
-                        RFDemolitionCluster.DemolishConnectedCluster (rigidScr, new[] {hit.collider});
+                if (rigidScr.objectType == ObjectType.ConnectedCluster && demolishCluster == true)
+                    RFDemolitionCluster.DemolishConnectedCluster (rigidScr, new[] {hit.collider});
 
                 // Collect for impact
                 if (strength > 0)
@@ -447,21 +447,21 @@ namespace RayFire
         /// /////////////////////////////////////////////////////////
         
         // Apply damage. Return new rigid
-        RayfireRigid ApplyDamage (RayfireRigid scrRigid, RaycastHit hit, Vector3 shootPos, Vector3 shootVector, Vector3 impactPoint)
+        RayfireRigid ApplyDamage (RayfireRigid scr, RaycastHit hit, Vector3 shootPos, Vector3 shootVector, Vector3 impactPoint)
         {
             // No damage or damage disabled
-            if (damage == 0 || scrRigid.damage.enable == false)
-                return scrRigid;
+            if (damage == 0 || scr.damage.enable == false)
+                return scr;
             
             // Check for demolition TODO input collision collider if radius is 0
-            bool damageDemolition = scrRigid.ApplyDamage(damage, impactPoint, radius);
+            bool damageDemolition = scr.ApplyDamage(damage, impactPoint, radius, hit.collider);
             
-            // object was not demolished
+            // Object was not demolished
             if (damageDemolition == false)
-                return scrRigid;
+                return scr;
             
             // Target was demolished
-            if (scrRigid.HasFragments == true)
+            if (scr.HasFragments == true)
             {
                 // Get new fragment target
                 bool dmlHitState = Physics.Raycast(shootPos, shootVector, out hit, maxDistance, mask, QueryTriggerInteraction.Ignore);
@@ -471,7 +471,6 @@ namespace RayFire
                 {
                     if (hit.collider.attachedRigidbody != null)
                         return hit.collider.attachedRigidbody.transform.GetComponent<RayfireRigid>();
-                    
                     if (hit.collider != null)
                         return hit.collider.transform.GetComponent<RayfireRigid>();
                 }

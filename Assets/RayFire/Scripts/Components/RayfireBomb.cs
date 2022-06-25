@@ -20,6 +20,7 @@ namespace RayFire
         {
             Linear      = 0,
             Exponential = 1,
+            ByCurve     = 3,
             None        = 2
         }
 
@@ -37,27 +38,30 @@ namespace RayFire
             public RayfireRigidRoot rigidRoot;
         }
         
-        public bool      showGizmo;
-        public RangeType rangeType;
-        public FadeType  fadeType;
-        public float     range = 5f;
-        public int       deletion;
-        public float     strength    = 1f;
-        public int       variation   = 50;
-        public int       chaos       = 30;
-        public bool      forceByMass = true;
-        public bool      affectInactive;
-        public bool      affectKinematic;
-        public float     heightOffset;
-        public float     delay;
-        public bool      atStart;
-        public bool      destroy;
-        public bool      applyDamage;
-        public float     damageValue;
-
-        public bool      play;
-        public float     volume = 1f;
-        public AudioClip clip;
+        public bool           showGizmo;
+        public RangeType      rangeType;
+        public FadeType       fadeType;
+        public float          range = 5f;
+        public int            deletion;
+        public float          strength    = 1f;
+        public int            variation   = 50;
+        public int            chaos       = 30;
+        public bool           forceByMass = true;
+        public bool           affectInactive;
+        public bool           affectKinematic;
+        public float          heightOffset;
+        public float          delay;
+        public bool           atStart;
+        public bool           destroy;
+        public bool           applyDamage;
+        public float          damageValue;
+        public AnimationCurve curve = new AnimationCurve (
+            new Keyframe (0,    1, -1, 0), new Keyframe (0.5f, 1, 0, 0),
+            new Keyframe (0.7f, 0, -1, 0), new Keyframe (1,    0, 0,  -1));
+        
+        public bool           play;
+        public float          volume = 1f;
+        public AudioClip      clip;
 
         // Event
         public RFExplosionEvent explosionEvent = new RFExplosionEvent();
@@ -302,7 +306,7 @@ namespace RayFire
   
                     // Get fade multiplier by range and distance
                     projectile.fade = Fade (explPosition, projectile.positionClosest);
-
+                    
                     // Skip fragments out of range
                     if (projectile.fade <= 0)
                         continue;
@@ -537,9 +541,15 @@ namespace RayFire
                 fade =  1f - Vector3.Distance (bombPos, fragPos) / range;
                 fade *= fade;
             }
+            
+            // By curve
+            else if (fadeType == FadeType.ByCurve)
+            {
+                fade = curve.Evaluate (Vector3.Distance (bombPos, fragPos) / range);;
+            }
 
             // Cap fade
-            if (fade < 0)
+            if (fade < 0.01f)
                 fade = 0;
 
             return fade;

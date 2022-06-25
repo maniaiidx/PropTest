@@ -86,17 +86,18 @@ namespace RayFire
             AtDemolition     = 9
         }
 
-        public int amount;
-        public int variation;
-        public float depthFade;
-        public float contactBias;
-        public int seed;
-        public bool useShatter;
-        public bool clusterize;
-        public FragSimType simType;
-        public MeshInputType meshInput;
+        public int                  amount;
+        public int                  variation;
+        public float                depthFade;
+        public float                contactBias;
+        public int                  seed;
+        public bool                 useShatter;
+        public bool                 addChildren;
+        public bool                 clusterize;
+        public FragSimType          simType;
+        public MeshInputType        meshInput;
         public RFFragmentProperties properties;
-        public RFRuntimeCaching runtimeCaching;
+        public RFRuntimeCaching     runtimeCaching;
 
         // Non serialized
         [NonSerialized] public int badMesh;
@@ -128,6 +129,7 @@ namespace RayFire
             contactBias    = 0f;
             seed           = 1;
             useShatter     = false;
+            addChildren    = true;
             clusterize     = false;
             simType        = FragSimType.Inherit;
             meshInput      = MeshInputType.AtDemolition;
@@ -153,6 +155,7 @@ namespace RayFire
             seed        = demolition.seed;
             contactBias = demolition.contactBias;
             useShatter  = false;
+            addChildren = demolition.addChildren;
             clusterize  = demolition.clusterize;
             simType     = demolition.simType;
             meshInput   = demolition.meshInput;
@@ -360,8 +363,8 @@ namespace RayFire
             RFLimitations.CreateRoot (scr);
             
             // Vars 
-            int    baseLayer = scr.meshDemolition.GetLayer(scr);
-            string baseTag   = scr.gameObject.tag;
+            int    baseLayer = scr.meshDemolition.properties.GetLayer(scr);
+            string baseTag   = scr.meshDemolition.properties.GetTag(scr);
             string baseName  = scr.gameObject.name + fragmentStr;
 
             // Save original rotation
@@ -531,8 +534,8 @@ namespace RayFire
             RFLimitations.CreateRoot (scr);
             
             // Vars 
-            int    baseLayer = scr.meshDemolition.GetLayer(scr);
-            string baseTag   = scr.gameObject.tag;
+            int    baseLayer = scr.meshDemolition.properties.GetLayer(scr);
+            string baseTag   = scr.meshDemolition.properties.GetTag(scr);
             string baseName  = scr.gameObject.name + "_";
 
             // Get original mats
@@ -648,22 +651,7 @@ namespace RayFire
         /// /////////////////////////////////////////////////////////
         /// Methods
         /// /////////////////////////////////////////////////////////
-        
-        // Get layer for fragments
-        public int GetLayer (RayfireRigid scr)
-        {
-            // Inherit layer
-            if (properties.layer.Length == 0)
-                return scr.gameObject.layer;
-            
-            // No custom layer
-            if (RayfireMan.inst.layersHash.Contains (properties.layer) == false)
-                return 0;
 
-            // Get custom layer
-            return LayerMask.NameToLayer (properties.layer);
-        }
-        
         // Cor to fragment mesh over several frames
         public IEnumerator RuntimeCachingCor (RayfireRigid scr)
         {
@@ -799,6 +787,10 @@ namespace RayFire
             // Not for clusters
             if (scr.IsCluster == true)
                 return;
+
+            // Disabled
+            if (scr.meshDemolition.addChildren == false)
+                return;
             
             // No children
             if (scr.transForm.childCount == 0)
@@ -837,18 +829,12 @@ namespace RayFire
                 
                 // Set custom fragment simulation type if not inherited
                 SetFragmentSimulationType (childScr, scr);
-                
-                // Copy particles
-                // RFParticles.CopyRigidParticles (scr, childScr);
 
                 // Init
                 childScr.Initialize();
                 
                 // Update depth level and amount
                 childScr.limitations.currentDepth = scr.limitations.currentDepth + 1;
-                
-                //Debug.Log (childScr.name,                      scr.gameObject);
-                //Debug.Log (childScr.meshDemolition.useShatter, scr.gameObject);
                 
                 // Collect
                 scr.fragments.Add (childScr);

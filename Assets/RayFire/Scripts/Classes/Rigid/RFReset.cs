@@ -111,6 +111,9 @@ namespace RayFire
             if (scr.activation.activated == true)
                 scr.simulationType = SimType.Inactive;
             
+            // ReSet activation layer. IMPORTANT before Reset()
+            RFActivation.RestoreActivationLayer (scr);
+            
             // Reset rigid props
             Reset (scr);
             
@@ -132,7 +135,7 @@ namespace RayFire
             ResetSound(scr.sound);
             
             // Remove particles
-            DestroyParticles (scr);
+            DestroyRigidParticles (scr);
             
             // Enable Rigid because of cluster fade and reset
             if (scr.enabled == false)
@@ -216,6 +219,8 @@ namespace RayFire
             if (MeshRootCleanup (scr) == false)
                 return true;
 
+            DestroyMeshRootParticles (scr);
+            
             // Reset tm
             scr.physics.LoadInitTransform (scr.transform);
 
@@ -282,6 +287,18 @@ namespace RayFire
             return true;
         }
 
+        // Destroy particles
+        public static void DestroyMeshRootParticles (RayfireRigid scr)
+        {
+            if (scr.particleList.Count > 0)
+            {
+                for (int i = scr.particleList.Count - 1; i >= 0; i--)
+                    if (scr.particleList[i] != null)
+                        RayfireMan.DestroyGo (scr.particleList[i].gameObject);
+                scr.particleList.Clear();
+            }
+        }
+        
         /// /////////////////////////////////////////////////////////
         /// Reset Rigid Root
         /// /////////////////////////////////////////////////////////
@@ -302,7 +319,7 @@ namespace RayFire
             // TODO CLEANUP
             
             // Destroy particle roots
-            DestroyParticles (scr);
+            DestroyRigidRootParticles (scr);
             
             // Reset tm
             scr.transform.position   = scr.cluster.pos;
@@ -335,6 +352,9 @@ namespace RayFire
                 if (scr.cluster.shards[i].tm.gameObject.activeSelf == false)
                     scr.cluster.shards[i].tm.gameObject.SetActive (true);
             }
+
+            // ReSet layer for activated shards
+            RFActivation.RestoreActivationLayer (scr);
             
             // Set physics properties for shards
             RFPhysic.SetPhysics(scr.cluster.shards, scr.physics);
@@ -401,7 +421,7 @@ namespace RayFire
         }
         
         // Destroy particles
-        public static void DestroyParticles (RayfireRigidRoot scr)
+        public static void DestroyRigidRootParticles (RayfireRigidRoot scr)
         {
             if (scr.particleList.Count > 0)
             {
@@ -478,7 +498,7 @@ namespace RayFire
                     if (scr.fragments[i] != null)
                     {
                         // Destroy particles
-                        DestroyParticles (scr.fragments[i]);
+                        DestroyRigidParticles (scr.fragments[i]);
                         
                         // Destroy fragment
                         scr.fragments[i].gameObject.SetActive (false);
@@ -533,7 +553,7 @@ namespace RayFire
         }
 
         // Destroy particles
-        public static void DestroyParticles (RayfireRigid scr)
+        public static void DestroyRigidParticles (RayfireRigid scr)
         {
             // Destroy debris
             if (scr.HasDebris == true)
@@ -572,7 +592,7 @@ namespace RayFire
             for (int i = scr.fragments.Count - 1; i >= 0; i--)
             {
                 // Destroy particles
-                DestroyParticles (scr.fragments[i]);
+                DestroyRigidParticles (scr.fragments[i]);
                 
                 scr.fragments[i].transForm.localScale = scr.fragments[i].physics.initScale;
                 scr.fragments[i].transForm.position = scr.transForm.position + scr.pivots[i];

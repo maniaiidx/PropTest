@@ -250,7 +250,7 @@ namespace RayFire
         /// Methods
         /// /////////////////////////////////////////////////////////
         
-        // Fragment this object by shatter properties
+        // Fragment this object by shatter properties  List<GameObject>
         public void Fragment(FragLastMode fragmentMode = FragLastMode.New)
         {
             // Cache variables
@@ -274,7 +274,7 @@ namespace RayFire
             if (fragmentMode == FragLastMode.ToLast)
             {
                 if (rootChildList[rootChildList.Count - 1] != null)
-                    fragmentsLast = CreateFragments(rootChildList[rootChildList.Count - 1].gameObject);
+                    fragmentsLast = CreateFragments(rootChildList[rootChildList.Count - 1]);
                 else
                     fragmentMode = FragLastMode.New;
             }
@@ -283,8 +283,10 @@ namespace RayFire
             if (fragmentMode == FragLastMode.New)
                 fragmentsLast = CreateFragments();
 
-            // Vertex limitation
+            // Limitation fragment
+            SizeLimitation();
             VertexLimitation();
+            TriangleLimitation();
             
             // Collect to all fragments
             fragmentsAll.AddRange(fragmentsLast);
@@ -292,9 +294,9 @@ namespace RayFire
             // Reset original object back if it was scaled
             transForm.localScale = originalScale;
         }
-
+        
         // Create fragments by mesh and pivots array
-        List<GameObject> CreateFragments(GameObject lastRoot = null)
+        List<GameObject> CreateFragments(Transform root = null)
         {
             // No mesh were cached
             if (meshes == null)
@@ -302,22 +304,20 @@ namespace RayFire
 
             // Clear array for new fragments
             GameObject[] fragArray = new GameObject[meshes.Length];
-
-            // Vars 
-            string goName = gameObject.name;
-            string baseName = goName + "_sh_";
             
             // Create root object
-            GameObject root = lastRoot;
-            if (lastRoot == null)
+            if (root == null)
             {
-                root                    = new GameObject (goName + "_root");
-                root.transform.position = transForm.position;
-                root.transform.rotation = transForm.rotation;
-                root.tag                = gameObject.tag;
-                root.layer              = gameObject.layer;
-                rootChildList.Add (root.transform);
+                GameObject rootGo         = new GameObject (gameObject.name + "_root");
+                rootGo.transform.position = transForm.position;
+                rootGo.transform.rotation = transForm.rotation;
+                rootGo.tag                = gameObject.tag;
+                rootGo.layer              = gameObject.layer;
+                root                      = rootGo.transform;
+                rootChildList.Add (root);
             }
+            
+            //Debug.Log (root.transform);
             
             // Create instance for fragments
             GameObject fragInstance;
@@ -339,11 +339,12 @@ namespace RayFire
             
             // Get original mats. in case of combined meshes it is already defined in CombineShatter()
             if (advanced.combineChildren == false)
-            {
                 materials = skinnedMeshRend != null
                     ? skinnedMeshRend.sharedMaterials
                     : meshRenderer.sharedMaterials;
-            }
+
+            // Vars 
+            string baseName = gameObject.name + "_sh_";
             
             // Create fragment objects
             for (int i = 0; i < meshes.Length; ++i)
@@ -359,7 +360,7 @@ namespace RayFire
                 // Set multymaterial
                 MeshRenderer targetRend = fragGo.GetComponent<MeshRenderer>();
                 RFSurface.SetMaterial(origSubMeshIdsRF, materials, material, targetRend, i, meshes.Length);
-                
+
                 // Set fragment object name and tm
                 fragGo.name               = baseName + (i + 1);
                 fragGo.transform.position = root.transform.position + (pivots[i] / rescaleFix);
@@ -379,9 +380,6 @@ namespace RayFire
 
                 // Add in array
                 fragArray[i] = fragGo;
-                
-                //Debug.Log (meshes[i].bounds.size.magnitude);
-                //Debug.Log (targetRend.bounds.size.magnitude);
             }
 
             // Root back to original parent
@@ -559,35 +557,70 @@ namespace RayFire
         }
         
         /// /////////////////////////////////////////////////////////
-        /// Other
+        /// Limitations
         /// /////////////////////////////////////////////////////////
+        
+        // Size limitation
+        void SizeLimitation()
+        {
+            if (advanced.sizeLimitation == true)
+            {
+                for (int i = fragmentsLast.Count - 1; i >= 0; i--)
+                {
+                    
+                    MeshRenderer mr = fragmentsLast[i].GetComponent<MeshRenderer>();
+                    if (mr.bounds.size.magnitude > advanced.sizeAmount)
+                        LimitationFragment (i);
+                }
+            }
+        }
         
         // Vertex limitation
         void VertexLimitation()
         {
-            // Vertex limitation
             if (advanced.vertexLimitation == true)
-            {
                 for (int i = fragmentsLast.Count - 1; i >= 0; i--)
                 {
                     MeshFilter mf = fragmentsLast[i].GetComponent<MeshFilter>();
                     if (mf.sharedMesh.vertexCount > advanced.vertexAmount)
-                    {
-                        RayfireShatter shat = fragmentsLast[i].AddComponent<RayfireShatter>();
-                        shat.voronoi.amount = 4;
-                        
-                        shat.Fragment ();
-
-                        if (shat.fragmentsLast.Count > 0)
-                        {
-                            fragmentsLast.AddRange (shat.fragmentsLast);
-                            DestroyImmediate (shat.gameObject);
-                            fragmentsLast.RemoveAt (i);
-                        }
-                    }
+                        LimitationFragment (i);
                 }
+        }
+        
+        // Triangle limitation
+        void TriangleLimitation()
+        {
+            if (advanced.triangleLimitation == true)
+                for (int i = fragmentsLast.Count - 1; i >= 0; i--)
+                {
+                    MeshFilter mf = fragmentsLast[i].GetComponent<MeshFilter>();
+                    if (mf.sharedMesh.triangles.Length / 3 > advanced.triangleAmount)
+                        LimitationFragment (i);
+                }
+        }
+        
+        // Fragment by limitations
+        void LimitationFragment(int ind)
+        {
+            RayfireShatter shat = fragmentsLast[ind].AddComponent<RayfireShatter>();
+            shat.voronoi.amount = 4;
+                        
+            shat.Fragment ();
+
+            if (shat.fragmentsLast.Count > 0)
+            {
+                fragmentsLast.AddRange (shat.fragmentsLast);
+                DestroyImmediate (shat.gameObject);
+                fragmentsLast.RemoveAt (ind);
+
+                // Parent and destroy root
+                foreach (var frag in shat.fragmentsLast)
+                    frag.transform.parent = rootChildList[rootChildList.Count - 1];
+                DestroyImmediate (shat.rootChildList[rootChildList.Count - 1].gameObject);
             }
         }
+        
+        
         
         /*
         enum PrefabMode

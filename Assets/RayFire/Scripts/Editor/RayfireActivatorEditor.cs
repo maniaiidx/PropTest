@@ -35,6 +35,7 @@ namespace RayFire
         static GUIContent gui_forceVelocity      = new GUIContent ("Velocity",         "Applied Velocity in world coordinates.");
         static GUIContent gui_forceSpin          = new GUIContent ("Spin",             "Applied Angular Velocity in world coordinates.");
         static GUIContent gui_forceMode          = new GUIContent ("Mode",             "");
+        static GUIContent gui_forceCoord         = new GUIContent ("Local Space",      "");
         static GUIContent gui_animShow           = new GUIContent ("Show Animation",   "Show animation properties.");
         static GUIContent gui_animDuration       = new GUIContent ("Duration",         "Total animation duration.");
         static GUIContent gui_animScale          = new GUIContent ("Scale Animation",  "Animate scale of Activator gizmo.");
@@ -255,22 +256,6 @@ namespace RayFire
         {
             GUILayout.Label ("  Force", EditorStyles.boldLabel);
 
-            UI_ForceApply();
-
-            if (activator.apply == true)
-            {
-                GUILayout.Space (space);
-
-                UI_ForceVelocitySpin();
-
-                GUILayout.Space (space);
-
-                UI_ForceMode();
-            }
-        }
-
-        void UI_ForceApply()
-        {
             EditorGUI.BeginChangeCheck();
             activator.apply = EditorGUILayout.Toggle (gui_forceApply, activator.apply);
             if (EditorGUI.EndChangeCheck())
@@ -279,41 +264,53 @@ namespace RayFire
                     scr.apply = activator.apply;
                     SetDirty (scr);
                 }
-        }
-        
-        void UI_ForceVelocitySpin()
-        {
-            EditorGUI.BeginChangeCheck();
-            activator.velocity = EditorGUILayout.Vector3Field (gui_forceVelocity, activator.velocity);
-            if (EditorGUI.EndChangeCheck())
-                foreach (RayfireActivator scr in targets)
-                {
-                    scr.velocity = activator.velocity;
-                    SetDirty (scr);
-                }
 
-            GUILayout.Space (space);
+            if (activator.apply == true)
+            {
+                GUILayout.Space (space);
+                
+                EditorGUI.BeginChangeCheck();
+                activator.coord = EditorGUILayout.Toggle (gui_forceCoord, activator.coord);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireActivator scr in targets)
+                    {
+                        scr.coord = activator.coord;
+                        SetDirty (scr);
+                    }
+                
+                GUILayout.Space (space);
+                
+                EditorGUI.BeginChangeCheck();
+                activator.velocity = EditorGUILayout.Vector3Field (gui_forceVelocity, activator.velocity);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireActivator scr in targets)
+                    {
+                        scr.velocity = activator.velocity;
+                        SetDirty (scr);
+                    }
+
+                GUILayout.Space (space);
             
-            EditorGUI.BeginChangeCheck();
-            activator.spin = EditorGUILayout.Vector3Field (gui_forceSpin, activator.spin);
-            if (EditorGUI.EndChangeCheck())
-                foreach (RayfireActivator scr in targets)
-                {
-                    scr.spin = activator.spin;
-                    SetDirty (scr);
-                }
-        }
-        
-        void UI_ForceMode()
-        {
-            EditorGUI.BeginChangeCheck();
-            activator.mode = (ForceMode)EditorGUILayout.EnumPopup (gui_forceMode, activator.mode);
-            if (EditorGUI.EndChangeCheck() == true)
-                foreach (RayfireActivator scr in targets)
-                {
-                    scr.mode = activator.mode;
-                    SetDirty (scr);
-                }
+                EditorGUI.BeginChangeCheck();
+                activator.spin = EditorGUILayout.Vector3Field (gui_forceSpin, activator.spin);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireActivator scr in targets)
+                    {
+                        scr.spin = activator.spin;
+                        SetDirty (scr);
+                    }
+
+                GUILayout.Space (space);
+
+                EditorGUI.BeginChangeCheck();
+                activator.mode = (ForceMode)EditorGUILayout.EnumPopup (gui_forceMode, activator.mode);
+                if (EditorGUI.EndChangeCheck() == true)
+                    foreach (RayfireActivator scr in targets)
+                    {
+                        scr.mode = activator.mode;
+                        SetDirty (scr);
+                    }
+            }
         }
         
         /// /////////////////////////////////////////////////////////

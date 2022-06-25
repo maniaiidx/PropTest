@@ -4,9 +4,10 @@ using UnityEngine;
 public class ApplyDamageScript : MonoBehaviour
 {
 	public RayfireRigid rigid;
-	public float damageValue = 50f;
-	public Transform damagePoint;
-	public float damageRadius = 2f;
+	public float        damageValue = 50f;
+	public Transform    damagePoint;
+	public float        damageRadius = 2f;
+	public Collider     coll; // Optional Connected cluster collider to apply damage to shard
 	
 	// Update is called once per frame
 	void Update () {
@@ -21,7 +22,7 @@ public class ApplyDamageScript : MonoBehaviour
 					worldPosition = damagePoint.position;
 				
 				// Apply damage
-				rigid.ApplyDamage (damageValue, worldPosition, damageRadius);
+				rigid.ApplyDamage (damageValue, worldPosition, damageRadius, coll);
 			}
 		}
 	}

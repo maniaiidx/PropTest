@@ -63,7 +63,8 @@ namespace RayFire
         static GUIContent gui_act_con     = new GUIContent ("Connectivity",       "Inactive object will be activated by Connectivity component if it will not be connected with Unyielding zone.");
         static GUIContent gui_act_uny     = new GUIContent ("Unyielding",         "Allows to define Inactive/Kinematic object as Unyielding to check for connection with other Inactive/Kinematic objects with enabled By Connectivity activation type.");
         static GUIContent gui_act_acd     = new GUIContent ("Activatable",        "Unyielding object can not be activate by default. When On allows to activate Unyielding objects as well.");
-        static GUIContent gui_act_lay     = new GUIContent ("Layer",              "Custom layer for activated fragments.");
+        static GUIContent gui_act_l       = new GUIContent ("Change Layer",       "Change layer for activated objects.");
+        static GUIContent gui_act_lay     = new GUIContent ("Layer",              "Custom layer for activated objects.");
         static GUIContent gui_lim         = new GUIContent ("Limitations",        "");
         static GUIContent gui_lim_col     = new GUIContent ("By Collision",       "Enables demolition by collision.");
         static GUIContent gui_lim_sol     = new GUIContent ("Solidity",           "Local Object solidity multiplier for object. Low Solidity makes object more fragile at collision.");
@@ -80,6 +81,7 @@ namespace RayFire
         static GUIContent gui_msh_cb      = new GUIContent ("Contact Bias",       "Higher value allows to create more tiny fragments closer to collision contact point and bigger fragments far from it.");
         static GUIContent gui_msh_sd      = new GUIContent ("Seed",               "Defines Seed for fragmentation algorithm. Same Seed will produce same fragments for same object every time.");
         static GUIContent gui_msh_sh      = new GUIContent ("Use Shatter",        "Allows to use RayFire Shatter properties for fragmentation. Works only if object has RayFire Shatter component.");
+        static GUIContent gui_msh_ch      = new GUIContent ("Add Children",       "Add children mesh objects to fragments.");
         static GUIContent gui_msh_adv_cls = new GUIContent ("Clusterize",         "Convert demolished fragments into Connected Cluster and demolish it instantly relative to contact point."); 
         static GUIContent gui_msh_adv_sim = new GUIContent ("Sim Type",           "Simulation type for demolished fragments."); 
         static GUIContent gui_msh_adv_inp = new GUIContent ("Mesh Input",         "Defines time for Mesh Input to process it and prepare for demolition. Useful for mid and hi poly objects.");
@@ -91,7 +93,10 @@ namespace RayFire
         static GUIContent gui_msh_adv_col = new GUIContent ("Collider",           "");
         static GUIContent gui_msh_adv_szl = new GUIContent ("Size Filter",        "Fragments with size less than this value will not get collider.");
         static GUIContent gui_msh_adv_rem = new GUIContent ("Remove Collinear",   "Remove collier vertices to decrease amount of triangles.");
-        static GUIContent gui_msh_adv_lay = new GUIContent ("Layer",              "Custom layer for fragments.");
+        static GUIContent gui_msh_adv_l   = new GUIContent ("Inherit Layer",      "Inherit Layer for fragments.");
+        static GUIContent gui_msh_adv_lay = new GUIContent ("  Custom Layer",     "Custom layer for fragments.");
+        static GUIContent gui_msh_adv_t   = new GUIContent ("Inherit Tag",        "Inherit Tag for fragments.");
+        static GUIContent gui_msh_adv_tag = new GUIContent ("  Custom Tag",       "Custom Tag fr fragments.");
         static GUIContent gui_cls         = new GUIContent ("Cluster Demolition", "");
         static GUIContent gui_cls_conn    = new GUIContent ("Connectivity",       "Defines Connectivity algorithm for clusters.");
         static GUIContent gui_cls_fl_ar   = new GUIContent ("Minimum Area",       "Two shards will have connection if their shared area is bigger than this value.");
@@ -130,6 +135,7 @@ namespace RayFire
         static GUIContent gui_dmg_cur    = new GUIContent ("Current Damage",       "Shows current damage value. Can be increased by public method: \nApplyDamage(float damageValue, Vector3 damagePosition)");
         static GUIContent gui_dmg_col    = new GUIContent ("Collect",              "Allows to accumulate damage value by collisions during dynamic simulation.");
         static GUIContent gui_dmg_mul    = new GUIContent ("Multiplier",           "Multiplier for every collision damage.");
+        static GUIContent gui_dmg_sh     = new GUIContent ("To Shards",            "Apply damage to Connected Cluster shards.");
         static GUIContent gui_fade       = new GUIContent ("Fading",               "");
         static GUIContent gui_fade_dml   = new GUIContent ("On Demolition",        "");
         static GUIContent gui_fade_act   = new GUIContent ("On Activation",        "");
@@ -150,6 +156,8 @@ namespace RayFire
         static GUIContent gui_res_ms     = new GUIContent ("Mesh",                 "");
         static GUIContent gui_res_fr     = new GUIContent ("Fragments",            "");
 
+        static GUIStyle damageStyle = new GUIStyle();
+        
         /// /////////////////////////////////////////////////////////
         /// Enable
         /// /////////////////////////////////////////////////////////
@@ -162,6 +170,18 @@ namespace RayFire
             refsList.drawHeaderCallback  = DrawRefHeader;
             refsList.onAddCallback       = AddRed;
             refsList.onRemoveCallback    = RemoveRef;
+            
+            if (EditorPrefs.HasKey ("rf_rp") == true) exp_phy  = EditorPrefs.GetBool ("rf_rp");
+            if (EditorPrefs.HasKey ("rf_ra") == true) exp_act  = EditorPrefs.GetBool ("rf_ra");
+            if (EditorPrefs.HasKey ("rf_rl") == true) exp_lim  = EditorPrefs.GetBool ("rf_rl");
+            if (EditorPrefs.HasKey ("rf_rm") == true) exp_msh  = EditorPrefs.GetBool ("rf_rm");
+            if (EditorPrefs.HasKey ("rf_rc") == true) exp_cls  = EditorPrefs.GetBool ("rf_rc");
+            if (EditorPrefs.HasKey ("rf_rp") == true) exp_clp  = EditorPrefs.GetBool ("rf_rp");
+            if (EditorPrefs.HasKey ("rf_rr") == true) exp_ref  = EditorPrefs.GetBool ("rf_rr");
+            if (EditorPrefs.HasKey ("rf_rm") == true) exp_mat  = EditorPrefs.GetBool ("rf_rm");
+            if (EditorPrefs.HasKey ("rf_rd") == true) exp_dmg  = EditorPrefs.GetBool ("rf_rd");
+            if (EditorPrefs.HasKey ("rf_rf") == true) exp_fade = EditorPrefs.GetBool ("rf_rf");
+            if (EditorPrefs.HasKey ("rf_re") == true) exp_res  = EditorPrefs.GetBool ("rf_re");
         }
 
         /// /////////////////////////////////////////////////////////
@@ -226,7 +246,7 @@ namespace RayFire
         
         void UI_Physic()
         {
-            exp_phy = EditorGUILayout.Foldout (exp_phy, gui_phy, true);
+            SetFoldoutPref (ref exp_phy, "rf_rp", gui_phy, true);
             if (exp_phy == true)
             {
                 EditorGUI.indentLevel++;
@@ -360,7 +380,7 @@ namespace RayFire
         
         void UI_Activation()
         {
-            exp_act = EditorGUILayout.Foldout (exp_act, gui_act, true);
+            SetFoldoutPref (ref exp_act, "rf_ra", gui_act, true);
             if (exp_act == true)
             {
                 EditorGUI.indentLevel++;
@@ -485,18 +505,32 @@ namespace RayFire
                 GUILayout.Space (space);
 
                 GUILayout.Label ("  Post Activation", EditorStyles.boldLabel);
-                
+
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
-                rigid.activation.layer = EditorGUILayout.TextField (gui_act_lay, rigid.activation.layer);
+                rigid.activation.l = EditorGUILayout.Toggle (gui_act_l, rigid.activation.l);
                 if (EditorGUI.EndChangeCheck())
                     foreach (RayfireRigid scr in targets)
                     {
-                        scr.activation.layer = rigid.activation.layer;
+                        scr.activation.l = rigid.activation.l;
                         SetDirty (scr);
                     }
+                
+                if (rigid.activation.l == true)
+                {
+                    GUILayout.Space (space);
 
+                    EditorGUI.BeginChangeCheck();
+                    rigid.activation.layer = EditorGUILayout.LayerField (gui_act_lay, rigid.activation.layer);
+                    if (EditorGUI.EndChangeCheck())
+                        foreach (RayfireRigid scr in targets)
+                        {
+                            scr.activation.layer = rigid.activation.layer;
+                            SetDirty (scr);
+                        }
+                }
+                
                 EditorGUI.indentLevel--;
             }
         }
@@ -536,21 +570,21 @@ namespace RayFire
                     scr.demolitionType = rigid.demolitionType;
                     SetDirty (scr);
                 }
-
-            if (DemolishableState() == false)
-                return;
-
+            
             GUILayout.Space (space);
 
             UI_Limitations();
 
+            if (DemolishableState() == false)
+                return;
+            
             if (MeshState() == true)
             {
                 GUILayout.Space (space);
                 UI_Mesh();
             }
 
-            if (rigid.IsCluster == true || rigid.meshDemolition.clusterize == true)
+            if (rigid.IsCluster == true || rigid.meshDemolition.clusterize == true || rigid.objectType == ObjectType.MeshRoot)
             {
                 GUILayout.Space (space);
                 UI_Cluster();
@@ -613,7 +647,7 @@ namespace RayFire
 
         void UI_Limitations()
         {
-            exp_lim = EditorGUILayout.Foldout (exp_lim, gui_lim, true);
+            SetFoldoutPref (ref exp_lim, "rf_rl", gui_lim, true);
             if (exp_lim == true)
             {
                 EditorGUI.indentLevel++;
@@ -631,10 +665,10 @@ namespace RayFire
                         SetDirty (scr);
                     }
                 
-                GUILayout.Space (space);
-
                 if (rigid.limitations.byCollision == true)
                 {
+                    GUILayout.Space (space);
+                    
                     EditorGUI.BeginChangeCheck();
                     rigid.limitations.solidity = EditorGUILayout.Slider (gui_lim_sol, rigid.limitations.solidity, 0, 10f);
                     if (EditorGUI.EndChangeCheck() == true)
@@ -643,19 +677,19 @@ namespace RayFire
                             scr.limitations.solidity = rigid.limitations.solidity;
                             SetDirty (scr);
                         }
-                    
-                    GUILayout.Space (space);
-                    
-                    EditorGUI.BeginChangeCheck();
-                    rigid.limitations.tag = EditorGUILayout.TagField (gui_lim_tag, rigid.limitations.tag);
-                    if (EditorGUI.EndChangeCheck())
-                        foreach (RayfireRigid scr in targets)
-                        {
-                            scr.limitations.tag = rigid.limitations.tag;
-                            SetDirty (scr);
-                        }
                 }
                 
+                GUILayout.Space (space);
+                    
+                EditorGUI.BeginChangeCheck();
+                rigid.limitations.tag = EditorGUILayout.TagField (gui_lim_tag, rigid.limitations.tag);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireRigid scr in targets)
+                    {
+                        scr.limitations.tag = rigid.limitations.tag;
+                        SetDirty (scr);
+                    }
+
                 GUILayout.Label ("  Other", EditorStyles.boldLabel);
 
                 EditorGUI.BeginChangeCheck();
@@ -721,7 +755,7 @@ namespace RayFire
 
         void UI_Mesh()
         {
-            exp_msh = EditorGUILayout.Foldout (exp_msh, gui_msh, true);
+            SetFoldoutPref (ref exp_msh, "rf_rm", gui_msh, true);
             if (exp_msh == true)
             {
                 EditorGUI.indentLevel++;
@@ -813,6 +847,17 @@ namespace RayFire
                 foreach (RayfireRigid scr in targets)
                 {
                     scr.meshDemolition.useShatter = rigid.meshDemolition.useShatter;
+                    SetDirty (scr);
+                }
+            
+            GUILayout.Space (space);
+            
+            EditorGUI.BeginChangeCheck();
+            rigid.meshDemolition.addChildren = EditorGUILayout.Toggle (gui_msh_ch, rigid.meshDemolition.addChildren);
+            if (EditorGUI.EndChangeCheck())
+                foreach (RayfireRigid scr in targets)
+                {
+                    scr.meshDemolition.addChildren = rigid.meshDemolition.addChildren;
                     SetDirty (scr);
                 }
         }
@@ -949,18 +994,56 @@ namespace RayFire
                         SetDirty (scr);
                     }
 
-
                 GUILayout.Space (space);
-
+                
                 EditorGUI.BeginChangeCheck();
-                rigid.meshDemolition.properties.layer = EditorGUILayout.TextField (gui_msh_adv_lay, rigid.meshDemolition.properties.layer);
+                rigid.meshDemolition.properties.l = EditorGUILayout.Toggle (gui_msh_adv_l, rigid.meshDemolition.properties.l);
                 if (EditorGUI.EndChangeCheck())
                     foreach (RayfireRigid scr in targets)
                     {
-                        scr.meshDemolition.properties.layer = rigid.meshDemolition.properties.layer;
+                        scr.meshDemolition.properties.l = rigid.meshDemolition.properties.l;
                         SetDirty (scr);
                     }
                 
+                if (rigid.meshDemolition.properties.l == false)
+                {
+                    GUILayout.Space (space);
+
+                    EditorGUI.BeginChangeCheck();
+                    rigid.meshDemolition.properties.layer = EditorGUILayout.LayerField (gui_msh_adv_lay, rigid.meshDemolition.properties.layer);
+                    if (EditorGUI.EndChangeCheck())
+                        foreach (RayfireRigid scr in targets)
+                        {
+                            scr.meshDemolition.properties.layer = rigid.meshDemolition.properties.layer;
+                            SetDirty (scr);
+                        }
+                }
+
+                GUILayout.Space (space);
+                
+                EditorGUI.BeginChangeCheck();
+                rigid.meshDemolition.properties.t = EditorGUILayout.Toggle (gui_msh_adv_t, rigid.meshDemolition.properties.t);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireRigid scr in targets)
+                    {
+                        scr.meshDemolition.properties.t = rigid.meshDemolition.properties.t;
+                        SetDirty (scr);
+                    }
+
+                if (rigid.meshDemolition.properties.t == false)
+                {
+                    GUILayout.Space (space);
+
+                    EditorGUI.BeginChangeCheck();
+                    rigid.meshDemolition.properties.tag = EditorGUILayout.TagField (gui_msh_adv_tag, rigid.meshDemolition.properties.tag);
+                    if (EditorGUI.EndChangeCheck())
+                        foreach (RayfireRigid scr in targets)
+                        {
+                            scr.meshDemolition.properties.tag = rigid.meshDemolition.properties.tag;
+                            SetDirty (scr);
+                        }
+                }
+
                 EditorGUI.indentLevel--;
             }
         }
@@ -971,7 +1054,7 @@ namespace RayFire
 
         void UI_Cluster()
         {
-            exp_cls = EditorGUILayout.Foldout (exp_cls, gui_cls, true);
+            SetFoldoutPref (ref exp_cls, "rf_rc", gui_cls, true);
             if (exp_cls == true)
             {
                 EditorGUI.indentLevel++;
@@ -1135,7 +1218,7 @@ namespace RayFire
             GUILayout.Label ("  Clusters", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-            rigid.clusterDemolition.minAmount = EditorGUILayout.IntSlider (gui_cls_min, rigid.clusterDemolition.minAmount, 2, 20);
+            rigid.clusterDemolition.minAmount = EditorGUILayout.IntSlider (gui_cls_min, rigid.clusterDemolition.minAmount, 1, 20);
             if (EditorGUI.EndChangeCheck() == true)
                 foreach (RayfireRigid scr in targets)
                 {
@@ -1146,7 +1229,7 @@ namespace RayFire
             GUILayout.Space (space);
             
             EditorGUI.BeginChangeCheck();
-            rigid.clusterDemolition.maxAmount = EditorGUILayout.IntSlider (gui_cls_max, rigid.clusterDemolition.maxAmount, 2, 20);
+            rigid.clusterDemolition.maxAmount = EditorGUILayout.IntSlider (gui_cls_max, rigid.clusterDemolition.maxAmount, 1, 20);
             if (EditorGUI.EndChangeCheck() == true)
                 foreach (RayfireRigid scr in targets)
                 {
@@ -1170,7 +1253,7 @@ namespace RayFire
         {
             GUILayout.Label ("  Collapse", EditorStyles.boldLabel);
 
-            exp_clp = EditorGUILayout.Foldout (exp_clp, "Properties", true);
+            SetFoldoutPref (ref exp_clp, "rf_rp", gui_msh_adv, true);
             if (exp_clp == true)
             {
                 GUILayout.Space (space);
@@ -1240,7 +1323,7 @@ namespace RayFire
 
         void UI_Reference()
         {
-            exp_ref = EditorGUILayout.Foldout (exp_ref, gui_ref, true);
+            SetFoldoutPref (ref exp_ref, "rf_rr", gui_ref, true);
             if (exp_ref == true)
             {
                 EditorGUI.indentLevel++;
@@ -1359,7 +1442,7 @@ namespace RayFire
 
         void UI_Materials()
         {
-            exp_mat = EditorGUILayout.Foldout (exp_mat, gui_mat, true);
+            SetFoldoutPref (ref exp_mat, "rf_rm", gui_mat, true);
             if (exp_mat == true)
             {
                 EditorGUI.indentLevel++;
@@ -1407,7 +1490,7 @@ namespace RayFire
 
         void UI_Damage()
         {
-            exp_dmg = EditorGUILayout.Foldout (exp_dmg, gui_dmg, true);
+            SetFoldoutPref (ref exp_dmg, "rf_rd", gui_dmg, true);
             if (exp_dmg == true)
             {
                 EditorGUI.indentLevel++;
@@ -1420,7 +1503,6 @@ namespace RayFire
                 
                 EditorGUI.indentLevel--;
             }
-
         }
         
         void UI_Damage_Props()
@@ -1436,8 +1518,22 @@ namespace RayFire
                     SetDirty (scr);
                 }
 
+            if (rigid.objectType == ObjectType.ConnectedCluster)
+            {
+                GUILayout.Space (space);
+
+                EditorGUI.BeginChangeCheck();
+                rigid.damage.toShards = EditorGUILayout.Toggle (gui_dmg_sh, rigid.damage.toShards);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireRigid scr in targets)
+                    {
+                        scr.damage.toShards = rigid.damage.toShards;
+                        SetDirty (scr);
+                    }
+            }
+
             GUILayout.Space (space);
-            
+
             EditorGUI.BeginChangeCheck();
             rigid.damage.maxDamage = EditorGUILayout.FloatField (gui_dmg_max, rigid.damage.maxDamage);
             if (EditorGUI.EndChangeCheck())
@@ -1446,17 +1542,24 @@ namespace RayFire
                     scr.damage.maxDamage = rigid.damage.maxDamage;
                     SetDirty (scr);
                 }
-            
-            GUILayout.Space (space);
-            
-            EditorGUI.BeginChangeCheck();
-            rigid.damage.currentDamage = EditorGUILayout.FloatField (gui_dmg_cur, rigid.damage.currentDamage);
-            if (EditorGUI.EndChangeCheck())
-                foreach (RayfireRigid scr in targets)
-                {
-                    scr.damage.currentDamage = rigid.damage.currentDamage;
-                    SetDirty (scr);
-                }
+
+            if (rigid.objectType == ObjectType.ConnectedCluster && rigid.damage.toShards == true)
+            {
+                // To Damage preview
+            }
+            else
+            {
+                GUILayout.Space (space);
+
+                EditorGUI.BeginChangeCheck();
+                rigid.damage.currentDamage = EditorGUILayout.FloatField (gui_dmg_cur, rigid.damage.currentDamage);
+                if (EditorGUI.EndChangeCheck())
+                    foreach (RayfireRigid scr in targets)
+                    {
+                        scr.damage.currentDamage = rigid.damage.currentDamage;
+                        SetDirty (scr);
+                    }
+            }
         }
         
         void UI_Damage_Coll()
@@ -1490,7 +1593,7 @@ namespace RayFire
 
         void UI_Fade()
         {
-            exp_fade = EditorGUILayout.Foldout (exp_fade, gui_fade, true);
+            SetFoldoutPref (ref exp_fade, "rf_rf", gui_fade, true);
             if (exp_fade == true)
             {
                 EditorGUI.indentLevel++;
@@ -1641,7 +1744,7 @@ namespace RayFire
 
         void UI_Reset()
         {
-            exp_res = EditorGUILayout.Foldout (exp_res, gui_res, true);
+            SetFoldoutPref (ref exp_res, "rf_re", gui_res, true);
             if (exp_res == true )
             {
                 EditorGUI.indentLevel++;
@@ -2100,6 +2203,10 @@ namespace RayFire
         {
             if (targ.objectType == ObjectType.ConnectedCluster)
             {
+                // Damage style
+                damageStyle.fontSize         = 15;
+                damageStyle.normal.textColor = Color.red;
+                
                 if (targ.clusterDemolition.cluster != null && targ.clusterDemolition.cluster.shards.Count > 0)
                 {
                     // Reinit connections
@@ -2111,6 +2218,17 @@ namespace RayFire
                     {
                         if (targ.clusterDemolition.cluster.shards[i].tm != null)
                         {
+                            // Damage
+                            if (targ.damage.toShards == true)
+                            {
+                                if (targ.clusterDemolition.cluster.shards[i].dm > 0)
+                                {
+                                    Vector3 pos = targ.clusterDemolition.cluster.shards[i].tm.position;
+                                    Handles.Label (pos, targ.clusterDemolition.cluster.shards[i].dm.ToString ("F1"), damageStyle);
+                                }
+                            }
+
+                            // Set color
                             if (targ.clusterDemolition.cluster.shards[i].uny == false)
                             {
                                 Gizmos.color = targ.clusterDemolition.cluster.shards[i].nIds.Count > 0 
@@ -2135,7 +2253,7 @@ namespace RayFire
                 }
             }
         }
-
+        
         /// /////////////////////////////////////////////////////////
         /// Common
         /// /////////////////////////////////////////////////////////
@@ -2148,6 +2266,14 @@ namespace RayFire
                 EditorSceneManager.MarkSceneDirty (scr.gameObject.scene);
                 SceneView.RepaintAll();
             }
+        }
+        
+        void SetFoldoutPref (ref bool val, string pref, GUIContent caption, bool state) 
+        {
+            EditorGUI.BeginChangeCheck();
+            val = EditorGUILayout.Foldout (val, caption, state);
+            if (EditorGUI.EndChangeCheck() == true)
+                EditorPrefs.SetBool (pref, val);
         }
     }
 }

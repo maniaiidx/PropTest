@@ -11,7 +11,7 @@ namespace RayFire
     {
         public static RayfireMan             inst;
         public static int                    buildMajor = 1;
-        public static int                    buildMinor = 48;
+        public static int                    buildMinor = 50;
         public        bool                   setGravity;
         public        float                  multiplier         = 1f;
         public        RigidbodyInterpolation interpolation      = RigidbodyInterpolation.None;
@@ -35,8 +35,7 @@ namespace RayFire
         public List<string>    layers;
         public RFStorage       storage;
         public float           maxTimeThisFrame;
-        public HashSet<string> layersHash;
-        
+
         /// /////////////////////////////////////////////////////////
         /// Common
         /// /////////////////////////////////////////////////////////
@@ -179,19 +178,7 @@ namespace RayFire
             }
         }
         
-        // Set list of layers and tags
-        void SetLayers()
-        {
-            // Set layers list
-            layers     = new List<string>();
-            for (int i = 0; i < 32; i++)
-            {
-                string layerName = LayerMask.LayerToName (i);
-                if (layerName.Length > 0)
-                    layers.Add (layerName);
-            }
-            layersHash = new HashSet<string>(layers);
-        }
+
         
         // Max fragments amount check
         public static bool MaxAmountCheck
@@ -199,6 +186,23 @@ namespace RayFire
             get { return inst.advancedDemolitionProperties.currentAmount < inst.advancedDemolitionProperties.maximumAmount; }
         }
 
+        /// /////////////////////////////////////////////////////////
+        /// Layer
+        /// /////////////////////////////////////////////////////////
+        
+        // Set list of layers
+        void SetLayers()
+        {
+            // Set layers list
+            layers = new List<string>();
+            for (int i = 0; i < 32; i++)
+            {
+                string layerName = LayerMask.LayerToName (i);
+                if (layerName.Length > 0)
+                    layers.Add (layerName);
+            }
+        }
+        
         /// /////////////////////////////////////////////////////////
         /// Pooling
         /// /////////////////////////////////////////////////////////

@@ -26,7 +26,7 @@ namespace RayFire
         
         static GUIContent gui_mn_ini = new GUIContent ("Initialization", "");
 
-        
+        static GUIContent gui_props     = new GUIContent ("Properties",            "");
         static GUIContent gui_mn_sim    = new GUIContent ("Simulation Type",    "Defines behaviour of object during simulation.");
         static GUIContent gui_phy       = new GUIContent ("Physics",            "Defines all physics properties for simulated object.");
         static GUIContent gui_phy_mtp   = new GUIContent ("Type",               "Material preset with predefined density, friction, elasticity and solidity. Can be edited in Rayfire Man component.");
@@ -49,7 +49,8 @@ namespace RayFire
         static GUIContent gui_act_con   = new GUIContent ("Connectivity",       "Inactive object will be activated by Connectivity component if it will not be connected with Unyielding zone.");
         static GUIContent gui_act_uny   = new GUIContent ("Unyielding",         "Allows to define Inactive/Kinematic object as Unyielding to check for connection with other Inactive/Kinematic objects with enabled By Connectivity activation type.");
         static GUIContent gui_act_acd   = new GUIContent ("Activatable",        "Unyielding object can not be activate by default. When On allows to activate Unyielding objects as well.");
-        static GUIContent gui_act_lay   = new GUIContent ("Layer",              "Custom layer for activated fragments.");
+        static GUIContent gui_act_l     = new GUIContent ("Change Layer",       "Change layer for activated objects.");
+        static GUIContent gui_act_lay   = new GUIContent ("Layer",              "Custom layer for activated objects.");
         static GUIContent gui_lim       = new GUIContent ("Limitations",        "");
         static GUIContent gui_lim_col   = new GUIContent ("By Collision",       "Enables demolition by collision.");
         static GUIContent gui_lim_sol   = new GUIContent ("Solidity",           "Local Object solidity multiplier for object. Low Solidity makes object more fragile at collision.");
@@ -101,6 +102,21 @@ namespace RayFire
         static GUIContent gui_res_fr     = new GUIContent ("Fragments",     "");
 
         /// /////////////////////////////////////////////////////////
+        /// Enable
+        /// /////////////////////////////////////////////////////////
+
+        private void OnEnable()
+        {
+            if (EditorPrefs.HasKey ("rf_tp") == true) exp_phy  = EditorPrefs.GetBool ("rf_tp");
+            if (EditorPrefs.HasKey ("rf_ta") == true) exp_act  = EditorPrefs.GetBool ("rf_ta");
+            if (EditorPrefs.HasKey ("rf_tl") == true) exp_lim  = EditorPrefs.GetBool ("rf_tl");
+            if (EditorPrefs.HasKey ("rf_tc") == true) exp_cls  = EditorPrefs.GetBool ("rf_tc");
+            if (EditorPrefs.HasKey ("rf_tp") == true) exp_clp  = EditorPrefs.GetBool ("rf_tp");
+            if (EditorPrefs.HasKey ("rf_tf") == true) exp_fade = EditorPrefs.GetBool ("rf_tf");
+            if (EditorPrefs.HasKey ("rf_te") == true) exp_res  = EditorPrefs.GetBool ("rf_te");
+        }
+        
+        /// /////////////////////////////////////////////////////////
         /// Simulation
         /// /////////////////////////////////////////////////////////
 
@@ -133,7 +149,7 @@ namespace RayFire
         
         void UI_Physic()
         {
-            exp_phy = EditorGUILayout.Foldout (exp_phy, gui_phy, true);
+            SetFoldoutPref (ref exp_phy, "rf_tp", gui_phy, true);
             if (exp_phy == true)
             {
                 EditorGUI.indentLevel++;
@@ -267,7 +283,7 @@ namespace RayFire
         
         void UI_Activation()
         {
-            exp_act = EditorGUILayout.Foldout (exp_act, gui_act, true);
+            SetFoldoutPref (ref exp_act, "rf_ta", gui_act, true);
             if (exp_act == true)
             {
                 EditorGUI.indentLevel++;
@@ -316,6 +332,8 @@ namespace RayFire
                         SetDirty (scr);
                     }
 
+                /*
+                
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
@@ -326,6 +344,8 @@ namespace RayFire
                         scr.activation.byDamage = root.activation.byDamage;
                         SetDirty (scr);
                     }
+                
+                */
                 
                 GUILayout.Space (space);
                 
@@ -396,14 +416,28 @@ namespace RayFire
                 GUILayout.Space (space);
                 
                 EditorGUI.BeginChangeCheck();
-                root.activation.layer = EditorGUILayout.TextField (gui_act_lay, root.activation.layer);
+                root.activation.l = EditorGUILayout.Toggle (gui_act_l, root.activation.l);
                 if (EditorGUI.EndChangeCheck())
                     foreach (RayfireRigidRoot scr in targets)
                     {
-                        scr.activation.layer = root.activation.layer;
+                        scr.activation.l = root.activation.l;
                         SetDirty (scr);
                     }
+                
+                if (root.activation.l == true)
+                {
+                    GUILayout.Space (space);
 
+                    EditorGUI.BeginChangeCheck();
+                    root.activation.layer = EditorGUILayout.LayerField (gui_act_lay, root.activation.layer);
+                    if (EditorGUI.EndChangeCheck())
+                        foreach (RayfireRigidRoot scr in targets)
+                        {
+                            scr.activation.layer = root.activation.layer;
+                            SetDirty (scr);
+                        }
+                }
+                
                 EditorGUI.indentLevel--;
             }
         }
@@ -465,7 +499,7 @@ namespace RayFire
 
         void UI_Limitations()
         {
-            exp_lim = EditorGUILayout.Foldout (exp_lim, gui_lim, true);
+            SetFoldoutPref (ref exp_lim, "rf_tl", gui_lim, true);
             if (exp_lim == true)
             {
                 EditorGUI.indentLevel++;
@@ -573,7 +607,7 @@ namespace RayFire
 
         void UI_Cluster()
         {
-            exp_cls = EditorGUILayout.Foldout (exp_cls, gui_cls, true);
+            SetFoldoutPref (ref exp_cls, "rf_tc", gui_cls, true);
             if (exp_cls == true)
             {
                 EditorGUI.indentLevel++;
@@ -772,7 +806,7 @@ namespace RayFire
         {
             GUILayout.Label ("  Collapse", EditorStyles.boldLabel);
 
-            exp_clp = EditorGUILayout.Foldout (exp_clp, "Properties", true);
+            SetFoldoutPref (ref exp_clp, "rf_tp", gui_props, true);
             if (exp_clp == true)
             {
                 GUILayout.Space (space);
@@ -842,7 +876,7 @@ namespace RayFire
 
         void UI_Fade()
         {
-            exp_fade = EditorGUILayout.Foldout (exp_fade, gui_fade, true);
+            SetFoldoutPref (ref exp_fade, "rf_tf", gui_fade, true);
             if (exp_fade == true)
             {
                 EditorGUI.indentLevel++;
@@ -993,7 +1027,7 @@ namespace RayFire
 
         void UI_Reset()
         {
-            exp_res = EditorGUILayout.Foldout (exp_res, gui_res, true);
+            SetFoldoutPref (ref exp_res, "rf_te", gui_res, true);
             if (exp_res == true )
             {
                 EditorGUI.indentLevel++;
@@ -1242,6 +1276,14 @@ namespace RayFire
                 EditorSceneManager.MarkSceneDirty (scr.gameObject.scene);
                 SceneView.RepaintAll();
             }
+        }
+        
+        void SetFoldoutPref (ref bool val, string pref, GUIContent caption, bool state) 
+        {
+            EditorGUI.BeginChangeCheck();
+            val = EditorGUILayout.Foldout (val, caption, state);
+            if (EditorGUI.EndChangeCheck() == true)
+                EditorPrefs.SetBool (pref, val);
         }
     }
 }

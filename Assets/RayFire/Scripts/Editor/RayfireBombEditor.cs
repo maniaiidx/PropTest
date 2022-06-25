@@ -28,6 +28,7 @@ namespace RayFire
         static GUIContent gui_rangeRange    = new GUIContent ("Range",         "Only objects in Range distance will be affected by explosion.");
         static GUIContent gui_rangeDeletion = new GUIContent ("Deletion",      "Destroy objects close to Bomb. Measures in percentage relative to Range value.");
         static GUIContent gui_impulseStr    = new GUIContent ("Strength",      "Maximum explosion impulse which will be applied to objects.");
+        static GUIContent gui_impulseCrv    = new GUIContent ("Curve",         "");
         static GUIContent gui_impulseVar    = new GUIContent ("Variation",     "Random variation to final explosion strength for every object in percents relative to Strength value.");
         static GUIContent gui_impulseChaos  = new GUIContent ("Chaos",         "Random rotation velocity to exploded objects.");
         static GUIContent gui_impulseForce  = new GUIContent ("Force By Mass", "Add different final explosion impulse to objects with different mass.");
@@ -238,6 +239,22 @@ namespace RayFire
             GUILayout.Label ("  Impulse", EditorStyles.boldLabel);
 
             UI_ImpulseFade();
+            
+            if (bomb.fadeType == RayfireBomb.FadeType.ByCurve)
+            {
+                GUILayout.Space (space);
+                
+                EditorGUI.BeginChangeCheck();
+                bomb.curve = EditorGUILayout.CurveField (gui_impulseCrv, bomb.curve);
+                if (EditorGUI.EndChangeCheck() == true)
+                {
+                    foreach (RayfireBomb scr in targets)
+                    {
+                        scr.curve = bomb.curve;
+                        SetDirty (scr);
+                    }
+                }
+            }
             
             GUILayout.Space (space);
 

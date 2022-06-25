@@ -196,7 +196,7 @@ namespace RayFire
                 }
                 
                 // Not readable mesh 
-                if (scr.demolitionType != DemolitionType.None)
+                if (scr.demolitionType != DemolitionType.None && scr.demolitionType != DemolitionType.ReferenceDemolition)
                 {
                     if (scr.meshFilter != null && scr.meshFilter.sharedMesh != null && scr.meshFilter.sharedMesh.isReadable == false)
                     {

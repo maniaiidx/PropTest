@@ -88,11 +88,7 @@ namespace RayFire
             // No objects
             if (fadeObjects.Count == 0)
                 return;
-
-            // Life time fix
-            if (lifeTime < 1f)
-                lifeTime = 1f;
-
+            
             // Add Fade script and init fading
             for (int i = 0; i < fadeObjects.Count; i++)
             {
@@ -265,7 +261,7 @@ namespace RayFire
                 else
                     for (int i = 0; i < fadeShards.Count; i++)
                         FadeShard (scr.rigidRoot, fadeShards[i]);
-                
+
                 // Self fade for main cluster
                 scr.Fade();
             }

@@ -226,7 +226,6 @@ namespace RayFire
 
             // Main cluster.
             int removed = RemNeibRandom (scr.clusterDemolition.cluster, randomValue, randomSeed);
-            ;
             if (removed > 0)
                 CollapseCluster (scr);
         }
@@ -291,7 +290,7 @@ namespace RayFire
             connectivity.cluster.areaCollapse = areaValue;
             
             // Main cluster
-            int removed = RemNeibByArea (connectivity.cluster, areaValue);;
+            int removed = RemNeibByArea (connectivity.cluster, areaValue);
             if (removed > 0)
                 connectivity.CheckConnectivity();
         }
@@ -307,7 +306,7 @@ namespace RayFire
             connectivity.cluster.sizeCollapse = sizeValue;
             
             // Main cluster.
-            int removed = RemNeibBySize (connectivity.cluster, sizeValue);;
+            int removed = RemNeibBySize (connectivity.cluster, sizeValue);
             if (removed > 0)
                 connectivity.CheckConnectivity();
         }
@@ -436,6 +435,23 @@ namespace RayFire
                 }
             }
             return removed;
+        }
+
+        // Remove connection in cluster in s shard and for its n neib 
+        static void RemoveConnection(RFCluster cluster, int s, int n)
+        {
+            // Remove self in neib's neib list
+            for (int i = cluster.shards[s].neibShards[n].neibShards.Count - 1; i >= 0; i--)
+            {
+                if (cluster.shards[s].neibShards[n].neibShards[i] == cluster.shards[s])
+                {
+                    cluster.shards[s].neibShards[n].RemoveNeibAt (i);
+                    break;
+                }
+            }
+                       
+            // Remove in self
+            cluster.shards[s].RemoveNeibAt (n);
         }
         
         // Set range for area and size

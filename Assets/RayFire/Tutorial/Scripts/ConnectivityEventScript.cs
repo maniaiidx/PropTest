@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 // IMPORTANT! You should use RayFire namespace to use RayFire component's event.
 using RayFire;
@@ -52,14 +53,24 @@ public class ConnectivityEventScript : MonoBehaviour
     // RayfireConnectivity input parameter is Connectivity component which was activated.
    
     // Method for local activation subscription
-    void LocalMethodConnectivity(RayfireConnectivity connectivity)
+    void LocalMethodConnectivity(RayfireConnectivity connectivity, List<RFShard> shards, List<RFCluster> clusters)
     {
         Debug.Log("Local Connectivity activation: " + connectivity.name + " has " + connectivity.AmountIntegrity + " % Integrity");
+
+        if (shards != null & shards.Count > 0)
+            Debug.Log("Local Connectivity activation: " + shards.Count + " shards were activated.");
+        if (clusters != null & clusters.Count > 0)
+            Debug.Log("Local Connectivity activation: " + clusters.Count + " clusters were activated.");
     }
     
     // Method for global activation subscription
-    void GlobalMethodConnectivity(RayfireConnectivity connectivity)
+    void GlobalMethodConnectivity(RayfireConnectivity connectivity, List<RFShard> shards, List<RFCluster> clusters)
     {
         Debug.Log("Global Connectivity activation: "+ connectivity.name + " has " + connectivity.AmountIntegrity + " % Integrity");
+        
+        if (shards != null & shards.Count > 0)
+            Debug.Log("Global Connectivity activation: " + shards.Count + " shards were activated.");
+        if (clusters != null & clusters.Count > 0)
+            Debug.Log("Global Connectivity activation: " + clusters.Count + " clusters were activated.");
     }
 }

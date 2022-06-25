@@ -520,6 +520,9 @@ namespace RayFire
                      else if (cluster.shards[i].rigid.objectType == ObjectType.Mesh)
                         meshRigidShards.Add (cluster.shards[i]);
                 }
+
+            // Backup original layer in case shard will change layer after activation
+            RFActivation.BackupActivationLayer (this);
         }
 
         // Set physics properties

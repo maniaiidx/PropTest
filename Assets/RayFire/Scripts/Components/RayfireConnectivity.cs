@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Fragments from demolition
-// Scale support for bound + Unyielding component
-
 namespace RayFire
 {
     [DisallowMultipleComponent]
@@ -78,11 +75,11 @@ namespace RayFire
                 }
             }
         }
-        
+
         /// /////////////////////////////////////////////////////////
         /// Enable/Disable
         /// /////////////////////////////////////////////////////////
-        
+
         // Disable
         void OnDisable()
         {
@@ -616,8 +613,8 @@ namespace RayFire
             // Event
             if (soloShards.Count > 0 || cluster.HasChildClusters == true)
             {
-                connectivityEvent.InvokeLocalEvent (this);
-                RFConnectivityEvent.InvokeGlobalEvent (this);  
+                connectivityEvent.InvokeLocalEvent (this, soloShards, cluster.childClusters);
+                RFConnectivityEvent.InvokeGlobalEvent (this, soloShards, cluster.childClusters);  
             }
             
             // Activate not connected shards. 
@@ -669,6 +666,9 @@ namespace RayFire
                     // Copy Sound
                     RFSound.CopySound (rigidRootHost.sound, cluster.childClusters[i].rigid);
                     
+                    // Set activation layer
+                    RFActivation.SetActivationLayer (cluster.childClusters[i].shards, rigidRootHost.activation);
+                    
                     // Per shard ops
                     for (int s = 0; s < cluster.childClusters[i].shards.Count; s++)
                     {
@@ -681,7 +681,7 @@ namespace RayFire
                         // Destroy rigidbody component
                         Destroy (cluster.childClusters[i].shards[s].rb);
                     }
-                    
+
                     // Collect child cluster
                     // rigidRootHost.clusters.Add (cluster.childClusters[i]);
                     
@@ -699,6 +699,9 @@ namespace RayFire
                     
                     // Copy Sound
                     RFSound.CopySound (meshRootHost.sound, cluster.childClusters[i].rigid);
+                    
+                    // Set activation layer
+                    RFActivation.SetActivationLayer (cluster.childClusters[i].shards, meshRootHost.activation);
                     
                     // Destroy components
                     for (int s = 0; s < cluster.childClusters[i].shards.Count; s++)
@@ -722,6 +725,9 @@ namespace RayFire
                 // Create connected cluster
                 RFDemolitionCluster.CreateClusterRuntime (cluster.childClusters[i].rigid, cluster.childClusters[i]);
 
+                // Init particles on activation
+                RFParticles.InitActivationParticlesRigid (cluster.childClusters[i].rigid);
+                
                 // Parent by manager
                 if (RayfireMan.inst.parent != null)
                     cluster.childClusters[i].rigid.gameObject.transform.parent = RayfireMan.inst.parent.transform;
@@ -1002,9 +1008,9 @@ namespace RayFire
             }
             
             // Check for connectivity left shards
-            if (cluster.shards.Count > 0);
+            if (cluster.shards.Count > 0)
                 CheckConnectivity();
-            
+
             // TODO divide to defined amount of 
         }
 

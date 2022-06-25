@@ -228,28 +228,10 @@ namespace RayFire
             } 
             
             // Get mass by density
-            if (scr.objectType == ObjectType.Mesh && scr.physics.massBy == MassType.MaterialDensity)
+            if (scr.physics.massBy == MassType.MaterialDensity)
             {
                 scr.physics.rigidBody.SetDensity(RayfireMan.inst.materialPresets.Density(scr.physics.materialType));
                 m = scr.physics.rigidBody.mass;
-            }
-
-            // Sec cluster mass by shards
-            else if (scr.objectType == ObjectType.ConnectedCluster || scr.objectType == ObjectType.NestedCluster)
-            {
-                // Collect main cluster shards
-                m = 0.1f;
-                float density = RayfireMan.inst.materialPresets.Density (scr.physics.materialType);
-                for (int i = 0; i < scr.clusterDemolition.cluster.shards.Count; i++)
-                    m += scr.clusterDemolition.cluster.shards[i].sz * density;
-                
-                // Collect minor cluster shards
-                if (scr.objectType == ObjectType.NestedCluster)
-                {
-                    if (scr.clusterDemolition.cluster.HasChildClusters)
-                        for (int c = 0; c < scr.clusterDemolition.cluster.childClusters.Count; c++)
-                            m += scr.clusterDemolition.cluster.childClusters[c].bound.size.magnitude * density;
-                }
             }
             
             // Check for min/max mass
@@ -646,7 +628,6 @@ namespace RayFire
                 for (int i = scr.physics.clusterColliders.Count - 1; i >= 0; i--)
                     if (scr.physics.clusterColliders[i] != null)
                         Object.DestroyImmediate (scr.physics.clusterColliders[i], true);
-            scr.physics.clusterColliders.Clear();
         }
         
         /// /////////////////////////////////////////////////////////
@@ -883,7 +864,7 @@ namespace RayFire
                 if (shards[pr[s * 2 + 0]].col != null && shards[pr[s * 2 + 1]].col != null)
                     Physics.IgnoreCollision (shards[pr[s * 2 + 0]].col, shards[pr[s * 2 + 1]].col, true);
         }
-        
+
         /// /////////////////////////////////////////////////////////
         /// Coroutines
         /// /////////////////////////////////////////////////////////
@@ -905,7 +886,8 @@ namespace RayFire
             physicsDataCorState = true;
             
             // Set velocity
-            velocity = scr.physics.rigidBody.velocity;
+            if (IsNull(scr.physics.rigidBody) == false)
+                velocity = scr.physics.rigidBody.velocity;
 
             while (exclude == false)
             {
@@ -957,26 +939,3 @@ namespace RayFire
         }
     }
 }
-
-        
-/*
-float f1 = Time.realtimeSinceStartup;    
-for (int i = 0; i < 10000; i++)
-{
-    if (physics.rigidBody != null)
-    {
-        
-    }
-}
-float f2 = Time.realtimeSinceStartup;
-for (int i = 0; i < 10000; i++)
-{
-    if (RFPhysic.IsNull (physics.rigidBody))
-    {
-        
-    }
-}
-float f3 = Time.realtimeSinceStartup;
-Debug.Log (f2 - f1);
-Debug.Log (f3 - f2);
-*/

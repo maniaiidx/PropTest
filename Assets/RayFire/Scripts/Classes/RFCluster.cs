@@ -438,7 +438,7 @@ namespace RayFire
             // No mesh renderers
             if (bounds.Count == 0)
             {
-                Debug.Log("GetBoundsBound error");
+                Debug.Log("GetBoundsBound warning");
                 return bound;
             }
 
@@ -490,7 +490,7 @@ namespace RayFire
             // No mesh renderers
             if (shards.Count == 0)
             {
-                Debug.Log("GetBoundsBound error");
+                Debug.Log("GetBoundsBound warning");
                 return bound;
             }
 
@@ -507,19 +507,12 @@ namespace RayFire
             {
                 for (int i = 1; i < shards.Count; i++)
                 {
-                    if (shards[i].bnd.min.x < minX)
-                        minX = shards[i].bnd.min.x;
-                    if (shards[i].bnd.min.y < minY)
-                        minY = shards[i].bnd.min.y;
-                    if (shards[i].bnd.min.z < minZ)
-                        minZ = shards[i].bnd.min.z;
-
-                    if (shards[i].bnd.max.x > maxX)
-                        maxX = shards[i].bnd.max.x;
-                    if (shards[i].bnd.max.y > maxY)
-                        maxY = shards[i].bnd.max.y;
-                    if (shards[i].bnd.max.z > maxZ)
-                        maxZ = shards[i].bnd.max.z;
+                    if (shards[i].bnd.min.x < minX) minX = shards[i].bnd.min.x;
+                    if (shards[i].bnd.min.y < minY) minY = shards[i].bnd.min.y;
+                    if (shards[i].bnd.min.z < minZ) minZ = shards[i].bnd.min.z;
+                    if (shards[i].bnd.max.x > maxX) maxX = shards[i].bnd.max.x;
+                    if (shards[i].bnd.max.y > maxY) maxY = shards[i].bnd.max.y;
+                    if (shards[i].bnd.max.z > maxZ) maxZ = shards[i].bnd.max.z;
                 }
             }
 
@@ -542,7 +535,7 @@ namespace RayFire
             // No mesh renderers
             if (shards.Count == 0)
             {
-                Debug.Log("GetBoundsBound error");
+                Debug.Log("GetBoundsBound warning");
                 return bound;
             }
 

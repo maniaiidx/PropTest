@@ -704,8 +704,11 @@ namespace RayFire
             if (rigid.HasDebris == true)
                 for (int i = 0; i < rigid.debrisList.Count; i++)
                     if (rigid.debrisList[i].onActivation == true)
-                        CreateDebrisRigid (rigid.debrisList[i]);
-                
+                        if (rigid.objectType == ObjectType.Mesh)
+                            CreateDebrisRigid (rigid.debrisList[i]);
+                        else if (rigid.IsCluster == true)
+                            CreateDebrisCluster (rigid, rigid.debrisList[i]);
+
             // Create dust particles
             if (rigid.HasDust == true)
                 for (int i = 0; i < rigid.dustList.Count; i++)
@@ -750,10 +753,10 @@ namespace RayFire
         }
         
         /// /////////////////////////////////////////////////////////
-        /// Create
+        /// Create Debris
         /// /////////////////////////////////////////////////////////
         
-        // Create single debris particle system
+        // Create single debris particle system for Rigid mesh object
         public static void CreateDebrisRigid(RayfireDebris target)
         {
             // No particles
@@ -770,7 +773,46 @@ namespace RayFire
             target.CreateDebris (target, target.rigid.meshFilter, emitMatIndex, target.pSystem);
         }
         
-        // Create single debris particle system
+        // Create single debris particle system for Connected Cluster
+        public static void CreateDebrisCluster(RayfireRigid rigid, RayfireDebris debris)
+        {
+            for (int j = rigid.clusterDemolition.cluster.shards.Count - 1; j >= 0; j--)
+            {
+                // If has detached neib shard
+                if (rigid.clusterDemolition.cluster.shards[j].neibShards.Count < rigid.clusterDemolition.cluster.shards[j].nAm)
+                {
+                    // Cluster crated by RigidRoot shards
+                    if (rigid.rigidRoot != null)
+                        CreateDebrisShard (rigid.rigidRoot, debris, rigid.clusterDemolition.cluster.shards[j]);
+                    
+                    // Cluster created by MeshRoot fragments
+                    else if (rigid.meshRoot != null)
+                    {
+                        // Set amount
+                        debris.amountFinal = GetShardFinalAmount (rigid.clusterDemolition.cluster.shards[j],
+                            debris.emission.burstType, debris.emission.burstAmount, rigid.clusterDemolition.cluster.shards[j].sz);
+
+                        // No particles
+                        if (debris.amountFinal < debris.limitations.minParticles && debris.emission.distanceRate == 0)
+                            continue;
+
+                        // Particle system
+                        CreateParticleSystemDebris (debris, rigid.clusterDemolition.cluster.shards[j].tm);
+                        
+                        // Collect particles to reset them
+                        rigid.meshRoot.particleList.Add (debris.hostTm);
+                        
+                        // Get emit material index
+                        int emitMatIndex = GetEmissionMatIndex (rigid.clusterDemolition.cluster.shards[j].rigid.meshRenderer, debris.emissionMaterial);
+
+                        // Create debris
+                        debris.CreateDebris (debris, rigid.clusterDemolition.cluster.shards[j].mf, emitMatIndex, debris.pSystem);
+                    }
+                }
+            }
+        }
+        
+        // Create single debris particle system for RigidRoot shard
         public static void CreateDebrisShard(RayfireRigidRoot root, RayfireDebris debris, RFShard shard)
         {
             // Set amount
@@ -792,6 +834,10 @@ namespace RayFire
             // Create debris
             debris.CreateDebris (debris, shard.mf, emitMatIndex, debris.pSystem);
         }
+        
+        /// /////////////////////////////////////////////////////////
+        /// Create Dust
+        /// /////////////////////////////////////////////////////////
         
         // Create single dust particle system
         public static void CreateDustRigid(RayfireDust target)
@@ -1151,6 +1197,9 @@ namespace RayFire
                     SetDustFinalAmount (source.dustList[d].children, source.dustList[d].emission.burstType, source.dustList[d].emission.burstAmount);
                 }
             }
+            
+            // List for creates particle system to reset them
+            source.particleList = new List<Transform>();
         }
         
          // Copy debris and dust
@@ -1301,7 +1350,7 @@ namespace RayFire
         // Set emitter mesh shape
         public static int GetEmissionMatIndex(Renderer renderer, Material mat)
         {
-            if (mat != null)
+            if (mat != null && renderer != null)
                 for (int i = 0; i < renderer.sharedMaterials.Length; i++)
                       if (renderer.sharedMaterials[i] == mat)
                           return i;

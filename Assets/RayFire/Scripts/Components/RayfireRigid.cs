@@ -55,8 +55,10 @@ namespace RayFire
         public RayfireRestriction  restriction;
         public RayfireSound        sound;
         
+        [NonSerialized] public RayfireRigid     meshRoot;
         [NonSerialized] public RayfireRigidRoot rigidRoot;
-
+        [NonSerialized] public List<Transform>  particleList;
+        
         /// /////////////////////////////////////////////////////////
         /// Events
         /// /////////////////////////////////////////////////////////
@@ -436,6 +438,9 @@ namespace RayFire
 
                     // Collect
                     fragments.Add (childRigid);
+
+                    // Set parent meshRoot. IMPORTANT needed in case of custom Rigid
+                    childRigid.meshRoot = this;
                 }
             }
         }
@@ -480,6 +485,7 @@ namespace RayFire
                         fragments[i].meshFilter           = null;
                         fragments[i].meshRenderer         = null;
                         fragments[i].physics.meshCollider = null;
+                        fragments[i].meshRoot             = null;
                     }
             }
 
@@ -523,6 +529,12 @@ namespace RayFire
 
             // Set bound and size
             RFLimitations.SetBound(this);
+
+            // Backup original layer
+            RFActivation.BackupActivationLayer (this);
+
+            // meshDemolition.properties.layerBack = gameObject.layer;
+            // gameObject.tag;
         }
         
         // Set physics properties
@@ -659,8 +671,8 @@ namespace RayFire
         // Collision check
         protected virtual void OnCollisionEnter (Collision collision)
         {
-            // Demolition by Collision state
-            if (limitations.byCollision == false)
+            // Check if collision data needed
+            if (CollisionCheck() == false)
                 return;
             
             // Tag check. IMPORTANT keep length check for compatibility with older builds
@@ -709,50 +721,28 @@ namespace RayFire
                 
                 // Collect damage by collision
                 if (damage.enable == true && damage.collect == true)
-                    if (ApplyDamage (collisionMagnitude * damage.multiplier, limitations.contactVector3) == true)
+                    if (ApplyDamage (collisionMagnitude * damage.multiplier, limitations.contactVector3, 0f, collision.contacts[i].thisCollider) == true)
                         return true;
             }
 
             return false;
         }
         
-        /*
-        
-        // Collision check
-        protected virtual void OnCollisionEnter (Collision collision)
+        // Check if collision data needed
+        bool CollisionCheck()
         {
-            // Tag check. Can/t be replaced by CompareTag because not used tags can be defined
-            if (limitations.tag.Length > 0 && collision.collider.CompareTag (limitations.tag) == false)
-                return;
-            
-            // Demolish object check
-            if (DemolitionState() == false) 
-                return;
-            
-            // Check if damage collection by collision passed
-            if (DamageCollectionDemolition (collision) == true)
-            {
-                limitations.demolitionShould = true;
-                return;
-            }
-
-            // Demolition by Collision state
-            if (limitations.byCollision == false)
-                return;
-            
-            // Check if collision demolition passed
-            if (CollisionDemolition (collision) == true)
-                limitations.demolitionShould = true;
+            if (limitations.byCollision == true)
+                return true;
+            if (damage.enable == true && damage.collect == true)
+                return true;
+            return false;
         }
-
-        */
-
         
         /// /////////////////////////////////////////////////////////
         /// Demolition
         /// /////////////////////////////////////////////////////////
 
-         // Demolition available state
+        // Demolition available state
         public bool State ()
         {
             // Object already demolished
@@ -907,6 +897,12 @@ namespace RayFire
         // Copy rigid properties from parent to fragments
         public void CopyPropertiesTo (RayfireRigid toScr)
         {
+            // Set local meshRoot
+            if (objectType == ObjectType.MeshRoot)
+                toScr.meshRoot = this;
+            else if (meshRoot != null)
+                    toScr.meshRoot = meshRoot;
+
             // Object type
             toScr.objectType = objectType;
             if (objectType == ObjectType.MeshRoot || objectType == ObjectType.SkinnedMesh)
@@ -1126,9 +1122,9 @@ namespace RayFire
         }
         
         // Apply damage
-        public bool ApplyDamage (float damageValue, Vector3 damagePoint, float damageRadius = 0f)
+        public bool ApplyDamage (float damageValue, Vector3 damagePoint, float damageRadius = 0f, Collider coll = null)
         {
-            return RFDamage.ApplyDamage (this, damageValue, damagePoint, damageRadius);
+            return RFDamage.ApplyDamage (this, damageValue, damagePoint, damageRadius, coll);
         }
         
         // Activate inactive object

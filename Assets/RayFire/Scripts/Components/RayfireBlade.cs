@@ -341,7 +341,7 @@ namespace RayFire
                 return false;
 
             // Add damage 
-            return RFDamage.Apply (scr, damageValue);
+            return RFDamage.ApplyToRigid (scr, damageValue);
         }
         
         // Get two points or slice
