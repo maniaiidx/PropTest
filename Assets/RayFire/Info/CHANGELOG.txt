@@ -2,13 +2,22 @@
  [1.50]
  
  - Shatter. Size limitation.
+	0.1-100
  - Shatter. Triangle limitation.
+	100-1900
  - Shatter. All fragments created by limitation properties get one parent.
+	limitation propertiesによって作成されたすべての破片は、1つの親を取得します。
+	⇒（オブジェクト名）_rootのこと？　何が変わったのか不明
  - Rigid. Demolition By Collision and By Damage with collision collection now work independently.
+	By Damegeで使用するダメージ値とBy Collisionで使うダメージ値が独立するようになった。
  - Rigid. Nested & Connected Cluster allows to use Rigid and Shatter Components with custom properties on demolished shards.
+	ネストされたクラスタと接続されたクラスタにより、解体されたシャードにカスタム プロパティを持つリジッド コンポーネントとシャター コンポーネントが使用できるようになりました。
  - Rigid. Debris and Dust emitting for fragments clusterized by Connectivity.
+	Connectivityでクラスタ化された破片に対して、デブリとダストが放出されるようになった。
  - Rigid. New Add Children property for Mesh Demolition. Allows to add mesh children to fragments. 
+	Mesh Demoliton->Advanced->Sim TypeでInheritが使用可能。子オブジェクトに継承できる。
  - RigidRoot. Debris and Dust emitting for shards clusterized by Connectivity.
+	Connectivityでクラスタ化された破片にもDebrisとDustが適用されるようになった。
  
  [1.49]
 
