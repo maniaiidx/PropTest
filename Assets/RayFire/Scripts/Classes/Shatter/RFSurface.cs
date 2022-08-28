@@ -10,13 +10,14 @@ namespace RayFire
         public float    mappingScale;
         public Material outerMaterial;
         public bool needNewMat;
-        
+        //private static object Test_Material_Rayfire;
+
         // static public Material[] newMaterials;
-                    
+
         /// /////////////////////////////////////////////////////////
         /// Constructor
         /// /////////////////////////////////////////////////////////
-         
+
         // Constructor
         public RFSurface()
         {
@@ -66,6 +67,12 @@ namespace RayFire
                 }
                 
                 targetRend.sharedMaterials = newMaterials;
+                //
+                Test_Material_Rayfire tmp = GameObject.Find("Test_Material_Rayfire").GetComponent<Test_Material_Rayfire>();
+                tmp.getMaterials(newMaterials);
+             
+                //
+
                 //newMaterials               = null;
             }
         }

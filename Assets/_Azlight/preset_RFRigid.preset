@@ -154,8 +154,12 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: activation.l
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: activation.layer
-    value: 
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: activation.connect
@@ -242,6 +246,10 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: meshDemolition.addChildren
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: meshDemolition.clusterize
     value: 0
     objectReference: {fileID: 0}
@@ -270,7 +278,23 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: meshDemolition.properties.l
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: meshDemolition.properties.m
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: meshDemolition.properties.layer
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: meshDemolition.properties.t
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: meshDemolition.properties.tag
     value: 
     objectReference: {fileID: 0}
   - target: {fileID: 0}
@@ -599,6 +623,10 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: damage.multiplier
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: damage.toShards
     value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
