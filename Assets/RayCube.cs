@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class RayCube : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class RayCube : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //meshRenderer = GetComponent<MeshRenderer>();
+        //meshRendererT = GetComponent<MeshRenderer>();
     }
     // Update is called once per frame
     void Update()
@@ -33,13 +34,20 @@ public class RayCube : MonoBehaviour
             meshRendererT = hitInfo.collider.gameObject.GetComponent<MeshRenderer>();
             tex = meshRendererT.materials[1].mainTexture as Texture2D;
             Vector2 uv = hitInfo.textureCoord;
-            Color[] pix = tex.GetPixels(Mathf.FloorToInt(uv.x * tex.width), Mathf.FloorToInt(uv.y * tex.height), 1, 1);
-            text.text = pix[0].ToString();
-            image.color = pix[0];
+            try {
+                Color[] pix = tex.GetPixels(Mathf.FloorToInt(uv.x * tex.width), Mathf.FloorToInt(uv.y * tex.height), 1, 1);
+                text.text = pix[0].ToString();
+                image.color = pix[0];
+            }
+            catch
+            {
+                Debug.Log("内側に当たっている");
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.position = hitInfo.point;
+                testend = true;
+            }
 
-            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.position = hitInfo.point;
-            testend = true;
+
         }
     }
     private void OnCollisionEnter(Collision collision)
