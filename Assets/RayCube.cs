@@ -12,6 +12,8 @@ public class RayCube : MonoBehaviour
     Texture2D tex;
     [SerializeField] MeshRenderer meshRendererT;
     public bool testend;
+    public GameObject tekkin;
+    public float distance = 1f;
 
     // Start is called before the first frame update
     void Start()
@@ -26,14 +28,19 @@ public class RayCube : MonoBehaviour
         Ray ray = new Ray(gameObject.transform.position, transform.TransformDirection(Vector3.forward));
         Debug.DrawRay(gameObject.transform.position, transform.TransformDirection(Vector3.forward) * 6, Color.blue, 0.1f);
 
-        RaycastHit hitInfo;
+        //RaycastHit hitInfo;
+        RaycastHit[] hitInfo;
         //if (Physics.Raycast(ray, out hit))
         //if (Physics.Raycast(gameObject.transform.position, transform.TransformDirection(Vector3.forward), out hitInfo))
-        if (Physics.Raycast(ray, out hitInfo))
+        //if (Physics.Raycast(ray, out hitInfo))
+        hitInfo = Physics.RaycastAll(ray);
+        for (int i = 0; i < hitInfo.Length; i++)
         {
-            meshRendererT = hitInfo.collider.gameObject.GetComponent<MeshRenderer>();
+            //meshRendererT = hitInfo.collider.gameObject.GetComponent<MeshRenderer>();
+            meshRendererT = hitInfo[i].collider.gameObject.GetComponent<MeshRenderer>();
             tex = meshRendererT.materials[1].mainTexture as Texture2D;
-            Vector2 uv = hitInfo.textureCoord;
+            //Vector2 uv = hitInfo.textureCoord;
+            Vector2 uv = hitInfo[i].textureCoord;
             try {
                 Color[] pix = tex.GetPixels(Mathf.FloorToInt(uv.x * tex.width), Mathf.FloorToInt(uv.y * tex.height), 1, 1);
                 text.text = pix[0].ToString();
@@ -42,8 +49,10 @@ public class RayCube : MonoBehaviour
             catch
             {
                 Debug.Log("内側に当たっている");
-                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                sphere.transform.position = hitInfo.point;
+                //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                GameObject sphere = Instantiate(tekkin, Vector3.zero,);
+                //sphere.transform.position = hitInfo.point;
+                sphere.transform.position = hitInfo[i].point;
                 testend = true;
             }
 
