@@ -18,7 +18,7 @@ public class RayCube : MonoBehaviour
     [Header("weightが多いと生成されやすい")]
     //Inspectorに表示される
     [SerializeField]
-    public List <Spawntekkin> TekkinObject;
+    public List<Spawntekkin> TekkinObject;
     //プロパティStruct
     [Serializable]
     public class Spawntekkin
@@ -154,19 +154,79 @@ public class RayCube : MonoBehaviour
 
         for (int k = 0; k < LimitLoop; k++)
         {
+            //Rayを飛ばす
             Ray ray = new Ray(gameObject.transform.position, transform.TransformDirection(Vector3.forward));
+            //Rayを表示（デバッグ用）
             Debug.DrawRay(gameObject.transform.position, transform.TransformDirection(Vector3.forward) * 6, Color.blue, 0.1f);
+            //Rayが当たったすべてのオブジェクトを取得
             hitInfo = Physics.RaycastAll(ray);
+            Debug.Log("hitInfo.Length: " + hitInfo.Length);
+            //いっこも当たらなかったらループ破壊。（処理を全て終了）
             if (hitInfo.Length == 0) break;
+            //Rayが当たったオブジェクトを全てループ処理
             for (int i = 0; i < hitInfo.Length; i++)
             {
                 //tekkintargetのtagだけに鉄筋を刺すので、違うタグなら次のループへ飛ぶ
                 if (hitInfo[i].collider.gameObject.tag != "tekkintarget") continue;
+                //Rayが当たったオブジェクトのMeshRendererを取得
                 meshRendererT = hitInfo[i].collider.gameObject.GetComponent<MeshRenderer>();
+
+
+
+                //サブメッシュとhitの三角形座標比較の処理ここから
+                Mesh mesh;
+                MeshCollider meshCollider = hitInfo[i].collider as MeshCollider;
+                mesh = meshCollider.sharedMesh;
+
+                int[] hitTriangle = new int[]
+                    {
+                        mesh.triangles[hitInfo[i].triangleIndex * 3],
+                        mesh.triangles[hitInfo[i].triangleIndex * 3 + 1],
+                        mesh.triangles[hitInfo[i].triangleIndex * 3 + 2]
+                    };
+                //サブメッシュの数だけ繰り返す
+                //for (int l = 0; l < mesh.subMeshCount; l++)
+                //{
+                //2個目のサブメッシュだけ処理
+                //サブメッシュの三角形を取得
+                int[] subMeshTris = mesh.GetTriangles(1);//固定で1を指定（materialリストの2番目が内壁であるという前提）
+                //サブメッシュの三角形の頂点の数だけ繰り返す
+                for (int j = 0; j < subMeshTris.Length; j += 3)
+                {
+                    //サブメッシュの三角形の頂点座標ととRayが当たった三角形の頂点座標が3つとも一致したら
+                    if (subMeshTris[j] == hitTriangle[0] &&
+                        subMeshTris[j + 1] == hitTriangle[1] &&
+                        subMeshTris[j + 2] == hitTriangle[2])
+                    {
+                        //mat = renderer.materials[l];
+                        Debug.Log("内側に当たっている");
+                        //GameObject sphere = Instantiate(tekkin, hitInfo[i].point, Quaternion.Euler(EulerQ));
+                        //ランダムな鉄筋を取得
+                        GameObject tmp = Randomtekkin();
+                        //鉄筋をスポーンする
+                        GameObject sphere = Instantiate(tmp, hitInfo[i].point, Quaternion.Euler(EulerQ));
+                        //鉄筋を瓦礫の子供にする
+                        sphere.transform.parent = hitInfo[i].transform;
+                        Debug.Log("hit: " + i);
+                        //Listに追加
+                        GenerateList.Add(sphere);
+                    }
+                }
+                //}
+                //ここまで
+
+
+
+
+                /*色取得のエラーでやってた処理ここから
+                //MeshRendererの2番目（0の次である1）のテクスチャを取得する
                 tex = meshRendererT.materials[1].mainTexture as Texture2D;
+                //Rayが当たったUV上の座標を取得する
                 Vector2 uv = hitInfo[i].textureCoord;
                 try
                 {
+                    //UV画像から、Rayが当たった個所の座標の色を取得している
+                    //エラーになるのは、
                     Color[] pix = tex.GetPixels(Mathf.FloorToInt(uv.x * tex.width), Mathf.FloorToInt(uv.y * tex.height), 1, 1);
                     text.text = pix[0].ToString();
                     image.color = pix[0];
@@ -185,6 +245,7 @@ public class RayCube : MonoBehaviour
                     //Listに追加
                     GenerateList.Add(sphere);
                 }
+                ここまで*/
             }
             Debug.Log("位置ずらす");
             Vector3 nextpos = transform.position;
@@ -218,7 +279,7 @@ public class RayCube : MonoBehaviour
     {
         GameObject tekkin;
         int rmdnum = UnityEngine.Random.Range(0, tmpcopy.Count);//ランダム
-        Debug.Log(""+rmdnum);
+        Debug.Log("" + rmdnum);
         //ランダムに選ばれた鉄筋を変数に格納
         tekkin = tmpcopy[rmdnum].SpawnPrefab;
         //さらに0～weightの間のランダムな数を算出
@@ -232,4 +293,3 @@ public class RayCube : MonoBehaviour
     }
 }
 
- 
