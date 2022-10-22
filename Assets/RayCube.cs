@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class RayCube : MonoBehaviour
 {
@@ -12,6 +14,28 @@ public class RayCube : MonoBehaviour
     Texture2D tex;
     [SerializeField] MeshRenderer meshRendererT;
     public GameObject tekkin;
+
+    [Header("weightが多いと生成されやすい")]
+    //Inspectorに表示される
+    [SerializeField]
+    public List <Spawntekkin> TekkinObject;
+    //プロパティStruct
+    [Serializable]
+    public class Spawntekkin
+    {
+        public GameObject
+            SpawnPrefab;
+        public int
+            weight;
+        public Spawntekkin()
+        {
+            SpawnPrefab = null;
+            weight = 1;
+        }
+    }
+
+    private List<Spawntekkin> tmpcopy;
+
     [Header("鉄筋を刺す角度")]
     public Vector3 EulerQ;
     [Header("次の鉄筋を刺す移動距離")]
@@ -125,6 +149,9 @@ public class RayCube : MonoBehaviour
         if (GenerateLock == true) return;
         initPos = transform.position;//初期位置を保存
         RaycastHit[] hitInfo;
+        //鉄筋配列をコピー
+        tmpcopy = new List<Spawntekkin>(TekkinObject);
+
         for (int k = 0; k < LimitLoop; k++)
         {
             Ray ray = new Ray(gameObject.transform.position, transform.TransformDirection(Vector3.forward));
@@ -133,6 +160,7 @@ public class RayCube : MonoBehaviour
             if (hitInfo.Length == 0) break;
             for (int i = 0; i < hitInfo.Length; i++)
             {
+                //tekkintargetのtagだけに鉄筋を刺すので、違うタグなら次のループへ飛ぶ
                 if (hitInfo[i].collider.gameObject.tag != "tekkintarget") continue;
                 meshRendererT = hitInfo[i].collider.gameObject.GetComponent<MeshRenderer>();
                 tex = meshRendererT.materials[1].mainTexture as Texture2D;
@@ -146,13 +174,17 @@ public class RayCube : MonoBehaviour
                 catch
                 {
                     Debug.Log("内側に当たっている");
-                    GameObject sphere = Instantiate(tekkin, hitInfo[i].point, Quaternion.Euler(EulerQ));
+                    //GameObject sphere = Instantiate(tekkin, hitInfo[i].point, Quaternion.Euler(EulerQ));
+                    //ランダムな鉄筋を取得
+                    GameObject tmp = Randomtekkin();
+                    //鉄筋をスポーンする
+                    GameObject sphere = Instantiate(tmp, hitInfo[i].point, Quaternion.Euler(EulerQ));
+                    //鉄筋を瓦礫の子供にする
                     sphere.transform.parent = hitInfo[i].transform;
                     Debug.Log("hit: " + i);
                     //Listに追加
                     GenerateList.Add(sphere);
                 }
-                Debug.Log("てｓｔ");
             }
             Debug.Log("位置ずらす");
             Vector3 nextpos = transform.position;
@@ -182,4 +214,22 @@ public class RayCube : MonoBehaviour
         #endif
         */
     }
+    private GameObject Randomtekkin()
+    {
+        GameObject tekkin;
+        int rmdnum = UnityEngine.Random.Range(0, tmpcopy.Count);//ランダム
+        Debug.Log(""+rmdnum);
+        //ランダムに選ばれた鉄筋を変数に格納
+        tekkin = tmpcopy[rmdnum].SpawnPrefab;
+        //さらに0～weightの間のランダムな数を算出
+        int rmdwei = UnityEngine.Random.Range(0, tmpcopy[rmdnum].weight);
+        //0が出たら選ばれた鉄筋をリストから削除
+        if (rmdwei <= 0) tmpcopy.RemoveAt(rmdnum);
+        //要素が全部無くなったら元のListからコピーしてくる
+        if (tmpcopy.Count == 0) tmpcopy = new List<Spawntekkin>(TekkinObject);
+        //鉄筋を返す
+        return tekkin;
+    }
 }
+
+ 
